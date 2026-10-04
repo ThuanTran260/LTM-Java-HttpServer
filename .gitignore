@@ -1,0 +1,17 @@
+# Compiled bytecode
+out/
+bin/
+*.class
+
+# IDE & Editor files
+.idea/
+.vscode/
+*.iml
+
+# Antigravity / Agents internal data
+.agents/
+
+# OS metadata
+Thumbs.db
+Desktop.ini
+.DS_Store
