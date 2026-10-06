@@ -7,13 +7,13 @@ public class StaticFileHandler {
     public static boolean tryServe(HttpExchange ex, String path) throws IOException {
         String rel;
         if (path.equals("/")) rel = "index.html";
-        else if (path.startsWith("/") && !hasDotDot(path) && contentTypeFor(path.toLowerCase(java.util.Locale.ROOT)) != null) rel = path.substring(1);
+        else if (path.startsWith("/") && !hasDotDot(path) && contentTypeFor(path) != null) rel = path.substring(1);
         else return false;
         Path file = Paths.get("wwwroot", rel).toAbsolutePath().normalize();
         Path root = Paths.get("wwwroot").toAbsolutePath().normalize();
         if (!file.startsWith(root) || !Files.exists(file) || Files.isDirectory(file)) return false;
         byte[] data = Files.readAllBytes(file);
-        String ct = contentTypeFor(rel.toLowerCase(java.util.Locale.ROOT));
+        String ct = contentTypeFor(rel);
         ex.getResponseHeaders().set("Content-Type", ct);
         ex.sendResponseHeaders(200, data.length);
         try (OutputStream os = ex.getResponseBody()) { os.write(data); }
@@ -26,11 +26,12 @@ public class StaticFileHandler {
         return d == null || d.contains("..");
     }
     public static String contentTypeFor(String name) {
-        if (name.endsWith(".html")) return "text/html; charset=utf-8";
-        if (name.endsWith(".css")) return "text/css; charset=utf-8";
-        if (name.endsWith(".png")) return "image/png";
-        if (name.endsWith(".txt")) return "text/plain; charset=utf-8";
-        if (name.endsWith(".json")) return "application/json";
+        String n = name.toLowerCase(java.util.Locale.ROOT);
+        if (n.endsWith(".html")) return "text/html; charset=utf-8";
+        if (n.endsWith(".css")) return "text/css; charset=utf-8";
+        if (n.endsWith(".png")) return "image/png";
+        if (n.endsWith(".txt")) return "text/plain; charset=utf-8";
+        if (n.endsWith(".json")) return "application/json";
         return null;
     }
 }
