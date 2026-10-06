@@ -2,6 +2,7 @@ package server;
 import com.sun.net.httpserver.*;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -112,9 +113,14 @@ public class RouterHandler implements HttpHandler {
     static String queryParam(String query, String key) {
         if (query == null) return null;
         for (String p : query.split("&")) {
-            if (p.startsWith(key + "=")) return p.substring(key.length() + 1);
+            if (p.equals(key)) return "";
+            if (p.startsWith(key + "=")) return urlDecode(p.substring(key.length() + 1));
         }
         return null;
+    }
+    static String urlDecode(String s) {
+        try { return URLDecoder.decode(s, StandardCharsets.UTF_8); }
+        catch (IllegalArgumentException e) { return s; }
     }
     static String parseJsonString(String json, String key) {
         String k = "\"" + key + "\"";
