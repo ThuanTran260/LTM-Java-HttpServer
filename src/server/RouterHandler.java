@@ -14,14 +14,12 @@ public class RouterHandler implements HttpHandler {
         String method = ex.getRequestMethod();
         String path = ex.getRequestURI().getPath();
         try {
-            // 1. Static /
-            if (method.equals("GET") && (path.equals("/") || path.equals("/style.css"))) {
-                if (StaticFileHandler.tryServe(ex, path)) return;
-                // fallback neu chua co wwwroot
-                if (path.equals("/")) {
-                    send(ex, 200, "text/html; charset=utf-8", "<h1>HTTP Server dang hoat dong!</h1><p><a href='/api/time'>/api/time</a> | <a href='/api/students'>/api/students</a> | <a href='/iis/'>/iis/</a></p>");
-                    return;
-                }
+            // 1. Static wwwroot (index.html, style.css, sample.png, ...)
+            if (method.equals("GET") && StaticFileHandler.tryServe(ex, path)) return;
+            // fallback neu chua co wwwroot
+            if (method.equals("GET") && path.equals("/")) {
+                send(ex, 200, "text/html; charset=utf-8", "<h1>HTTP Server dang hoat dong!</h1><p><a href='/api/time'>/api/time</a> | <a href='/api/students'>/api/students</a> | <a href='/iis/'>/iis/</a></p>");
+                return;
             }
             // 2. GET /api/time
             if (method.equals("GET") && path.equals("/api/time")) {
@@ -46,7 +44,19 @@ public class RouterHandler implements HttpHandler {
             }
             // 4. CRUD /api/students
             if (path.equals("/api/students")) {
-                if (method.equals("GET")) { send(ex, 200, "application/json", SVC.listJson()); return; }
+                if (method.equals("GET")) {
+                    String qid = queryParam(ex.getRequestURI().getQuery(), "id");
+                    if (qid != null) {
+                        int qidInt;
+                        try { qidInt = Integer.parseInt(qid); }
+                        catch (NumberFormatException e) { send(ex, 400, "text/plain; charset=utf-8", "400 Bad Request"); return; }
+                        Student s = SVC.get(qidInt);
+                        if (s == null) send(ex, 404, "text/plain; charset=utf-8", "404 Not Found");
+                        else send(ex, 200, "application/json", s.toJson());
+                        return;
+                    }
+                    send(ex, 200, "application/json", SVC.listJson()); return;
+                }
                 if (method.equals("POST")) {
                     String ct = ex.getRequestHeaders().getFirst("Content-Type");
                     if (ct == null || !ct.startsWith("application/json")) {
@@ -98,6 +108,13 @@ public class RouterHandler implements HttpHandler {
         ex.sendResponseHeaders(status, data.length);
         try (OutputStream os = ex.getResponseBody()) { os.write(data); }
         ServerLogger.log(ex.getRequestMethod(), ex.getRequestURI().getPath(), status, data.length, ex.getRemoteAddress().toString());
+    }
+    static String queryParam(String query, String key) {
+        if (query == null) return null;
+        for (String p : query.split("&")) {
+            if (p.startsWith(key + "=")) return p.substring(key.length() + 1);
+        }
+        return null;
     }
     static String parseJsonString(String json, String key) {
         String k = "\"" + key + "\"";

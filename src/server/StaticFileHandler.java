@@ -8,13 +8,13 @@ public class StaticFileHandler {
     public static boolean tryServe(HttpExchange ex, String path) throws IOException {
         String rel;
         if (path.equals("/")) rel = "index.html";
-        else if (path.equals("/style.css")) rel = "style.css";
+        else if (path.startsWith("/") && !path.contains("..") && contentTypeFor(path) != null) rel = path.substring(1);
         else return false;
         Path file = Paths.get("wwwroot", rel).toAbsolutePath().normalize();
         Path root = Paths.get("wwwroot").toAbsolutePath().normalize();
-        if (!file.startsWith(root) || !Files.exists(file)) return false;
+        if (!file.startsWith(root) || !Files.exists(file) || Files.isDirectory(file)) return false;
         byte[] data = Files.readAllBytes(file);
-        String ct = rel.endsWith(".css") ? "text/css; charset=utf-8" : "text/html; charset=utf-8";
+        String ct = contentTypeFor(rel);
         ex.getResponseHeaders().set("Content-Type", ct);
         ex.sendResponseHeaders(200, data.length);
         try (OutputStream os = ex.getResponseBody()) { os.write(data); }
@@ -26,6 +26,6 @@ public class StaticFileHandler {
         if (name.endsWith(".css")) return "text/css; charset=utf-8";
         if (name.endsWith(".png")) return "image/png";
         if (name.endsWith(".json")) return "application/json";
-        return "text/plain; charset=utf-8";
+        return null;
     }
 }

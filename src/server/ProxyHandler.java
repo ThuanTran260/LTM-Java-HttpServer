@@ -12,8 +12,10 @@ public class ProxyHandler implements HttpHandler {
     public void handle(HttpExchange ex) throws IOException {
         String path = ex.getRequestURI().getPath();
         String query = ex.getRequestURI().getQuery();
-        String sub = path.replaceFirst("^/iis/?", "/");
-        if (sub.isEmpty()) sub = "/";
+        String sub;
+        if (path.equals("/iis") || path.equals("/iis/")) sub = "/";
+        else if (path.startsWith("/iis/")) sub = path.substring(4);
+        else { RouterHandler.send(ex, 404, "text/plain; charset=utf-8", "404 Not Found"); return; }
         if (query != null) sub += "?" + query;
         String method = ex.getRequestMethod();
         byte[] reqBody = ex.getRequestBody().readAllBytes();
