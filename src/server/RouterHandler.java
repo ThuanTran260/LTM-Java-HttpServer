@@ -83,6 +83,10 @@ public class RouterHandler implements HttpHandler {
                     return;
                 }
                 if (method.equals("PUT")) {
+                    String ct = ex.getRequestHeaders().getFirst("Content-Type");
+                    if (ct == null || !ct.startsWith("application/json")) {
+                        send(ex, 415, "text/plain; charset=utf-8", "415 Unsupported Media Type"); return;
+                    }
                     String body = new String(ex.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
                     String name = parseJsonString(body, "name");
                     Integer age = parseJsonInt(body, "age");

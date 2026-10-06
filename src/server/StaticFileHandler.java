@@ -13,7 +13,7 @@ public class StaticFileHandler {
         Path root = Paths.get("wwwroot").toAbsolutePath().normalize();
         if (!file.startsWith(root) || !Files.exists(file) || Files.isDirectory(file)) return false;
         byte[] data = Files.readAllBytes(file);
-        String ct = contentTypeFor(rel);
+        String ct = contentTypeFor(rel.toLowerCase(java.util.Locale.ROOT));
         ex.getResponseHeaders().set("Content-Type", ct);
         ex.sendResponseHeaders(200, data.length);
         try (OutputStream os = ex.getResponseBody()) { os.write(data); }
@@ -29,6 +29,7 @@ public class StaticFileHandler {
         if (name.endsWith(".html")) return "text/html; charset=utf-8";
         if (name.endsWith(".css")) return "text/css; charset=utf-8";
         if (name.endsWith(".png")) return "image/png";
+        if (name.endsWith(".txt")) return "text/plain; charset=utf-8";
         if (name.endsWith(".json")) return "application/json";
         return null;
     }
