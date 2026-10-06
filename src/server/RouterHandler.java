@@ -52,7 +52,7 @@ public class RouterHandler implements HttpHandler {
                         try { qidInt = Integer.parseInt(qid); }
                         catch (NumberFormatException e) { send(ex, 400, "text/plain; charset=utf-8", "400 Bad Request"); return; }
                         Student s = SVC.get(qidInt);
-                        if (s == null) send(ex, 404, "text/plain; charset=utf-8", "404 Not Found");
+                        if (s == null) sendNotFound(ex);
                         else send(ex, 200, "application/json", s.toJson());
                         return;
                     }
@@ -78,7 +78,7 @@ public class RouterHandler implements HttpHandler {
                 catch (NumberFormatException e) { send(ex, 400, "text/plain; charset=utf-8", "400 Bad Request"); return; }
                 if (method.equals("GET")) {
                     Student s = SVC.get(id);
-                    if (s == null) send(ex, 404, "text/plain; charset=utf-8", "404 Not Found");
+                    if (s == null) sendNotFound(ex);
                     else send(ex, 200, "application/json", s.toJson());
                     return;
                 }
@@ -87,17 +87,17 @@ public class RouterHandler implements HttpHandler {
                     String name = parseJsonString(body, "name");
                     Integer age = parseJsonInt(body, "age");
                     if (name == null || age == null) { send(ex, 400, "text/plain; charset=utf-8", "400 Bad Request"); return; }
-                    if (!SVC.update(id, name, age)) send(ex, 404, "text/plain; charset=utf-8", "404 Not Found");
+                    if (!SVC.update(id, name, age)) sendNotFound(ex);
                     else send(ex, 200, "application/json", SVC.get(id).toJson());
                     return;
                 }
                 if (method.equals("DELETE")) {
-                    if (!SVC.delete(id)) send(ex, 404, "text/plain; charset=utf-8", "404 Not Found");
+                    if (!SVC.delete(id)) sendNotFound(ex);
                     else send(ex, 200, "application/json", "{\"message\":\"Deleted\"}");
                     return;
                 }
             }
-            send(ex, 404, "text/plain; charset=utf-8", "404 Not Found");
+            sendNotFound(ex);
         } catch (Exception e) {
             try { send(ex, 500, "text/plain; charset=utf-8", "500 Internal Server Error"); }
             catch (Exception ignored) {}
@@ -114,13 +114,16 @@ public class RouterHandler implements HttpHandler {
         if (query == null) return null;
         for (String p : query.split("&")) {
             if (p.equals(key)) return "";
-            if (p.startsWith(key + "=")) return urlDecode(p.substring(key.length() + 1));
+            if (p.startsWith(key + "=")) { String v = p.substring(key.length() + 1); return urlDecodeOr(v, v); }
         }
         return null;
     }
-    static String urlDecode(String s) {
+    static String urlDecodeOr(String s, String fallback) {
         try { return URLDecoder.decode(s, StandardCharsets.UTF_8); }
-        catch (IllegalArgumentException e) { return s; }
+        catch (IllegalArgumentException e) { return fallback; }
+    }
+    static void sendNotFound(HttpExchange ex) throws IOException {
+        send(ex, 404, "text/plain; charset=utf-8", "404 Not Found");
     }
     static String parseJsonString(String json, String key) {
         String k = "\"" + key + "\"";
