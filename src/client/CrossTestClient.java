@@ -9,6 +9,7 @@ import java.time.Duration;
 import server.RouterHandler;
 import server.SimpleHttpServer;
 import server.SiteManager;
+import server.SitesApiHandler;
 import mock.MockIisServer;
 
 /**
@@ -400,6 +401,7 @@ public class CrossTestClient {
 
     private static void testMultiSite(String base) throws Exception {
         testSiteManager();
+        testSitesApi(base);
     }
 
     private static int freePort() throws java.io.IOException {
@@ -533,6 +535,60 @@ public class CrossTestClient {
         } finally {
             mgr.stopAll();
             deleteTree(tmp);
+        }
+    }
+
+    private static void httpDeleteQuietly(String url) {
+        try {
+            HttpClient.newHttpClient().send(HttpRequest.newBuilder(URI.create(url)).DELETE().build(),
+                HttpResponse.BodyHandlers.discarding());
+        } catch (Exception ignored) {
+            // don dep tren co gang: bo qua
+        }
+    }
+
+    private static void testSitesApi(String base) throws Exception {
+        check("S37. SitesApiHandler.isLoopback chi chap nhan dia chi loopback",
+            SitesApiHandler.isLoopback(new java.net.InetSocketAddress(java.net.InetAddress.getLoopbackAddress(), 1234))
+                && !SitesApiHandler.isLoopback(new java.net.InetSocketAddress("192.168.1.10", 1234))
+                && !SitesApiHandler.isLoopback(null),
+            "isLoopback tra ket qua sai");
+
+        String api = base + "/api/sites";
+        String name = "zz-api-test";
+        int port = freePort();
+        String siteApi = api + "/" + name;
+        try {
+            testRequest("S20. GET /api/sites -> mang JSON", "GET", api, null, null, 200, "application/json", "[");
+            testRequest("S21. POST /api/sites sai Content-Type -> 415", "POST", api, "text/plain", "{}", 415, "text/plain", "415");
+            testRequest("S22. POST /api/sites thieu port -> 400", "POST", api, "application/json",
+                "{\"name\":\"" + name + "\"}", 400, "text/plain", "400");
+            testRequest("S23. POST /api/sites ten khong hop le -> 400", "POST", api, "application/json",
+                "{\"name\":\"A B\",\"port\":" + port + "}", 400, "text/plain", "400");
+            testRequest("S24. POST /api/sites hop le -> 201, site dang chay", "POST", api, "application/json",
+                "{\"name\":\"" + name + "\",\"port\":" + port + "}", 201, "application/json", "\"running\":true");
+            testRequest("S25. GET site vua them tren cong rieng -> index.html mac dinh", "GET",
+                "http://localhost:" + port + "/", null, null, 200, "text/html", "Site " + name);
+            testRequest("S26. POST /api/sites trung ten -> 409", "POST", api, "application/json",
+                "{\"name\":\"" + name + "\",\"port\":" + freePort() + "}", 409, "text/plain", "409 Conflict");
+            testRequest("S27. POST /api/sites/{name}/stop -> 200, running=false", "POST", siteApi + "/stop",
+                "application/json", "{}", 200, "application/json", "\"running\":false");
+            check("S28. sau khi stop cong da dong", !canConnect(port), "cong " + port + " van mo");
+            testRequest("S29. POST /api/sites/{name}/start -> 200, running=true", "POST", siteApi + "/start",
+                "application/json", "{}", 200, "application/json", "\"running\":true");
+            check("S30. sau khi start cong mo lai", canConnect(port), "cong " + port + " khong mo");
+            testRequest("S31. POST /api/sites/{name}/start sai Content-Type -> 415", "POST", siteApi + "/start",
+                "text/plain", "x", 415, "text/plain", "415");
+            testRequest("S32. POST /api/sites/khong-co/start -> 404", "POST", api + "/khong-co/start",
+                "application/json", "{}", 404, "text/plain", "404");
+            testRequest("S33. PUT /api/sites -> 405 Allow co POST", "PUT", api, "application/json", "{}",
+                405, "text/plain", "405", "Allow", "POST");
+            testRequest("S34. DELETE /api/sites/{name} -> 200", "DELETE", siteApi, null, null, 200, "application/json", "Deleted");
+            check("S35. sau khi DELETE cong da dong", !canConnect(port), "cong " + port + " van mo");
+            testRequest("S36. DELETE lai site da xoa -> 404", "DELETE", siteApi, null, null, 404, "text/plain", "404");
+        } finally {
+            httpDeleteQuietly(siteApi);
+            deleteTree(java.nio.file.Paths.get("sites", name));
         }
     }
 

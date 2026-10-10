@@ -20,7 +20,9 @@ public class ServerLogger {
             case 301: return "Moved Permanently";
             case 302: return "Found";
             case 400: return "Bad Request";
+            case 403: return "Forbidden";
             case 404: return "Not Found";
+            case 409: return "Conflict";
             case 405: return "Method Not Allowed";
             case 415: return "Unsupported Media Type";
             case 500: return "Internal Server Error";

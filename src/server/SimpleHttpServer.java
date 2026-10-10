@@ -2,11 +2,15 @@ package server;
 
 import com.sun.net.httpserver.HttpServer;
 import java.net.InetSocketAddress;
+import java.nio.file.Paths;
 import java.util.concurrent.Executors;
 
 public class SimpleHttpServer {
     public static HttpServer startServer(int port) throws Exception {
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
+        SiteManager sites = new SiteManager(Paths.get("sites"), Paths.get("sites.json"), port);
+        sites.load();
+        server.createContext("/api/sites", new SitesApiHandler(sites));
         server.createContext("/iis", new ProxyHandler());
         server.createContext("/fetch", new WebFetchHandler());
         server.createContext("/", new RouterHandler());
@@ -23,6 +27,7 @@ public class SimpleHttpServer {
         System.out.println("Listening on http://localhost:" + port + "/");
         System.out.println("Proxy IIS: http://localhost:" + port + "/iis/  -> 80 that, fallback 8081 mock");
         System.out.println("Web Fetcher: http://localhost:" + port + "/fetch?url=...  (format=json)");
+        System.out.println("Quan ly nhieu web: http://localhost:" + port + "/admin.html  (API: /api/sites)");
         return server;
     }
 
