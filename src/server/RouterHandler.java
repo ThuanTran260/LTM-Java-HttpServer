@@ -30,6 +30,7 @@ public class RouterHandler implements HttpHandler {
         else if (path.startsWith("/students/")) path = "/api/students/" + path.substring("/students/".length());
         else if (path.equals("/time") || path.equals("/time/")) path = "/api/time";
         else if (path.equals("/message") || path.equals("/message/")) path = "/api/message";
+        else if (path.equals("/fetch") || path.equals("/fetch/")) path = "/api/fetch";
 
         String query = ex.getRequestURI().getRawQuery();
         String method = ex.getRequestMethod();
@@ -40,7 +41,13 @@ public class RouterHandler implements HttpHandler {
 
             // Fallback neu wwwroot/index.html khong ton tai
             if (method.equals("GET") && path.equals("/")) {
-                send(ex, 200, "text/html; charset=utf-8", "<h1>HTTP Server dang hoat dong!</h1><p><a href='/api/time'>/api/time</a> | <a href='/api/students'>/api/students</a> | <a href='/iis/'>/iis/</a></p>");
+                send(ex, 200, "text/html; charset=utf-8", "<h1>HTTP Server dang hoat dong!</h1><p><a href='/api/time'>/api/time</a> | <a href='/api/students'>/api/students</a> | <a href='/iis/'>/iis/</a> | <a href='/fetch?url=http://localhost:8081/'>/fetch</a></p>");
+                return;
+            }
+
+            // Web Fetcher / Proxy: /api/fetch (va /fetch)
+            if (path.equals("/api/fetch") || path.equals("/api/fetch/")) {
+                new WebFetchHandler().handle(ex);
                 return;
             }
 

@@ -8,6 +8,7 @@ public class SimpleHttpServer {
     public static HttpServer startServer(int port) throws Exception {
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/iis", new ProxyHandler());
+        server.createContext("/fetch", new WebFetchHandler());
         server.createContext("/", new RouterHandler());
         // Virtual threads cho moi request dong thoi (Java standard)
         try {
@@ -21,6 +22,7 @@ public class SimpleHttpServer {
         System.out.println("HTTP Server started.");
         System.out.println("Listening on http://localhost:" + port + "/");
         System.out.println("Proxy IIS: http://localhost:" + port + "/iis/  -> 80 that, fallback 8081 mock");
+        System.out.println("Web Fetcher: http://localhost:" + port + "/fetch?url=...  (format=json)");
         return server;
     }
 

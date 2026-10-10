@@ -18,6 +18,7 @@ import mock.MockIisServer;
  * - Route khong ton tai (404 text/plain)
  * - Proxy /iis/ va kiem tra IIS / Mock IIS
  * - Demo Clients (HttpClientGetDemo, HttpClientPostDemo, HttpClientErrorDemo)
+ * - Web Fetcher / Proxy: GET /fetch & GET /api/fetch (format=json, base tag injection, safety validation)
  *
  * Co kha nang tu dong khoi dong / goi den Server neu chua chay.
  */
@@ -175,6 +176,28 @@ public class CrossTestClient {
         testConcurrency("54. Concurrency stress test (50 concurrent requests)", base + "/api/time", 50);
         testLargeStaticStreaming("55. Large static file streaming (>250KB without truncation)", base);
         testEmptyStaticFile("56. Empty static file (0 bytes without chunked transfer)", base);
+
+        System.out.println("\n--- 8. WEB FETCHER / PROXY (/fetch & /api/fetch) ---");
+        testRequest("57. GET /fetch?url=... (Raw HTML fetch tu Mock IIS)", "GET", base + "/fetch?url=" + iisTarget + "/", null, null, 200, "text/html", "IIS Windows");
+        testRequest("58. GET /fetch?url=... (Tu dong chen the <base> vao Mock IIS)", "GET", base + "/fetch?url=" + iisTarget + "/", null, null, 200, "text/html", "<base href=\"" + iisTarget + "/\">");
+        testRequest("59. GET /api/fetch?url=... (Route alias /api/fetch Raw HTML)", "GET", base + "/api/fetch?url=" + iisTarget + "/", null, null, 200, "text/html", "<base href=\"" + iisTarget + "/\">");
+        testRequest("60. GET /fetch?url=...&format=json (JSON metadata status & body)", "GET", base + "/fetch?url=" + iisTarget + "/&format=json", null, null, 200, "application/json", "\"status\":200");
+        testRequest("61. GET /api/fetch?url=...&format=json (Route alias /api/fetch format=json)", "GET", base + "/api/fetch?url=" + iisTarget + "/&format=json", null, null, 200, "application/json", "\"targetUrl\":\"" + iisTarget + "/\"");
+        testRequest("62. GET /fetch?url=.../index.html (Chen <base> chinh xac vao trong <head>)", "GET", base + "/fetch?url=" + base + "/index.html", null, null, 200, "text/html", "<head><base href=\"" + base + "/index.html\">");
+        testRequest("63. GET /fetch?url=.../api/time&format=json (Fetch noi bo API thoi gian qua format=json)", "GET", base + "/fetch?url=" + base + "/api/time&format=json", null, null, 200, "application/json", "time");
+        testRequest("64. GET /fetch?url=.../style.css (Fetch asset tinh text/css giu nguyen raw)", "GET", base + "/fetch?url=" + base + "/style.css", null, null, 200, "text/css", "background");
+        testRequest("65. GET /fetch?url=http%3A%2F%2F... (Fetch URL duoc percent-encode)", "GET", base + "/fetch?url=http%3A%2F%2Flocalhost%3A8081%2F", null, null, 200, "text/html", "<base href=\"http://localhost:8081/\">");
+        testRequest("66. GET /fetch?url=file:///C:/Windows/win.ini (Chan scheme file:// -> 400)", "GET", base + "/fetch?url=file:///C:/Windows/win.ini", null, null, 400, "text/plain", "400 Bad Request");
+        testRequest("67. GET /fetch?url=ftp://speedtest.tele2.net (Chan scheme ftp:// -> 400)", "GET", base + "/fetch?url=ftp://speedtest.tele2.net", null, null, 400, "text/plain", "400 Bad Request");
+        testRequest("68. GET /fetch?url=javascript:alert(1) (Chan scheme javascript: -> 400)", "GET", base + "/fetch?url=javascript:alert(1)", null, null, 400, "text/plain", "400 Bad Request");
+        testRequest("69. GET /fetch?url=data:text/plain,hello (Chan scheme data: -> 400)", "GET", base + "/fetch?url=data:text/plain,hello", null, null, 400, "text/plain", "400 Bad Request");
+        testRequest("70. GET /fetch (Thieu url query param -> 400)", "GET", base + "/fetch", null, null, 400, "text/plain", "400 Bad Request");
+        testRequest("71. GET /fetch?url= (Url rong -> 400)", "GET", base + "/fetch?url=", null, null, 400, "text/plain", "400 Bad Request");
+        testRequest("72. POST /fetch?url=... (Method Not Allowed -> 405 Allow: GET)", "POST", base + "/fetch?url=" + iisTarget + "/", null, null, 405, "text/plain", "405", "Allow", "GET");
+        testRequest("73. GET /index.html (Giao dien UI chua form Web Fetcher)", "GET", base + "/index.html", null, null, 200, "text/html", "action=\"/fetch\"");
+        testRequest("74. GET /fetch?url=http://localhost:59999/ (Cong khong ton tai -> 502 Bad Gateway)", "GET", base + "/fetch?url=http://localhost:59999/", null, null, 502, "text/plain", "502 Bad Gateway");
+        testRequest("75. GET /fetch?url=http://localhost:59999/&format=json (Cong khong ton tai format=json -> 502 JSON)", "GET", base + "/fetch?url=http://localhost:59999/&format=json", null, null, 502, "application/json", "502 Bad Gateway");
+        testRequest("76. GET /fetch?url=...%3Fid%3D3&format=json (Fetch target URL co query param nested)", "GET", base + "/fetch?url=http%3A%2F%2Flocalhost%3A8080%2Fapi%2Fstudents%3Fid%3D3&format=json", null, null, 200, "application/json", "Cuong");
     }
 
     private static void testRequest(String testName, String method, String url, String contentType, String reqBody,
