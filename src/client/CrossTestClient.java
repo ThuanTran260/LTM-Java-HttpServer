@@ -19,6 +19,7 @@ import mock.MockIisServer;
  * - Proxy /iis/ va kiem tra IIS / Mock IIS
  * - Demo Clients (HttpClientGetDemo, HttpClientPostDemo, HttpClientErrorDemo)
  * - Web Fetcher / Proxy: GET /fetch & GET /api/fetch (format=json, base tag injection, safety validation)
+ * - Web Client: client.WebFetchService (logic) va client.WebClientApp (Swing, smoke test khong hien cua so)
  *
  * Co kha nang tu dong khoi dong / goi den Server neu chua chay.
  */
@@ -212,6 +213,9 @@ public class CrossTestClient {
             System.err.println("[FAIL] 83-94. WebFetchService -> Exception: " + e);
             fail++;
         }
+
+        System.out.println("\n--- 10. WEB CLIENT (client.WebClientApp, Swing) ---");
+        testWebClientApp(base);
     }
 
     private static void check(String testName, boolean ok, String detail) {
@@ -321,6 +325,59 @@ public class CrossTestClient {
                 && WebFetchService.charsetOf(null, null).equals(utf8)
                 && WebFetchService.charsetOf("text/html; charset=bogus-xyz", null).equals(utf8),
             "charsetOf tra ket qua sai");
+    }
+
+    private static void testWebClientApp(String base) {
+        if (java.awt.GraphicsEnvironment.isHeadless()) {
+            System.out.println("[SKIP] 95-97. WebClientApp -> moi truong headless, khong co man hinh de tao cua so Swing");
+            return;
+        }
+        try {
+            String[] r = fetchViaApp(base, base + "/index.html", false);
+            check("95. WebClientApp fetch raw -> Source co <base>, status 200, co chu thich <base>",
+                r[0].contains("<head><base href=\"" + base + "/index.html\">") && r[1].contains("Status: 200")
+                    && r[1].contains("Mode: raw") && r[2].contains("<base"),
+                r[1] + " | " + r[2]);
+
+            String[] j = fetchViaApp(base, base + "/index.html", true);
+            check("96. WebClientApp fetch json -> Source la JSON metadata, status 200, Mode: json",
+                j[0].startsWith("{\"targetUrl\":") && j[1].contains("Status: 200") && j[1].contains("Mode: json"),
+                j[1]);
+
+            String[] d = fetchViaApp("http://localhost:59998", base + "/index.html", false);
+            check("97. WebClientApp khi WebFetch server tat -> bao loi tren status bar, khong treo",
+                d[1].startsWith("Loi:") && d[1].contains("Khong ket noi"), d[1]);
+        } catch (Exception e) {
+            if (e instanceof java.awt.HeadlessException || e.getCause() instanceof java.awt.HeadlessException) {
+                System.out.println("[SKIP] 95-97. WebClientApp -> HeadlessException, khong co man hinh");
+            } else {
+                System.err.println("[FAIL] 95-97. WebClientApp -> Exception: " + e);
+                fail++;
+            }
+        }
+    }
+
+    /** Tao WebClientApp (khong hien), fetch 1 URL, doi giao dien cap nhat; tra ve {source, status, note}. */
+    private static String[] fetchViaApp(String server, String url, boolean json) throws Exception {
+        java.util.concurrent.CountDownLatch done = new java.util.concurrent.CountDownLatch(1);
+        String[] out = new String[3];
+        WebClientApp[] app = new WebClientApp[1];
+        javax.swing.SwingUtilities.invokeAndWait(() -> {
+            app[0] = new WebClientApp(server);
+            app[0].setJsonMode(json);
+            app[0].fetch(url, () -> {
+                out[0] = app[0].sourceText();
+                out[1] = app[0].statusText();
+                out[2] = app[0].noteText();
+                done.countDown();
+            });
+        });
+        boolean finished = done.await(20, java.util.concurrent.TimeUnit.SECONDS);
+        javax.swing.SwingUtilities.invokeAndWait(app[0]::dispose);
+        if (!finished) {
+            throw new IllegalStateException("Qua 20s ma WebClientApp chua tra ket qua cho " + url);
+        }
+        return out;
     }
 
     private static void testBaseTagInComment(String testName) {
