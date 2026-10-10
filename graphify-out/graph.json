@@ -1,0 +1,3437 @@
+{
+  "directed": false,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "id": "src_client_httpclienterrordemo_httpclienterrordemo",
+      "label": "HttpClientErrorDemo",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "HttpClientErrorDemo.java",
+      "file_type": "code",
+      "norm_label": "httpclienterrordemo",
+      "source_file": "src/client/HttpClientErrorDemo.java",
+      "source_location": "L7"
+    },
+    {
+      "id": "src_client_httpclientgetdemo_httpclientgetdemo",
+      "label": "HttpClientGetDemo",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "HttpClientErrorDemo.java",
+      "file_type": "code",
+      "norm_label": "httpclientgetdemo",
+      "source_file": "src/client/HttpClientGetDemo.java",
+      "source_location": "L4"
+    },
+    {
+      "id": "src_client_httpclientpostdemo_httpclientpostdemo",
+      "label": "HttpClientPostDemo",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "HttpClientErrorDemo.java",
+      "file_type": "code",
+      "norm_label": "httpclientpostdemo",
+      "source_file": "src/client/HttpClientPostDemo.java",
+      "source_location": "L4"
+    },
+    {
+      "id": "src_model_student_student",
+      "label": "Student",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "StudentService",
+      "file_type": "code",
+      "norm_label": "student",
+      "source_file": "src/model/Student.java",
+      "source_location": "L2"
+    },
+    {
+      "id": "src_service_studentservice_studentservice",
+      "label": "StudentService",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "StudentService",
+      "file_type": "code",
+      "norm_label": "studentservice",
+      "source_file": "src/service/StudentService.java",
+      "source_location": "L4"
+    },
+    {
+      "id": "src_mock_mockiisserver_mockiisserver",
+      "label": "MockIisServer",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "RouterHandler.java",
+      "file_type": "code",
+      "norm_label": "mockiisserver",
+      "source_file": "src/mock/MockIisServer.java",
+      "source_location": "L8"
+    },
+    {
+      "id": "src_server_routerhandler_routerhandler",
+      "label": "RouterHandler",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": ".handle",
+      "file_type": "code",
+      "norm_label": "routerhandler",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L13"
+    },
+    {
+      "id": "src_server_proxyhandler_proxyhandler",
+      "label": "ProxyHandler",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": ".handle",
+      "file_type": "code",
+      "norm_label": "proxyhandler",
+      "source_file": "src/server/ProxyHandler.java",
+      "source_location": "L8"
+    },
+    {
+      "id": "src_server_serverlogger_serverlogger",
+      "label": "ServerLogger",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": ".handle",
+      "file_type": "code",
+      "norm_label": "serverlogger",
+      "source_file": "src/server/ServerLogger.java",
+      "source_location": "L2"
+    },
+    {
+      "id": "src_server_simplehttpserver_simplehttpserver",
+      "label": "SimpleHttpServer",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": ".handle",
+      "file_type": "code",
+      "norm_label": "simplehttpserver",
+      "source_file": "src/server/SimpleHttpServer.java",
+      "source_location": "L5"
+    },
+    {
+      "id": "src_server_staticfilehandler_staticfilehandler",
+      "label": "StaticFileHandler",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 6,
+      "community_name": ".tryServe",
+      "file_type": "code",
+      "norm_label": "staticfilehandler",
+      "source_file": "src/server/StaticFileHandler.java",
+      "source_location": "L6"
+    },
+    {
+      "id": "src_client_crosstestclient_crosstestclient",
+      "label": "CrossTestClient",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 7,
+      "community_name": "CrossTestClient",
+      "file_type": "code",
+      "norm_label": "crosstestclient",
+      "source_file": "src/client/CrossTestClient.java",
+      "source_location": "L6"
+    },
+    {
+      "id": "src_client_httpclienterrordemo_httpclienterrordemo_main",
+      "label": ".main()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "HttpClientErrorDemo.java",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "newBuilder",
+            "receiver_type": "HttpClient",
+            "lang": "java",
+            "line": "L10"
+          },
+          {
+            "callee": "ofSeconds",
+            "receiver_type": "Duration",
+            "lang": "java",
+            "line": "L10"
+          },
+          {
+            "callee": "newBuilder",
+            "receiver_type": "HttpRequest",
+            "lang": "java",
+            "line": "L12"
+          },
+          {
+            "callee": "create",
+            "receiver_type": "URI",
+            "lang": "java",
+            "line": "L12"
+          },
+          {
+            "callee": "send",
+            "receiver_type": "HttpClient",
+            "lang": "java",
+            "line": "L14"
+          },
+          {
+            "callee": "statusCode",
+            "receiver_type": "HttpResponse",
+            "lang": "java",
+            "line": "L15"
+          },
+          {
+            "callee": "body",
+            "receiver_type": "HttpResponse",
+            "lang": "java",
+            "line": "L16"
+          },
+          {
+            "callee": "currentThread",
+            "receiver_type": "Thread",
+            "lang": "java",
+            "line": "L26"
+          }
+        ]
+      },
+      "norm_label": ".main()",
+      "source_file": "src/client/HttpClientErrorDemo.java",
+      "source_location": "L8"
+    },
+    {
+      "id": "src_client_httpclientgetdemo_httpclientgetdemo_main",
+      "label": ".main()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "HttpClientErrorDemo.java",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "newHttpClient",
+            "receiver_type": "HttpClient",
+            "lang": "java",
+            "line": "L7"
+          },
+          {
+            "callee": "newBuilder",
+            "receiver_type": "HttpRequest",
+            "lang": "java",
+            "line": "L8"
+          },
+          {
+            "callee": "create",
+            "receiver_type": "URI",
+            "lang": "java",
+            "line": "L8"
+          },
+          {
+            "callee": "send",
+            "receiver_type": "HttpClient",
+            "lang": "java",
+            "line": "L9"
+          },
+          {
+            "callee": "statusCode",
+            "receiver_type": "HttpResponse",
+            "lang": "java",
+            "line": "L10"
+          },
+          {
+            "callee": "headers",
+            "receiver_type": "HttpResponse",
+            "lang": "java",
+            "line": "L11"
+          },
+          {
+            "callee": "body",
+            "receiver_type": "HttpResponse",
+            "lang": "java",
+            "line": "L12"
+          }
+        ]
+      },
+      "norm_label": ".main()",
+      "source_file": "src/client/HttpClientGetDemo.java",
+      "source_location": "L5"
+    },
+    {
+      "id": "src_client_httpclientpostdemo_httpclientpostdemo_main",
+      "label": ".main()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "HttpClientErrorDemo.java",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "newHttpClient",
+            "receiver_type": "HttpClient",
+            "lang": "java",
+            "line": "L8"
+          },
+          {
+            "callee": "newBuilder",
+            "receiver_type": "HttpRequest",
+            "lang": "java",
+            "line": "L9"
+          },
+          {
+            "callee": "create",
+            "receiver_type": "URI",
+            "lang": "java",
+            "line": "L9"
+          },
+          {
+            "callee": "send",
+            "receiver_type": "HttpClient",
+            "lang": "java",
+            "line": "L12"
+          },
+          {
+            "callee": "statusCode",
+            "receiver_type": "HttpResponse",
+            "lang": "java",
+            "line": "L13"
+          },
+          {
+            "callee": "body",
+            "receiver_type": "HttpResponse",
+            "lang": "java",
+            "line": "L14"
+          }
+        ]
+      },
+      "norm_label": ".main()",
+      "source_file": "src/client/HttpClientPostDemo.java",
+      "source_location": "L5"
+    },
+    {
+      "id": "src_model_student_student_student",
+      "label": ".Student()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "StudentService",
+      "file_type": "code",
+      "norm_label": ".student()",
+      "source_file": "src/model/Student.java",
+      "source_location": "L6"
+    },
+    {
+      "id": "src_model_student_student_tojson",
+      "label": ".toJson()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "StudentService",
+      "file_type": "code",
+      "norm_label": ".tojson()",
+      "source_file": "src/model/Student.java",
+      "source_location": "L9"
+    },
+    {
+      "id": "src_server_routerhandler_routerhandler_filterjson",
+      "label": ".filterJson()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "StudentService",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "parseInt",
+            "receiver_type": "Integer",
+            "lang": "java",
+            "line": "L131"
+          }
+        ]
+      },
+      "norm_label": ".filterjson()",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L124"
+    },
+    {
+      "id": "src_service_studentservice_studentservice_add",
+      "label": ".add()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "StudentService",
+      "file_type": "code",
+      "norm_label": ".add()",
+      "source_file": "src/service/StudentService.java",
+      "source_location": "L16"
+    },
+    {
+      "id": "src_service_studentservice_studentservice_delete",
+      "label": ".delete()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "StudentService",
+      "file_type": "code",
+      "norm_label": ".delete()",
+      "source_file": "src/service/StudentService.java",
+      "source_location": "L27"
+    },
+    {
+      "id": "src_service_studentservice_studentservice_get",
+      "label": ".get()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "StudentService",
+      "file_type": "code",
+      "norm_label": ".get()",
+      "source_file": "src/service/StudentService.java",
+      "source_location": "L12"
+    },
+    {
+      "id": "src_service_studentservice_studentservice_list",
+      "label": ".list()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "StudentService",
+      "file_type": "code",
+      "norm_label": ".list()",
+      "source_file": "src/service/StudentService.java",
+      "source_location": "L11"
+    },
+    {
+      "id": "src_service_studentservice_studentservice_listjson",
+      "label": ".listJson()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "StudentService",
+      "file_type": "code",
+      "norm_label": ".listjson()",
+      "source_file": "src/service/StudentService.java",
+      "source_location": "L30"
+    },
+    {
+      "id": "src_service_studentservice_studentservice_studentservice",
+      "label": ".StudentService()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "StudentService",
+      "file_type": "code",
+      "norm_label": ".studentservice()",
+      "source_file": "src/service/StudentService.java",
+      "source_location": "L7"
+    },
+    {
+      "id": "src_service_studentservice_studentservice_update",
+      "label": ".update()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "StudentService",
+      "file_type": "code",
+      "norm_label": ".update()",
+      "source_file": "src/service/StudentService.java",
+      "source_location": "L21"
+    },
+    {
+      "id": "src_mock_mockiisserver_mockiisserver_main",
+      "label": ".main()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "RouterHandler.java",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "parseInt",
+            "receiver_type": "Integer",
+            "lang": "java",
+            "line": "L11"
+          },
+          {
+            "callee": "create",
+            "receiver_type": "HttpServer",
+            "lang": "java",
+            "line": "L12"
+          },
+          {
+            "callee": "createContext",
+            "receiver_type": "HttpServer",
+            "lang": "java",
+            "line": "L14"
+          },
+          {
+            "callee": "setExecutor",
+            "receiver_type": "HttpServer",
+            "lang": "java",
+            "line": "L23"
+          },
+          {
+            "callee": "newVirtualThreadPerTaskExecutor",
+            "receiver_type": "Executors",
+            "lang": "java",
+            "line": "L23"
+          },
+          {
+            "callee": "newFixedThreadPool",
+            "receiver_type": "Executors",
+            "lang": "java",
+            "line": "L24"
+          },
+          {
+            "callee": "start",
+            "receiver_type": "HttpServer",
+            "lang": "java",
+            "line": "L25"
+          }
+        ]
+      },
+      "norm_label": ".main()",
+      "source_file": "src/mock/MockIisServer.java",
+      "source_location": "L9"
+    },
+    {
+      "id": "src_server_routerhandler_routerhandler_handle",
+      "label": ".handle()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": ".handle",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "getRequestURI",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L20"
+          },
+          {
+            "callee": "getRequestMethod",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L22"
+          },
+          {
+            "callee": "now",
+            "receiver_type": "LocalDateTime",
+            "lang": "java",
+            "line": "L33"
+          },
+          {
+            "callee": "getRequestHeaders",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L39"
+          },
+          {
+            "callee": "getRequestBody",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L44"
+          },
+          {
+            "callee": "parseInt",
+            "receiver_type": "Integer",
+            "lang": "java",
+            "line": "L58"
+          }
+        ]
+      },
+      "norm_label": ".handle()",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L17"
+    },
+    {
+      "id": "src_server_routerhandler_routerhandler_parsejsonint",
+      "label": ".parseJsonInt()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": ".handle",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "isDigit",
+            "receiver_type": "Character",
+            "lang": "java",
+            "line": "L184"
+          },
+          {
+            "callee": "parseInt",
+            "receiver_type": "Integer",
+            "lang": "java",
+            "line": "L185"
+          }
+        ]
+      },
+      "norm_label": ".parsejsonint()",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L175"
+    },
+    {
+      "id": "src_server_routerhandler_routerhandler_parsejsonstring",
+      "label": ".parseJsonString()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": ".handle",
+      "file_type": "code",
+      "norm_label": ".parsejsonstring()",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L163"
+    },
+    {
+      "id": "src_server_routerhandler_routerhandler_queryparam",
+      "label": ".queryParam()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": ".handle",
+      "file_type": "code",
+      "norm_label": ".queryparam()",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L148"
+    },
+    {
+      "id": "src_server_routerhandler_routerhandler_send",
+      "label": ".send()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": ".handle",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "getResponseHeaders",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L143"
+          },
+          {
+            "callee": "sendResponseHeaders",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L144"
+          },
+          {
+            "callee": "getResponseBody",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L145"
+          },
+          {
+            "callee": "getRequestMethod",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L146"
+          },
+          {
+            "callee": "getRequestURI",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L146"
+          },
+          {
+            "callee": "getRemoteAddress",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L146"
+          }
+        ]
+      },
+      "norm_label": ".send()",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L141"
+    },
+    {
+      "id": "src_server_routerhandler_routerhandler_sendnotfound",
+      "label": ".sendNotFound()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": ".handle",
+      "file_type": "code",
+      "norm_label": ".sendnotfound()",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L160"
+    },
+    {
+      "id": "src_server_routerhandler_routerhandler_urldecodeor",
+      "label": ".urlDecodeOr()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": ".handle",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "decode",
+            "receiver_type": "URLDecoder",
+            "lang": "java",
+            "line": "L157"
+          }
+        ]
+      },
+      "norm_label": ".urldecodeor()",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L156"
+    },
+    {
+      "id": "src_server_proxyhandler_proxyhandler_forward",
+      "label": ".forward()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": ".handle",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "newBuilder",
+            "receiver_type": "HttpClient",
+            "lang": "java",
+            "line": "L32"
+          },
+          {
+            "callee": "ofSeconds",
+            "receiver_type": "Duration",
+            "lang": "java",
+            "line": "L32"
+          },
+          {
+            "callee": "newBuilder",
+            "receiver_type": "HttpRequest",
+            "lang": "java",
+            "line": "L33"
+          },
+          {
+            "callee": "create",
+            "receiver_type": "URI",
+            "lang": "java",
+            "line": "L33"
+          },
+          {
+            "callee": "getRequestHeaders",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L35"
+          },
+          {
+            "callee": "header",
+            "receiver_type": "Builder",
+            "lang": "java",
+            "line": "L36"
+          },
+          {
+            "callee": "method",
+            "receiver_type": "Builder",
+            "lang": "java",
+            "line": "L37"
+          },
+          {
+            "callee": "send",
+            "receiver_type": "HttpClient",
+            "lang": "java",
+            "line": "L39"
+          },
+          {
+            "callee": "build",
+            "receiver_type": "Builder",
+            "lang": "java",
+            "line": "L39"
+          },
+          {
+            "callee": "headers",
+            "receiver_type": "HttpResponse",
+            "lang": "java",
+            "line": "L40"
+          },
+          {
+            "callee": "body",
+            "receiver_type": "HttpResponse",
+            "lang": "java",
+            "line": "L41"
+          },
+          {
+            "callee": "getResponseHeaders",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L42"
+          },
+          {
+            "callee": "sendResponseHeaders",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L43"
+          },
+          {
+            "callee": "statusCode",
+            "receiver_type": "HttpResponse",
+            "lang": "java",
+            "line": "L43"
+          },
+          {
+            "callee": "getResponseBody",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L44"
+          },
+          {
+            "callee": "getRequestURI",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L46"
+          },
+          {
+            "callee": "getRemoteAddress",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L47"
+          }
+        ]
+      },
+      "norm_label": ".forward()",
+      "source_file": "src/server/ProxyHandler.java",
+      "source_location": "L30"
+    },
+    {
+      "id": "src_server_proxyhandler_proxyhandler_handle",
+      "label": ".handle()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": ".handle",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "getRequestURI",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L13"
+          },
+          {
+            "callee": "getRequestMethod",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L20"
+          },
+          {
+            "callee": "getRequestBody",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L21"
+          }
+        ]
+      },
+      "norm_label": ".handle()",
+      "source_file": "src/server/ProxyHandler.java",
+      "source_location": "L11"
+    },
+    {
+      "id": "src_server_serverlogger_serverlogger_log",
+      "label": ".log()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": ".handle",
+      "file_type": "code",
+      "norm_label": ".log()",
+      "source_file": "src/server/ServerLogger.java",
+      "source_location": "L3"
+    },
+    {
+      "id": "src_server_serverlogger_serverlogger_statuslabel",
+      "label": ".statusLabel()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": ".handle",
+      "file_type": "code",
+      "norm_label": ".statuslabel()",
+      "source_file": "src/server/ServerLogger.java",
+      "source_location": "L10"
+    },
+    {
+      "id": "src_server_simplehttpserver_simplehttpserver_main",
+      "label": ".main()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": ".handle",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "parseInt",
+            "receiver_type": "Integer",
+            "lang": "java",
+            "line": "L8"
+          },
+          {
+            "callee": "create",
+            "receiver_type": "HttpServer",
+            "lang": "java",
+            "line": "L9"
+          },
+          {
+            "callee": "createContext",
+            "receiver_type": "HttpServer",
+            "lang": "java",
+            "line": "L10"
+          },
+          {
+            "callee": "setExecutor",
+            "receiver_type": "HttpServer",
+            "lang": "java",
+            "line": "L14"
+          },
+          {
+            "callee": "newVirtualThreadPerTaskExecutor",
+            "receiver_type": "Executors",
+            "lang": "java",
+            "line": "L14"
+          },
+          {
+            "callee": "newFixedThreadPool",
+            "receiver_type": "Executors",
+            "lang": "java",
+            "line": "L17"
+          },
+          {
+            "callee": "start",
+            "receiver_type": "HttpServer",
+            "lang": "java",
+            "line": "L20"
+          }
+        ]
+      },
+      "norm_label": ".main()",
+      "source_file": "src/server/SimpleHttpServer.java",
+      "source_location": "L6"
+    },
+    {
+      "id": "src_server_staticfilehandler_staticfilehandler_contenttypefor",
+      "label": ".contentTypeFor()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 6,
+      "community_name": ".tryServe",
+      "file_type": "code",
+      "norm_label": ".contenttypefor()",
+      "source_file": "src/server/StaticFileHandler.java",
+      "source_location": "L28"
+    },
+    {
+      "id": "src_server_staticfilehandler_staticfilehandler_hasdotdot",
+      "label": ".hasDotDot()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 6,
+      "community_name": ".tryServe",
+      "file_type": "code",
+      "norm_label": ".hasdotdot()",
+      "source_file": "src/server/StaticFileHandler.java",
+      "source_location": "L23"
+    },
+    {
+      "id": "src_server_staticfilehandler_staticfilehandler_tryserve",
+      "label": ".tryServe()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 6,
+      "community_name": ".tryServe",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "get",
+            "receiver_type": "Paths",
+            "lang": "java",
+            "line": "L12"
+          },
+          {
+            "callee": "exists",
+            "receiver_type": "Files",
+            "lang": "java",
+            "line": "L14"
+          },
+          {
+            "callee": "isDirectory",
+            "receiver_type": "Files",
+            "lang": "java",
+            "line": "L14"
+          },
+          {
+            "callee": "readAllBytes",
+            "receiver_type": "Files",
+            "lang": "java",
+            "line": "L15"
+          },
+          {
+            "callee": "getResponseHeaders",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L17"
+          },
+          {
+            "callee": "sendResponseHeaders",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L18"
+          },
+          {
+            "callee": "getResponseBody",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L19"
+          },
+          {
+            "callee": "getRequestMethod",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L20"
+          },
+          {
+            "callee": "getRemoteAddress",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L20"
+          }
+        ]
+      },
+      "norm_label": ".tryserve()",
+      "source_file": "src/server/StaticFileHandler.java",
+      "source_location": "L7"
+    },
+    {
+      "id": "src_client_crosstestclient_crosstestclient_detectiis",
+      "label": ".detectIis()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 7,
+      "community_name": "CrossTestClient",
+      "file_type": "code",
+      "norm_label": ".detectiis()",
+      "source_file": "src/client/CrossTestClient.java",
+      "source_location": "L20"
+    },
+    {
+      "id": "src_client_crosstestclient_crosstestclient_main",
+      "label": ".main()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 7,
+      "community_name": "CrossTestClient",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "exit",
+            "receiver_type": "System",
+            "lang": "java",
+            "line": "L18"
+          }
+        ]
+      },
+      "norm_label": ".main()",
+      "source_file": "src/client/CrossTestClient.java",
+      "source_location": "L8"
+    },
+    {
+      "id": "src_client_crosstestclient_crosstestclient_probe",
+      "label": ".probe()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 7,
+      "community_name": "CrossTestClient",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "newBuilder",
+            "receiver_type": "HttpClient",
+            "lang": "java",
+            "line": "L26"
+          },
+          {
+            "callee": "ofSeconds",
+            "receiver_type": "Duration",
+            "lang": "java",
+            "line": "L26"
+          },
+          {
+            "callee": "newBuilder",
+            "receiver_type": "HttpRequest",
+            "lang": "java",
+            "line": "L27"
+          },
+          {
+            "callee": "create",
+            "receiver_type": "URI",
+            "lang": "java",
+            "line": "L27"
+          },
+          {
+            "callee": "send",
+            "receiver_type": "HttpClient",
+            "lang": "java",
+            "line": "L28"
+          }
+        ]
+      },
+      "norm_label": ".probe()",
+      "source_file": "src/client/CrossTestClient.java",
+      "source_location": "L24"
+    },
+    {
+      "id": "src_client_crosstestclient_crosstestclient_test",
+      "label": ".test()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 7,
+      "community_name": "CrossTestClient",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "newBuilder",
+            "receiver_type": "HttpClient",
+            "lang": "java",
+            "line": "L33"
+          },
+          {
+            "callee": "ofSeconds",
+            "receiver_type": "Duration",
+            "lang": "java",
+            "line": "L33"
+          },
+          {
+            "callee": "send",
+            "receiver_type": "HttpClient",
+            "lang": "java",
+            "line": "L34"
+          },
+          {
+            "callee": "newBuilder",
+            "receiver_type": "HttpRequest",
+            "lang": "java",
+            "line": "L34"
+          },
+          {
+            "callee": "create",
+            "receiver_type": "URI",
+            "lang": "java",
+            "line": "L34"
+          },
+          {
+            "callee": "statusCode",
+            "receiver_type": "HttpResponse",
+            "lang": "java",
+            "line": "L35"
+          },
+          {
+            "callee": "headers",
+            "receiver_type": "HttpResponse",
+            "lang": "java",
+            "line": "L36"
+          }
+        ]
+      },
+      "norm_label": ".test()",
+      "source_file": "src/client/CrossTestClient.java",
+      "source_location": "L31"
+    },
+    {
+      "id": "src_client_crosstestclient_crosstestclient_testexpect",
+      "label": ".testExpect()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 7,
+      "community_name": "CrossTestClient",
+      "file_type": "code",
+      "norm_label": ".testexpect()",
+      "source_file": "src/client/CrossTestClient.java",
+      "source_location": "L40"
+    },
+    {
+      "id": "src_client_crosstestclient_crosstestclient_testpost",
+      "label": ".testPost()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 7,
+      "community_name": "CrossTestClient",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "newHttpClient",
+            "receiver_type": "HttpClient",
+            "lang": "java",
+            "line": "L43"
+          },
+          {
+            "callee": "newBuilder",
+            "receiver_type": "HttpRequest",
+            "lang": "java",
+            "line": "L44"
+          },
+          {
+            "callee": "create",
+            "receiver_type": "URI",
+            "lang": "java",
+            "line": "L44"
+          },
+          {
+            "callee": "send",
+            "receiver_type": "HttpClient",
+            "lang": "java",
+            "line": "L47"
+          },
+          {
+            "callee": "statusCode",
+            "receiver_type": "HttpResponse",
+            "lang": "java",
+            "line": "L48"
+          },
+          {
+            "callee": "body",
+            "receiver_type": "HttpResponse",
+            "lang": "java",
+            "line": "L49"
+          }
+        ]
+      },
+      "norm_label": ".testpost()",
+      "source_file": "src/client/CrossTestClient.java",
+      "source_location": "L41"
+    },
+    {
+      "id": "src_client_crosstestclient",
+      "label": "CrossTestClient.java",
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "HttpClientErrorDemo.java",
+      "file_type": "code",
+      "norm_label": "crosstestclient.java",
+      "source_file": "src/client/CrossTestClient.java",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_client_httpclienterrordemo",
+      "label": "HttpClientErrorDemo.java",
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "HttpClientErrorDemo.java",
+      "file_type": "code",
+      "norm_label": "httpclienterrordemo.java",
+      "source_file": "src/client/HttpClientErrorDemo.java",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_client_httpclientgetdemo",
+      "label": "HttpClientGetDemo.java",
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "HttpClientErrorDemo.java",
+      "file_type": "code",
+      "norm_label": "httpclientgetdemo.java",
+      "source_file": "src/client/HttpClientGetDemo.java",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_client_httpclientpostdemo",
+      "label": "HttpClientPostDemo.java",
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "HttpClientErrorDemo.java",
+      "file_type": "code",
+      "norm_label": "httpclientpostdemo.java",
+      "source_file": "src/client/HttpClientPostDemo.java",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_server_proxyhandler",
+      "label": "ProxyHandler.java",
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "HttpClientErrorDemo.java",
+      "file_type": "code",
+      "norm_label": "proxyhandler.java",
+      "source_file": "src/server/ProxyHandler.java",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_model_student",
+      "label": "Student.java",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "StudentService",
+      "file_type": "code",
+      "norm_label": "student.java",
+      "source_file": "src/model/Student.java",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_service_studentservice",
+      "label": "StudentService.java",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "StudentService",
+      "file_type": "code",
+      "norm_label": "studentservice.java",
+      "source_file": "src/service/StudentService.java",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_mock_mockiisserver",
+      "label": "MockIisServer.java",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "RouterHandler.java",
+      "file_type": "code",
+      "norm_label": "mockiisserver.java",
+      "source_file": "src/mock/MockIisServer.java",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_server_routerhandler",
+      "label": "RouterHandler.java",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "RouterHandler.java",
+      "file_type": "code",
+      "norm_label": "routerhandler.java",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_server_simplehttpserver",
+      "label": "SimpleHttpServer.java",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "RouterHandler.java",
+      "file_type": "code",
+      "norm_label": "simplehttpserver.java",
+      "source_file": "src/server/SimpleHttpServer.java",
+      "source_location": "L1"
+    },
+    {
+      "id": "httphandler",
+      "label": "HttpHandler",
+      "_origin": "ast",
+      "community": 3,
+      "community_name": ".handle",
+      "file_type": "code",
+      "norm_label": "httphandler",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "src_server_routerhandler_java_httpexchange",
+      "label": "HttpExchange",
+      "_origin": "ast",
+      "community": 3,
+      "community_name": ".handle",
+      "file_type": "code",
+      "norm_label": "httpexchange",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "src_server_routerhandler_java_override",
+      "label": "Override",
+      "_origin": "ast",
+      "community": 3,
+      "community_name": ".handle",
+      "file_type": "code",
+      "norm_label": "override",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "src_server_proxyhandler_java_httpexchange",
+      "label": "HttpExchange",
+      "_origin": "ast",
+      "community": 4,
+      "community_name": ".handle",
+      "file_type": "code",
+      "norm_label": "httpexchange",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "src_server_proxyhandler_java_override",
+      "label": "Override",
+      "_origin": "ast",
+      "community": 4,
+      "community_name": ".handle",
+      "file_type": "code",
+      "norm_label": "override",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "src_server_serverlogger",
+      "label": "ServerLogger.java",
+      "_origin": "ast",
+      "community": 4,
+      "community_name": ".handle",
+      "file_type": "code",
+      "norm_label": "serverlogger.java",
+      "source_file": "src/server/ServerLogger.java",
+      "source_location": "L1"
+    },
+    {
+      "id": "readme",
+      "label": "README.md",
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "B\u00c0I 12: HTTP SERVER V\u00c0 GIAO TI\u1ebeP M\u1ea0NG CH\u00c9O (JAVA)",
+      "file_type": "document",
+      "node_kind": "page",
+      "norm_label": "readme.md",
+      "source_file": "README.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "readme_1_kh\u1edfi_\u0111\u1ed9ng_nhanh_1_click",
+      "label": "\u26a1 1. Kh\u1edfi \u0110\u1ed9ng Nhanh (1-Click)",
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "B\u00c0I 12: HTTP SERVER V\u00c0 GIAO TI\u1ebeP M\u1ea0NG CH\u00c9O (JAVA)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "\u26a1 1. khoi \u0111ong nhanh (1-click)",
+      "source_file": "README.md",
+      "source_location": "L7"
+    },
+    {
+      "id": "readme_2_ki\u1ec3m_tra_b\u1eb1ng_tr\u00ecnh_duy\u1ec7t_firefox_chrome",
+      "label": "\ud83c\udf10 2. Ki\u1ec3m Tra B\u1eb1ng Tr\u00ecnh Duy\u1ec7t (Firefox / Chrome)",
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "B\u00c0I 12: HTTP SERVER V\u00c0 GIAO TI\u1ebeP M\u1ea0NG CH\u00c9O (JAVA)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "\ud83c\udf10 2. kiem tra bang trinh duyet (firefox / chrome)",
+      "source_file": "README.md",
+      "source_location": "L16"
+    },
+    {
+      "id": "readme_3_c\u00e1c_file_ki\u1ec3m_th\u1eed_ri\u00eang_l\u1ebb_ch\u1ea1y_b\u1eb1ng_1_click",
+      "label": "\ud83e\uddea 3. C\u00e1c File Ki\u1ec3m Th\u1eed Ri\u00eang L\u1ebb (Ch\u1ea1y B\u1eb1ng 1 Click)",
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "B\u00c0I 12: HTTP SERVER V\u00c0 GIAO TI\u1ebeP M\u1ea0NG CH\u00c9O (JAVA)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "\ud83e\uddea 3. cac file kiem thu rieng le (chay bang 1 click)",
+      "source_file": "README.md",
+      "source_location": "L28"
+    },
+    {
+      "id": "readme_4_qu\u1ea3n_l\u00fd_iis_th\u1eadt_c\u1ee7a_windows_w3svc_b\u1eb1ng_l\u1ec7nh",
+      "label": "\ud83d\uded1 4. Qu\u1ea3n L\u00fd IIS Th\u1eadt C\u1ee7a Windows (w3svc) B\u1eb1ng L\u1ec7nh",
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "B\u00c0I 12: HTTP SERVER V\u00c0 GIAO TI\u1ebeP M\u1ea0NG CH\u00c9O (JAVA)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "\ud83d\uded1 4. quan ly iis that cua windows (w3svc) bang lenh",
+      "source_file": "README.md",
+      "source_location": "L54"
+    },
+    {
+      "id": "readme_5_bi\u00ean_d\u1ecbch_l\u1ea1i_m\u00e3_ngu\u1ed3n_khi_c\u00f3_s\u1eeda_code",
+      "label": "\ud83d\udee0\ufe0f 5. Bi\u00ean D\u1ecbch L\u1ea1i M\u00e3 Ngu\u1ed3n (Khi C\u00f3 S\u1eeda Code)",
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "B\u00c0I 12: HTTP SERVER V\u00c0 GIAO TI\u1ebeP M\u1ea0NG CH\u00c9O (JAVA)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "\ud83d\udee0\ufe0f 5. bien dich lai ma nguon (khi co sua code)",
+      "source_file": "README.md",
+      "source_location": "L78"
+    },
+    {
+      "id": "readme_6_c\u1ea5u_tr\u00fac_m\u00e3_ngu\u1ed3n",
+      "label": "\ud83d\udcc1 6. C\u1ea5u Tr\u00fac M\u00e3 Ngu\u1ed3n",
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "B\u00c0I 12: HTTP SERVER V\u00c0 GIAO TI\u1ebeP M\u1ea0NG CH\u00c9O (JAVA)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "\ud83d\udcc1 6. cau truc ma nguon",
+      "source_file": "README.md",
+      "source_location": "L86"
+    },
+    {
+      "id": "readme_b\u00e0i_12_http_server_v\u00e0_giao_ti\u1ebfp_m\u1ea1ng_ch\u00e9o_java",
+      "label": "B\u00c0I 12: HTTP SERVER V\u00c0 GIAO TI\u1ebeP M\u1ea0NG CH\u00c9O (JAVA)",
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "B\u00c0I 12: HTTP SERVER V\u00c0 GIAO TI\u1ebeP M\u1ea0NG CH\u00c9O (JAVA)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "bai 12: http server va giao tiep mang cheo (java)",
+      "source_file": "README.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "readme_c\u00e1c_api_c\u00f3_s\u1eb5n_tr\u00ean_http_localhost_8080",
+      "label": "C\u00e1c API c\u00f3 s\u1eb5n tr\u00ean `http://localhost:8080/`",
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "B\u00c0I 12: HTTP SERVER V\u00c0 GIAO TI\u1ebeP M\u1ea0NG CH\u00c9O (JAVA)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "cac api co san tren `http://localhost:8080/`",
+      "source_file": "README.md",
+      "source_location": "L37"
+    },
+    {
+      "id": "com_sun_net_httpserver_httpexchange",
+      "label": "com.sun.net.httpserver.HttpExchange",
+      "_origin": "ast",
+      "community": 6,
+      "community_name": ".tryServe",
+      "file_type": "code",
+      "norm_label": "com.sun.net.httpserver.httpexchange",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "src_server_staticfilehandler",
+      "label": "StaticFileHandler.java",
+      "_origin": "ast",
+      "community": 6,
+      "community_name": ".tryServe",
+      "file_type": "code",
+      "norm_label": "staticfilehandler.java",
+      "source_file": "src/server/StaticFileHandler.java",
+      "source_location": "L1"
+    },
+    {
+      "id": "connectexception",
+      "label": "connectexception",
+      "community": 0,
+      "community_name": "HttpClientErrorDemo.java",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "connectexception",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "duration",
+      "label": "duration",
+      "community": 0,
+      "community_name": "HttpClientErrorDemo.java",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "duration",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "http",
+      "label": "http",
+      "community": 0,
+      "community_name": "HttpClientErrorDemo.java",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "http",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "httptimeoutexception",
+      "label": "httptimeoutexception",
+      "community": 0,
+      "community_name": "HttpClientErrorDemo.java",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "httptimeoutexception",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "ioexception",
+      "label": "ioexception",
+      "community": 0,
+      "community_name": "HttpClientErrorDemo.java",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "ioexception",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "uri",
+      "label": "uri",
+      "community": 0,
+      "community_name": "HttpClientErrorDemo.java",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "uri",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "util",
+      "label": "util",
+      "community": 1,
+      "community_name": "StudentService",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "util",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "datetimeformatter",
+      "label": "datetimeformatter",
+      "community": 2,
+      "community_name": "RouterHandler.java",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "datetimeformatter",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "executors",
+      "label": "executors",
+      "community": 2,
+      "community_name": "RouterHandler.java",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "executors",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "httpserver",
+      "label": "httpserver",
+      "community": 2,
+      "community_name": "RouterHandler.java",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "httpserver",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "inetsocketaddress",
+      "label": "inetsocketaddress",
+      "community": 2,
+      "community_name": "RouterHandler.java",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "inetsocketaddress",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "list",
+      "label": "list",
+      "community": 2,
+      "community_name": "RouterHandler.java",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "list",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "localdatetime",
+      "label": "localdatetime",
+      "community": 2,
+      "community_name": "RouterHandler.java",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "localdatetime",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "standardcharsets",
+      "label": "standardcharsets",
+      "community": 2,
+      "community_name": "RouterHandler.java",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "standardcharsets",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "urldecoder",
+      "label": "urldecoder",
+      "community": 2,
+      "community_name": "RouterHandler.java",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "urldecoder",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "file",
+      "label": "file",
+      "community": 6,
+      "community_name": ".tryServe",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "file",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "outputstream",
+      "label": "outputstream",
+      "community": 6,
+      "community_name": ".tryServe",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "outputstream",
+      "source_file": "",
+      "type": "external"
+    }
+  ],
+  "links": [
+    {
+      "source": "src_server_proxyhandler_proxyhandler_handle",
+      "target": "src_server_proxyhandler_java_override",
+      "relation": "references",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "attribute",
+      "source_file": "src/server/ProxyHandler.java",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler_routerhandler_handle",
+      "target": "src_server_routerhandler_java_override",
+      "relation": "references",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "attribute",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "src_client_crosstestclient_crosstestclient_detectiis",
+      "target": "src_client_crosstestclient_crosstestclient_probe",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/client/CrossTestClient.java",
+      "source_location": "L21",
+      "weight": 1.0
+    },
+    {
+      "source": "src_client_crosstestclient_crosstestclient_main",
+      "target": "src_client_crosstestclient_crosstestclient_detectiis",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/client/CrossTestClient.java",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "src_client_crosstestclient_crosstestclient_main",
+      "target": "src_client_crosstestclient_crosstestclient_test",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/client/CrossTestClient.java",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "src_client_crosstestclient_crosstestclient_main",
+      "target": "src_client_crosstestclient_crosstestclient_testpost",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/client/CrossTestClient.java",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "src_client_crosstestclient_crosstestclient_main",
+      "target": "src_client_crosstestclient_crosstestclient_testexpect",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/client/CrossTestClient.java",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "src_client_crosstestclient_crosstestclient_testexpect",
+      "target": "src_client_crosstestclient_crosstestclient_test",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/client/CrossTestClient.java",
+      "source_location": "L40",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_proxyhandler_proxyhandler_forward",
+      "target": "src_server_serverlogger_serverlogger_log",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/server/ProxyHandler.java",
+      "source_location": "L47",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_proxyhandler_proxyhandler_handle",
+      "target": "src_server_routerhandler_routerhandler_sendnotfound",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/server/ProxyHandler.java",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_proxyhandler_proxyhandler_handle",
+      "target": "src_server_proxyhandler_proxyhandler_forward",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/server/ProxyHandler.java",
+      "source_location": "L23",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_proxyhandler_proxyhandler_handle",
+      "target": "src_server_routerhandler_routerhandler_send",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/server/ProxyHandler.java",
+      "source_location": "L27",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler_routerhandler_handle",
+      "target": "src_server_staticfilehandler_staticfilehandler_tryserve",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L25",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler_routerhandler_handle",
+      "target": "src_server_routerhandler_routerhandler_send",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L28",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler_routerhandler_handle",
+      "target": "src_server_routerhandler_routerhandler_queryparam",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L55",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler_routerhandler_handle",
+      "target": "src_server_routerhandler_routerhandler_sendnotfound",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L61",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler_routerhandler_handle",
+      "target": "src_server_routerhandler_routerhandler_filterjson",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L68",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler_routerhandler_handle",
+      "target": "src_server_routerhandler_routerhandler_parsejsonstring",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L79",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler_routerhandler_handle",
+      "target": "src_server_routerhandler_routerhandler_parsejsonint",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L80",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler_routerhandler_queryparam",
+      "target": "src_server_routerhandler_routerhandler_urldecodeor",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L152",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler_routerhandler_send",
+      "target": "src_server_serverlogger_serverlogger_log",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L146",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler_routerhandler_sendnotfound",
+      "target": "src_server_routerhandler_routerhandler_send",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L161",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_serverlogger_serverlogger_log",
+      "target": "src_server_serverlogger_serverlogger_statuslabel",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/server/ServerLogger.java",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_staticfilehandler_staticfilehandler_hasdotdot",
+      "target": "src_server_routerhandler_routerhandler_urldecodeor",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/server/StaticFileHandler.java",
+      "source_location": "L25",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_staticfilehandler_staticfilehandler_tryserve",
+      "target": "src_server_staticfilehandler_staticfilehandler_contenttypefor",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/server/StaticFileHandler.java",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_staticfilehandler_staticfilehandler_tryserve",
+      "target": "src_server_staticfilehandler_staticfilehandler_hasdotdot",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/server/StaticFileHandler.java",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_staticfilehandler_staticfilehandler_tryserve",
+      "target": "src_server_serverlogger_serverlogger_log",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/server/StaticFileHandler.java",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "src_service_studentservice_studentservice_studentservice",
+      "target": "src_service_studentservice_studentservice_add",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/service/StudentService.java",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "src_service_studentservice_studentservice_update",
+      "target": "src_service_studentservice_studentservice_get",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/service/StudentService.java",
+      "source_location": "L22",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler_routerhandler",
+      "target": "src_service_studentservice_studentservice",
+      "relation": "references",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "field",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "src_service_studentservice_studentservice",
+      "target": "src_model_student_student",
+      "relation": "references",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "generic_arg",
+      "source_file": "src/service/StudentService.java",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_service_studentservice_studentservice_list",
+      "target": "src_model_student_student",
+      "relation": "references",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "generic_arg",
+      "source_file": "src/service/StudentService.java",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "src_client_crosstestclient",
+      "target": "uri",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/client/CrossTestClient.java",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_client_crosstestclient",
+      "target": "http",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/client/CrossTestClient.java",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_client_crosstestclient",
+      "target": "duration",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/client/CrossTestClient.java",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_client_httpclienterrordemo",
+      "target": "uri",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/client/HttpClientErrorDemo.java",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_client_httpclienterrordemo",
+      "target": "http",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/client/HttpClientErrorDemo.java",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_client_httpclienterrordemo",
+      "target": "duration",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/client/HttpClientErrorDemo.java",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_client_httpclienterrordemo",
+      "target": "connectexception",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/client/HttpClientErrorDemo.java",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_client_httpclienterrordemo",
+      "target": "httptimeoutexception",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/client/HttpClientErrorDemo.java",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_client_httpclientgetdemo",
+      "target": "uri",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/client/HttpClientGetDemo.java",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_client_httpclientgetdemo",
+      "target": "http",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/client/HttpClientGetDemo.java",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_client_httpclientpostdemo",
+      "target": "uri",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/client/HttpClientPostDemo.java",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_client_httpclientpostdemo",
+      "target": "http",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/client/HttpClientPostDemo.java",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_mock_mockiisserver",
+      "target": "httpserver",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/mock/MockIisServer.java",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_mock_mockiisserver",
+      "target": "inetsocketaddress",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/mock/MockIisServer.java",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_mock_mockiisserver",
+      "target": "standardcharsets",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/mock/MockIisServer.java",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_mock_mockiisserver",
+      "target": "executors",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/mock/MockIisServer.java",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_proxyhandler",
+      "target": "httpserver",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/server/ProxyHandler.java",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_proxyhandler",
+      "target": "ioexception",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/server/ProxyHandler.java",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_proxyhandler",
+      "target": "uri",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/server/ProxyHandler.java",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_proxyhandler",
+      "target": "http",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/server/ProxyHandler.java",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_proxyhandler",
+      "target": "duration",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/server/ProxyHandler.java",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler",
+      "target": "src_service_studentservice_studentservice",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler",
+      "target": "src_model_student_student",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler",
+      "target": "httpserver",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler",
+      "target": "ioexception",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler",
+      "target": "outputstream",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler",
+      "target": "urldecoder",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler",
+      "target": "standardcharsets",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler",
+      "target": "localdatetime",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler",
+      "target": "datetimeformatter",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler",
+      "target": "list",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_simplehttpserver",
+      "target": "httpserver",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/server/SimpleHttpServer.java",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_simplehttpserver",
+      "target": "inetsocketaddress",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/server/SimpleHttpServer.java",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_simplehttpserver",
+      "target": "executors",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/server/SimpleHttpServer.java",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_staticfilehandler",
+      "target": "com_sun_net_httpserver_httpexchange",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/server/StaticFileHandler.java",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_staticfilehandler",
+      "target": "ioexception",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/server/StaticFileHandler.java",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_staticfilehandler",
+      "target": "outputstream",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/server/StaticFileHandler.java",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_staticfilehandler",
+      "target": "file",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/server/StaticFileHandler.java",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_service_studentservice",
+      "target": "src_model_student_student",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/service/StudentService.java",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_service_studentservice",
+      "target": "util",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/service/StudentService.java",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_proxyhandler_proxyhandler_forward",
+      "target": "src_server_proxyhandler_java_httpexchange",
+      "relation": "references",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "parameter_type",
+      "source_file": "src/server/ProxyHandler.java",
+      "source_location": "L30",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_proxyhandler_proxyhandler_handle",
+      "target": "src_server_proxyhandler_java_httpexchange",
+      "relation": "references",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "parameter_type",
+      "source_file": "src/server/ProxyHandler.java",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler_routerhandler_handle",
+      "target": "src_server_routerhandler_java_httpexchange",
+      "relation": "references",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "parameter_type",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler_routerhandler_send",
+      "target": "src_server_routerhandler_java_httpexchange",
+      "relation": "references",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "parameter_type",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L141",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler_routerhandler_sendnotfound",
+      "target": "src_server_routerhandler_java_httpexchange",
+      "relation": "references",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "parameter_type",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L160",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_staticfilehandler_staticfilehandler_tryserve",
+      "target": "com_sun_net_httpserver_httpexchange",
+      "relation": "references",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "parameter_type",
+      "source_file": "src/server/StaticFileHandler.java",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "src_service_studentservice_studentservice_add",
+      "target": "src_model_student_student",
+      "relation": "references",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "return_type",
+      "source_file": "src/service/StudentService.java",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "src_service_studentservice_studentservice_get",
+      "target": "src_model_student_student",
+      "relation": "references",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "return_type",
+      "source_file": "src/service/StudentService.java",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "readme",
+      "target": "readme_b\u00e0i_12_http_server_v\u00e0_giao_ti\u1ebfp_m\u1ea1ng_ch\u00e9o_java",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "readme_3_c\u00e1c_file_ki\u1ec3m_th\u1eed_ri\u00eang_l\u1ebb_ch\u1ea1y_b\u1eb1ng_1_click",
+      "target": "readme_c\u00e1c_api_c\u00f3_s\u1eb5n_tr\u00ean_http_localhost_8080",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": "L37",
+      "weight": 1.0
+    },
+    {
+      "source": "readme_b\u00e0i_12_http_server_v\u00e0_giao_ti\u1ebfp_m\u1ea1ng_ch\u00e9o_java",
+      "target": "readme_2_ki\u1ec3m_tra_b\u1eb1ng_tr\u00ecnh_duy\u1ec7t_firefox_chrome",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "readme_b\u00e0i_12_http_server_v\u00e0_giao_ti\u1ebfp_m\u1ea1ng_ch\u00e9o_java",
+      "target": "readme_3_c\u00e1c_file_ki\u1ec3m_th\u1eed_ri\u00eang_l\u1ebb_ch\u1ea1y_b\u1eb1ng_1_click",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": "L28",
+      "weight": 1.0
+    },
+    {
+      "source": "readme_b\u00e0i_12_http_server_v\u00e0_giao_ti\u1ebfp_m\u1ea1ng_ch\u00e9o_java",
+      "target": "readme_4_qu\u1ea3n_l\u00fd_iis_th\u1eadt_c\u1ee7a_windows_w3svc_b\u1eb1ng_l\u1ec7nh",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": "L54",
+      "weight": 1.0
+    },
+    {
+      "source": "readme_b\u00e0i_12_http_server_v\u00e0_giao_ti\u1ebfp_m\u1ea1ng_ch\u00e9o_java",
+      "target": "readme_1_kh\u1edfi_\u0111\u1ed9ng_nhanh_1_click",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "readme_b\u00e0i_12_http_server_v\u00e0_giao_ti\u1ebfp_m\u1ea1ng_ch\u00e9o_java",
+      "target": "readme_5_bi\u00ean_d\u1ecbch_l\u1ea1i_m\u00e3_ngu\u1ed3n_khi_c\u00f3_s\u1eeda_code",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": "L78",
+      "weight": 1.0
+    },
+    {
+      "source": "readme_b\u00e0i_12_http_server_v\u00e0_giao_ti\u1ebfp_m\u1ea1ng_ch\u00e9o_java",
+      "target": "readme_6_c\u1ea5u_tr\u00fac_m\u00e3_ngu\u1ed3n",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": "L86",
+      "weight": 1.0
+    },
+    {
+      "source": "src_client_crosstestclient",
+      "target": "src_client_crosstestclient_crosstestclient",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/client/CrossTestClient.java",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_client_httpclienterrordemo",
+      "target": "src_client_httpclienterrordemo_httpclienterrordemo",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/client/HttpClientErrorDemo.java",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "src_client_httpclientgetdemo",
+      "target": "src_client_httpclientgetdemo_httpclientgetdemo",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/client/HttpClientGetDemo.java",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_client_httpclientpostdemo",
+      "target": "src_client_httpclientpostdemo_httpclientpostdemo",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/client/HttpClientPostDemo.java",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_mock_mockiisserver",
+      "target": "src_mock_mockiisserver_mockiisserver",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/mock/MockIisServer.java",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "src_model_student",
+      "target": "src_model_student_student",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/model/Student.java",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_proxyhandler",
+      "target": "src_server_proxyhandler_proxyhandler",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/server/ProxyHandler.java",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler",
+      "target": "src_server_routerhandler_routerhandler",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_serverlogger",
+      "target": "src_server_serverlogger_serverlogger",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/server/ServerLogger.java",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_simplehttpserver",
+      "target": "src_server_simplehttpserver_simplehttpserver",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/server/SimpleHttpServer.java",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_staticfilehandler",
+      "target": "src_server_staticfilehandler_staticfilehandler",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/server/StaticFileHandler.java",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_service_studentservice",
+      "target": "src_service_studentservice_studentservice",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/service/StudentService.java",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_proxyhandler_proxyhandler",
+      "target": "httphandler",
+      "relation": "implements",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/server/ProxyHandler.java",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler_routerhandler",
+      "target": "httphandler",
+      "relation": "implements",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "src_client_crosstestclient_crosstestclient",
+      "target": "src_client_crosstestclient_crosstestclient_detectiis",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/client/CrossTestClient.java",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "src_client_crosstestclient_crosstestclient",
+      "target": "src_client_crosstestclient_crosstestclient_probe",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/client/CrossTestClient.java",
+      "source_location": "L24",
+      "weight": 1.0
+    },
+    {
+      "source": "src_client_crosstestclient_crosstestclient",
+      "target": "src_client_crosstestclient_crosstestclient_test",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/client/CrossTestClient.java",
+      "source_location": "L31",
+      "weight": 1.0
+    },
+    {
+      "source": "src_client_crosstestclient_crosstestclient",
+      "target": "src_client_crosstestclient_crosstestclient_testexpect",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/client/CrossTestClient.java",
+      "source_location": "L40",
+      "weight": 1.0
+    },
+    {
+      "source": "src_client_crosstestclient_crosstestclient",
+      "target": "src_client_crosstestclient_crosstestclient_testpost",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/client/CrossTestClient.java",
+      "source_location": "L41",
+      "weight": 1.0
+    },
+    {
+      "source": "src_client_crosstestclient_crosstestclient",
+      "target": "src_client_crosstestclient_crosstestclient_main",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/client/CrossTestClient.java",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "src_client_httpclienterrordemo_httpclienterrordemo",
+      "target": "src_client_httpclienterrordemo_httpclienterrordemo_main",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/client/HttpClientErrorDemo.java",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "src_client_httpclientgetdemo_httpclientgetdemo",
+      "target": "src_client_httpclientgetdemo_httpclientgetdemo_main",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/client/HttpClientGetDemo.java",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_client_httpclientpostdemo_httpclientpostdemo",
+      "target": "src_client_httpclientpostdemo_httpclientpostdemo_main",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/client/HttpClientPostDemo.java",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_mock_mockiisserver_mockiisserver",
+      "target": "src_mock_mockiisserver_mockiisserver_main",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/mock/MockIisServer.java",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "src_model_student_student",
+      "target": "src_model_student_student_student",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/model/Student.java",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_model_student_student",
+      "target": "src_model_student_student_tojson",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/model/Student.java",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_proxyhandler_proxyhandler",
+      "target": "src_server_proxyhandler_proxyhandler_handle",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/server/ProxyHandler.java",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_proxyhandler_proxyhandler",
+      "target": "src_server_proxyhandler_proxyhandler_forward",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/server/ProxyHandler.java",
+      "source_location": "L30",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler_routerhandler",
+      "target": "src_server_routerhandler_routerhandler_filterjson",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L124",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler_routerhandler",
+      "target": "src_server_routerhandler_routerhandler_send",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L141",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler_routerhandler",
+      "target": "src_server_routerhandler_routerhandler_queryparam",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L148",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler_routerhandler",
+      "target": "src_server_routerhandler_routerhandler_urldecodeor",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L156",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler_routerhandler",
+      "target": "src_server_routerhandler_routerhandler_sendnotfound",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L160",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler_routerhandler",
+      "target": "src_server_routerhandler_routerhandler_parsejsonstring",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L163",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler_routerhandler",
+      "target": "src_server_routerhandler_routerhandler_handle",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler_routerhandler",
+      "target": "src_server_routerhandler_routerhandler_parsejsonint",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L175",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_serverlogger_serverlogger",
+      "target": "src_server_serverlogger_serverlogger_statuslabel",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/server/ServerLogger.java",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_serverlogger_serverlogger",
+      "target": "src_server_serverlogger_serverlogger_log",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/server/ServerLogger.java",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_simplehttpserver_simplehttpserver",
+      "target": "src_server_simplehttpserver_simplehttpserver_main",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/server/SimpleHttpServer.java",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_staticfilehandler_staticfilehandler",
+      "target": "src_server_staticfilehandler_staticfilehandler_hasdotdot",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/server/StaticFileHandler.java",
+      "source_location": "L23",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_staticfilehandler_staticfilehandler",
+      "target": "src_server_staticfilehandler_staticfilehandler_contenttypefor",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/server/StaticFileHandler.java",
+      "source_location": "L28",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_staticfilehandler_staticfilehandler",
+      "target": "src_server_staticfilehandler_staticfilehandler_tryserve",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/server/StaticFileHandler.java",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "src_service_studentservice_studentservice",
+      "target": "src_service_studentservice_studentservice_list",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/service/StudentService.java",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "src_service_studentservice_studentservice",
+      "target": "src_service_studentservice_studentservice_get",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/service/StudentService.java",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "src_service_studentservice_studentservice",
+      "target": "src_service_studentservice_studentservice_add",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/service/StudentService.java",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "src_service_studentservice_studentservice",
+      "target": "src_service_studentservice_studentservice_update",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/service/StudentService.java",
+      "source_location": "L21",
+      "weight": 1.0
+    },
+    {
+      "source": "src_service_studentservice_studentservice",
+      "target": "src_service_studentservice_studentservice_delete",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/service/StudentService.java",
+      "source_location": "L27",
+      "weight": 1.0
+    },
+    {
+      "source": "src_service_studentservice_studentservice",
+      "target": "src_service_studentservice_studentservice_listjson",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/service/StudentService.java",
+      "source_location": "L30",
+      "weight": 1.0
+    },
+    {
+      "source": "src_service_studentservice_studentservice",
+      "target": "src_service_studentservice_studentservice_studentservice",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/service/StudentService.java",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler_routerhandler_filterjson",
+      "target": "src_service_studentservice_studentservice_list",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "context": "call",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L125",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler_routerhandler_handle",
+      "target": "src_service_studentservice_studentservice_update",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "context": "call",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L106",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler_routerhandler_handle",
+      "target": "src_service_studentservice_studentservice_delete",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "context": "call",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L111",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler_routerhandler_handle",
+      "target": "src_service_studentservice_studentservice_get",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "context": "call",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L60",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler_routerhandler_handle",
+      "target": "src_model_student_student_tojson",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "context": "call",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L62",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler_routerhandler_handle",
+      "target": "src_service_studentservice_studentservice_listjson",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "context": "call",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L71",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_routerhandler_routerhandler_handle",
+      "target": "src_service_studentservice_studentservice_add",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "context": "call",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L82",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_simplehttpserver_simplehttpserver_main",
+      "target": "src_server_proxyhandler_proxyhandler",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "context": "call",
+      "source_file": "src/server/SimpleHttpServer.java",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "src_server_simplehttpserver_simplehttpserver_main",
+      "target": "src_server_routerhandler_routerhandler",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "context": "call",
+      "source_file": "src/server/SimpleHttpServer.java",
+      "source_location": "L11",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": [],
+  "built_at_commit": "fc7150347c915deb76f04d1adc72575a8a14b708"
+}
