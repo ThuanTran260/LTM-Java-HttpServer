@@ -5,15 +5,18 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 /**
  * Quan ly nhieu web (site) tren cung mot Java Server: moi site co mot thu muc rieng va chay tren mot cong rieng
@@ -140,6 +143,63 @@ public final class SiteManager {
             sb.append(view(s).toJson());
         }
         return sb.append("]").toString();
+    }
+
+    /**
+     * Cay file web cua site, dang JSON. Chi lay file ma site phuc vu duoc (StaticFileHandler.contentTypeFor);
+     * thu muc truoc, file sau, sap xep theo ten; thu muc khong co file web nao thi bo qua. Chi doc, khong sua file.
+     */
+    public synchronized String filesJson(String name) throws SiteException {
+        Site s = require(name);
+        try {
+            return "[" + String.join(",", listWebFiles(folderOf(s), "")) + "]";
+        } catch (IOException e) {
+            throw new SiteException(500, "Khong doc duoc thu muc cua site: " + e.getMessage());
+        }
+    }
+
+    /** Cac node JSON cua mot thu muc; prefix la duong dan tuong doi cua thu muc do (dung '/'). */
+    private static List<String> listWebFiles(Path dir, String prefix) throws IOException {
+        List<String> nodes = new ArrayList<>();
+        if (!Files.isDirectory(dir)) {
+            return nodes;
+        }
+        List<Path> entries;
+        try (Stream<Path> stream = Files.list(dir)) {
+            entries = stream.sorted(Comparator
+                    .comparing((Path p) -> !Files.isDirectory(p, LinkOption.NOFOLLOW_LINKS))
+                    .thenComparing(p -> p.getFileName().toString(), String.CASE_INSENSITIVE_ORDER))
+                .toList();
+        }
+        for (Path p : entries) {
+            String fileName = p.getFileName().toString();
+            String rel = prefix.isEmpty() ? fileName : prefix + "/" + fileName;
+            if (Files.isDirectory(p, LinkOption.NOFOLLOW_LINKS)) {
+                List<String> children = listWebFiles(p, rel);
+                if (!children.isEmpty()) {
+                    nodes.add("{\"name\":\"" + jsonEscape(fileName) + "\",\"path\":\"" + jsonEscape(rel)
+                        + "\",\"dir\":true,\"children\":[" + String.join(",", children) + "]}");
+                }
+            } else if (StaticFileHandler.contentTypeFor(fileName) != null) {
+                nodes.add("{\"name\":\"" + jsonEscape(fileName) + "\",\"path\":\"" + jsonEscape(rel) + "\",\"dir\":false}");
+            }
+        }
+        return nodes;
+    }
+
+    /** Escape chuoi cho JSON: dau nhay kep, dau gach cheo nguoc va ky tu dieu khien. */
+    private static String jsonEscape(String s) {
+        StringBuilder sb = new StringBuilder();
+        for (char c : s.toCharArray()) {
+            if (c == '"' || c == '\\') {
+                sb.append('\\').append(c);
+            } else if (c < 0x20) {
+                sb.append(String.format("\\u%04x", (int) c));
+            } else {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
     }
 
     public synchronized SiteView get(String name) throws SiteException {

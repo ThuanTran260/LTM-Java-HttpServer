@@ -401,6 +401,7 @@ public class CrossTestClient {
 
     private static void testMultiSite(String base) throws Exception {
         testSiteManager();
+        testFileTreeUnit();
         testSitesApi(base);
         testAdminPage(base);
     }
@@ -596,6 +597,57 @@ public class CrossTestClient {
     private static void testAdminPage(String base) {
         testRequest("S38. GET /admin.html -> trang quan tri goi /api/sites", "GET", base + "/admin.html", null, null, 200, "text/html", "/api/sites");
         testRequest("S39. GET /index.html -> co link toi trang quan tri", "GET", base + "/index.html", null, null, 200, "text/html", "/admin.html");
+    }
+
+    private static void testFileTreeUnit() throws Exception {
+        java.nio.file.Path tmp = java.nio.file.Files.createTempDirectory("tree-test");
+        java.nio.file.Path sitesDir = tmp.resolve("sites");
+        java.nio.file.Path cfg = tmp.resolve("sites.json");
+        SiteManager mgr = new SiteManager(sitesDir, cfg, 8080);
+        try {
+            mgr.add("alpha", freePort());
+            java.nio.file.Path root = sitesDir.resolve("alpha");
+            java.nio.file.Files.createDirectories(root.resolve("sub"));
+            java.nio.file.Files.writeString(root.resolve("sub").resolve("a.html"), "<p>a</p>");
+            java.nio.file.Files.writeString(root.resolve("my page.html"), "<p>b</p>");
+            java.nio.file.Files.writeString(root.resolve("notes.md"), "x");
+            java.nio.file.Files.writeString(root.resolve("skip.pdf"), "x");
+            java.nio.file.Files.createDirectories(root.resolve("empty"));
+            java.nio.file.Files.writeString(root.resolve("empty").resolve("readme.md"), "x");
+
+            String json = mgr.filesJson("alpha");
+            check("S40. files: thu muc con long nhau, duong dan dung '/' (sub/a.html)",
+                json.contains("{\"name\":\"sub\",\"path\":\"sub\",\"dir\":true,\"children\":[{\"name\":\"a.html\",\"path\":\"sub/a.html\",\"dir\":false}]}"),
+                json);
+            check("S41. files: thu muc truoc file; ten co khoang trang giu nguyen (my page.html)",
+                json.indexOf("\"name\":\"sub\"") < json.indexOf("\"name\":\"index.html\"")
+                    && json.contains("{\"name\":\"my page.html\",\"path\":\"my page.html\",\"dir\":false}"),
+                json);
+            check("S42. files: chi file site phuc vu duoc; thu muc khong co file web bi an",
+                !json.contains("notes.md") && !json.contains("skip.pdf") && !json.contains("\"empty\""),
+                json);
+
+            mgr.add("gamma", freePort());
+            deleteTree(sitesDir.resolve("gamma"));
+            check("S43. files: thu muc site bi xoa tay -> [] (khong loi)",
+                mgr.filesJson("gamma").equals("[]"), mgr.filesJson("gamma"));
+
+            mgr.stop("alpha");
+            check("S44. files: site dang tat van liet ke duoc file",
+                !mgr.get("alpha").running() && mgr.filesJson("alpha").contains("\"path\":\"sub/a.html\""),
+                mgr.filesJson("alpha"));
+
+            int missing = 0;
+            try {
+                mgr.filesJson("khong-co");
+            } catch (SiteManager.SiteException e) {
+                missing = e.status();
+            }
+            check("S45. files: site khong ton tai -> 404", missing == 404, "status=" + missing);
+        } finally {
+            mgr.stopAll();
+            deleteTree(tmp);
+        }
     }
 
     private static void testBaseTagInComment(String testName) {
