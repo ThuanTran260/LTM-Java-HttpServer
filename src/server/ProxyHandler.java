@@ -12,15 +12,17 @@ public class ProxyHandler implements HttpHandler {
     public void handle(HttpExchange ex) throws IOException {
         String path = ex.getRequestURI().getPath();
         String query = ex.getRequestURI().getQuery();
-        String sub = path.replaceFirst("^/iis/?", "/");
-        if (sub.isEmpty()) sub = "/";
-        if (query != null) sub += "?" + query;
+        String upstreamPath;
+        if (path.equals("/iis") || path.equals("/iis/")) upstreamPath = "/";
+        else if (path.startsWith("/iis/")) upstreamPath = path.substring(4);
+        else { RouterHandler.sendNotFound(ex); return; }
+        if (query != null) upstreamPath += "?" + query;
         String method = ex.getRequestMethod();
         byte[] reqBody = ex.getRequestBody().readAllBytes();
         // 1. thu IIS that
-        if (forward(ex, method, REAL_IIS + sub, reqBody, true)) return;
+        if (forward(ex, method, REAL_IIS + upstreamPath, reqBody, true)) return;
         // 2. fallback Mock
-        if (forward(ex, method, MOCK_IIS + sub, reqBody, false)) return;
+        if (forward(ex, method, MOCK_IIS + upstreamPath, reqBody, false)) return;
         // 3. ca 2 fail
         RouterHandler.send(ex, 502, "text/plain; charset=utf-8",
             "502 Bad Gateway: khong noi duoc IIS :80 lan Mock :8081. Hay chay: java -cp out mock.MockIisServer");

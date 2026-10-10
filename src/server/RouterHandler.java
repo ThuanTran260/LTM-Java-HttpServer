@@ -21,13 +21,12 @@ public class RouterHandler implements HttpHandler {
         String query = ex.getRequestURI().getRawQuery();
         String method = ex.getRequestMethod();
         try {
-            // 1. Static file: moi GET khong thuoc /api va /iis deu thu phuc vu tu wwwroot/
-            if (method.equals("GET") && !path.startsWith("/api/") && !path.startsWith("/iis/")) {
-                if (StaticFileHandler.tryServe(ex, path)) return;
-                if (path.equals("/")) {
-                    send(ex, 200, "text/html; charset=utf-8", "<h1>HTTP Server dang hoat dong!</h1><p><a href='/api/time'>/api/time</a> | <a href='/api/students'>/api/students</a> | <a href='/iis/'>/iis/</a></p>");
-                    return;
-                }
+            // 1. Static wwwroot (index.html, style.css, sample.png, ...)
+            if (method.equals("GET") && StaticFileHandler.tryServe(ex, path)) return;
+            // fallback neu chua co wwwroot
+            if (method.equals("GET") && path.equals("/")) {
+                send(ex, 200, "text/html; charset=utf-8", "<h1>HTTP Server dang hoat dong!</h1><p><a href='/api/time'>/api/time</a> | <a href='/api/students'>/api/students</a> | <a href='/iis/'>/iis/</a></p>");
+                return;
             }
             // 2. GET /api/time
             if (method.equals("GET") && path.equals("/api/time")) {
@@ -50,13 +49,26 @@ public class RouterHandler implements HttpHandler {
                 send(ex, 201, "application/json", "{\"message\":\"Da nhan du lieu\"}");
                 return;
             }
-            // 4. CRUD /api/students (ho tro query string de loc: ?name= &age= )
+            // 4. CRUD /api/students (?id= tra 1 SV dung mau slide, ?name=/ ?age= loc danh sach)
             if (path.equals("/api/students")) {
                 if (method.equals("GET")) {
-                    String nameFilter = param(query, "name");
-                    String ageFilter = param(query, "age");
-                    send(ex, 200, "application/json", filterJson(nameFilter, ageFilter));
-                    return;
+                    String qid = queryParam(query, "id");
+                    if (qid != null) {
+                        int qidInt;
+                        try { qidInt = Integer.parseInt(qid); }
+                        catch (NumberFormatException e) { send(ex, 400, "text/plain; charset=utf-8", "400 Bad Request"); return; }
+                        Student s = SVC.get(qidInt);
+                        if (s == null) sendNotFound(ex);
+                        else send(ex, 200, "application/json", s.toJson());
+                        return;
+                    }
+                    String nameFilter = queryParam(query, "name");
+                    String ageFilter = queryParam(query, "age");
+                    if (nameFilter != null || ageFilter != null) {
+                        send(ex, 200, "application/json", filterJson(nameFilter, ageFilter));
+                        return;
+                    }
+                    send(ex, 200, "application/json", SVC.listJson()); return;
                 }
                 if (method.equals("POST")) {
                     String ct = ex.getRequestHeaders().getFirst("Content-Type");
@@ -78,33 +90,37 @@ public class RouterHandler implements HttpHandler {
                 catch (NumberFormatException e) { send(ex, 400, "text/plain; charset=utf-8", "400 Bad Request"); return; }
                 if (method.equals("GET")) {
                     Student s = SVC.get(id);
-                    if (s == null) send(ex, 404, "text/plain; charset=utf-8", "404 Not Found");
+                    if (s == null) sendNotFound(ex);
                     else send(ex, 200, "application/json", s.toJson());
                     return;
                 }
                 if (method.equals("PUT")) {
+                    String ct = ex.getRequestHeaders().getFirst("Content-Type");
+                    if (ct == null || !ct.startsWith("application/json")) {
+                        send(ex, 415, "text/plain; charset=utf-8", "415 Unsupported Media Type"); return;
+                    }
                     String body = new String(ex.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
                     String name = parseJsonString(body, "name");
                     Integer age = parseJsonInt(body, "age");
                     if (name == null || age == null) { send(ex, 400, "text/plain; charset=utf-8", "400 Bad Request"); return; }
-                    if (!SVC.update(id, name, age)) send(ex, 404, "text/plain; charset=utf-8", "404 Not Found");
+                    if (!SVC.update(id, name, age)) sendNotFound(ex);
                     else send(ex, 200, "application/json", SVC.get(id).toJson());
                     return;
                 }
                 if (method.equals("DELETE")) {
-                    if (!SVC.delete(id)) send(ex, 404, "text/plain; charset=utf-8", "404 Not Found");
+                    if (!SVC.delete(id)) sendNotFound(ex);
                     else send(ex, 200, "application/json", "{\"message\":\"Deleted\"}");
                     return;
                 }
             }
-            send(ex, 404, "text/plain; charset=utf-8", "404 Not Found");
+            sendNotFound(ex);
         } catch (Exception e) {
             try { send(ex, 500, "text/plain; charset=utf-8", "500 Internal Server Error"); }
             catch (Exception ignored) {}
         }
     }
 
-    // Loc danh sach sinh vien theo tham so tren Query String
+    // Loc danh sach sinh vien theo ?name= / ?age=
     private String filterJson(String nameFilter, String ageFilter) {
         List<Student> all = SVC.list();
         StringBuilder sb = new StringBuilder("[");
@@ -122,20 +138,6 @@ public class RouterHandler implements HttpHandler {
         return sb.append("]").toString();
     }
 
-    // Lay 1 tham so tu query string "name=An&age=20", tu giai ma UTF-8
-    static String param(String query, String key) {
-        if (query == null || query.isEmpty()) return null;
-        for (String pair : query.split("&")) {
-            int eq = pair.indexOf('=');
-            if (eq < 0) continue;
-            if (pair.substring(0, eq).equals(key)) {
-                try { return URLDecoder.decode(pair.substring(eq + 1), StandardCharsets.UTF_8); }
-                catch (Exception e) { return pair.substring(eq + 1); }
-            }
-        }
-        return null;
-    }
-
     public static void send(HttpExchange ex, int status, String contentType, String body) throws IOException {
         byte[] data = body.getBytes(StandardCharsets.UTF_8);
         ex.getResponseHeaders().set("Content-Type", contentType);
@@ -143,7 +145,21 @@ public class RouterHandler implements HttpHandler {
         try (OutputStream os = ex.getResponseBody()) { os.write(data); }
         ServerLogger.log(ex.getRequestMethod(), ex.getRequestURI().getPath(), status, data.length, ex.getRemoteAddress().toString());
     }
-
+    static String queryParam(String query, String key) {
+        if (query == null) return null;
+        for (String p : query.split("&")) {
+            if (p.equals(key)) return "";
+            if (p.startsWith(key + "=")) { String v = p.substring(key.length() + 1); return urlDecodeOr(v, v); }
+        }
+        return null;
+    }
+    static String urlDecodeOr(String s, String fallback) {
+        try { return URLDecoder.decode(s, StandardCharsets.UTF_8); }
+        catch (IllegalArgumentException e) { return fallback; }
+    }
+    static void sendNotFound(HttpExchange ex) throws IOException {
+        send(ex, 404, "text/plain; charset=utf-8", "404 Not Found");
+    }
     static String parseJsonString(String json, String key) {
         String k = "\"" + key + "\"";
         int i = json.indexOf(k);
@@ -156,7 +172,6 @@ public class RouterHandler implements HttpHandler {
         if (q2 < 0) return null;
         return json.substring(q1 + 1, q2);
     }
-
     static Integer parseJsonInt(String json, String key) {
         String k = "\"" + key + "\"";
         int i = json.indexOf(k);

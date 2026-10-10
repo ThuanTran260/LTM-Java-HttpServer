@@ -41,7 +41,7 @@ Nếu giảng viên yêu cầu kiểm tra từng tính năng riêng:
 | `/` hoặc `/index.html` | GET | Trang chủ từ `wwwroot/` (200 `text/html`) |
 | `/style.css`, `/about.html`, `*.png`, ... | GET | Bất kỳ file tĩnh nào trong `wwwroot/` (Content-Type tự theo đuôi file) |
 | `/api/time` | GET | `{"time":"HH:mm:ss"}` |
-| `/api/students` | GET | Danh sách sinh viên (hỗ trợ lọc `?name=` & `age=`) |
+| `/api/students` | GET | Danh sách sinh viên (`?id=` tra 1 SV, `?name=` & `?age=` lọc) |
 | `/api/students/{id}` | GET | Một sinh viên theo ID |
 | `/api/students` | POST | Thêm sinh viên → `201 Created` |
 | `/api/students/{id}` | PUT | Cập nhật sinh viên theo ID |
