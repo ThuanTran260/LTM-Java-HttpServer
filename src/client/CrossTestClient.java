@@ -403,6 +403,7 @@ public class CrossTestClient {
         testSiteManager();
         testFileTreeUnit();
         testSitesApi(base);
+        testFileTreeApi(base);
         testAdminPage(base);
     }
 
@@ -647,6 +648,34 @@ public class CrossTestClient {
         } finally {
             mgr.stopAll();
             deleteTree(tmp);
+        }
+    }
+
+    private static void testFileTreeApi(String base) throws Exception {
+        String api = base + "/api/sites";
+        String name = "zz-tree-test";
+        String siteApi = api + "/" + name;
+        java.nio.file.Path root = java.nio.file.Paths.get("sites", name);
+        try {
+            deleteTree(root);
+            HttpClient.newHttpClient().send(
+                HttpRequest.newBuilder(URI.create(api)).header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString("{\"name\":\"" + name + "\",\"port\":" + freePort() + "}"))
+                    .build(),
+                HttpResponse.BodyHandlers.discarding());
+            java.nio.file.Files.createDirectories(root.resolve("sub"));
+            java.nio.file.Files.writeString(root.resolve("sub").resolve("a.html"), "<p>a</p>");
+            java.nio.file.Files.writeString(root.resolve("notes.md"), "x");
+
+            testRequest("S46. GET /api/sites/{name}/files -> 200 JSON, co sub/a.html", "GET", siteApi + "/files",
+                null, null, 200, "application/json", "\"path\":\"sub/a.html\"");
+            testRequest("S47. GET /api/sites/khong-co/files -> 404", "GET", api + "/khong-co/files",
+                null, null, 404, "text/plain", "404");
+            testRequest("S48. POST /api/sites/{name}/files -> 405 Allow: GET", "POST", siteApi + "/files",
+                "application/json", "{}", 405, "text/plain", "405", "Allow", "GET");
+        } finally {
+            httpDeleteQuietly(siteApi);
+            deleteTree(root);
         }
     }
 

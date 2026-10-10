@@ -14,6 +14,7 @@ import java.nio.charset.StandardCharsets;
  *   POST   /api/sites/{name}/start   bat -> 200
  *   POST   /api/sites/{name}/stop    tat -> 200
  *   DELETE /api/sites/{name}         xoa khoi danh sach (giu nguyen thu muc) -> 200
+ *   GET    /api/sites/{name}/files   cay file web cua site (chi doc)
  * Moi POST bat buoc Content-Type: application/json (form POST tu trang khac se bi 415).
  */
 public class SitesApiHandler implements HttpHandler {
@@ -67,6 +68,14 @@ public class SitesApiHandler implements HttpHandler {
                 } else {
                     methodNotAllowed(ex, "GET, DELETE");
                 }
+                return;
+            }
+            if (parts.length == 2 && parts[1].equals("files")) {
+                if (!method.equals("GET")) {
+                    methodNotAllowed(ex, "GET");
+                    return;
+                }
+                RouterHandler.send(ex, 200, JSON, manager.filesJson(name));
                 return;
             }
             if (parts.length == 2 && (parts[1].equals("start") || parts[1].equals("stop"))) {
