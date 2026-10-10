@@ -91,9 +91,30 @@ Http server/
 │   ├── server/       # SimpleHttpServer, RouterHandler, ProxyHandler, StaticFileHandler, ServerLogger
 │   ├── service/      # StudentService (CRUD sinh viên dạng JSON, hỗ trợ lọc theo name/age)
 │   ├── model/        # Student POJO
-│   ├── client/       # HttpClientGetDemo, HttpClientPostDemo, HttpClientErrorDemo, CrossTestClient
+│   ├── client/       # HttpClientGetDemo, HttpClientPostDemo, HttpClientErrorDemo, CrossTestClient, WebFetchService, WebClientApp (Swing)
 │   └── mock/         # MockIisServer (dự phòng cổng 8081 nếu máy không có IIS thật)
 ├── wwwroot/          # index.html, style.css (+ mọi file tĩnh khác: html, css, png, json, txt)
 ├── out/              # Bytecode .class sau khi biên dịch
 └── *.bat             # Các file script chạy nhanh
 ```
+
+---
+
+## 🖥️ 7. Web Client (Swing) — xem source code qua WebFetch
+
+Ứng dụng desktop Java thuần (Swing) đóng vai **client**: gọi `GET http://localhost:8080/fetch?url=<URL>` của Java Server rồi hiển thị **mã nguồn** trang web nhận về.
+
+1. Bật server: **`run_server.bat`**
+2. Mở app: **`run_webclient.bat`** (có thể truyền địa chỉ server khác, ví dụ `run_webclient.bat http://localhost:8080`)
+
+| Thành phần | Chức năng |
+|:---|:---|
+| Ô **Server WebFetch** | Địa chỉ Java Server (mặc định `http://localhost:8080`) |
+| Ô **URL** + nút **Fetch** (hoặc Enter) | URL cần xem (`http://` hoặc `https://`); ghi nhớ 20 URL gần nhất |
+| Checkbox **format=json** | Gọi `/fetch?format=json`: tab Source hiện JSON metadata (`targetUrl`, `status`, `contentType`, `contentLength`, `body`) |
+| Tab **Source** | Nội dung đúng như server trả về, kèm chú thích: server tự chèn thẻ `<base href>` vào HTML |
+| Tab **Rendered** | Trang HTML render bằng `JEditorPane` (chỉ hiển thị tốt HTML cơ bản) |
+| Nút **Save...** | Lưu nội dung tab Source ra file UTF-8 |
+| Thanh trạng thái | Status, Content-Type, độ dài, chế độ raw/json; lỗi (ví dụ chưa bật server) hiện màu đỏ |
+
+Kiểm thử tự động: `java -cp out client.CrossTestClient` (mục 9 và 10 kiểm tra `WebFetchService` và `WebClientApp`).

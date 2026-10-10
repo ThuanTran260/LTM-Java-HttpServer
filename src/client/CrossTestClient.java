@@ -329,7 +329,7 @@ public class CrossTestClient {
 
     private static void testWebClientApp(String base) {
         if (java.awt.GraphicsEnvironment.isHeadless()) {
-            System.out.println("[SKIP] 95-97. WebClientApp -> moi truong headless, khong co man hinh de tao cua so Swing");
+            System.out.println("[SKIP] 95-99. WebClientApp -> moi truong headless, khong co man hinh de tao cua so Swing");
             return;
         }
         try {
@@ -347,20 +347,28 @@ public class CrossTestClient {
             String[] d = fetchViaApp("http://localhost:59998", base + "/index.html", false);
             check("97. WebClientApp khi WebFetch server tat -> bao loi tren status bar, khong treo",
                 d[1].startsWith("Loi:") && d[1].contains("Khong ket noi"), d[1]);
+
+            String[] h = fetchViaApp(base, base + "/index.html", false);
+            check("98. WebClientApp tab Rendered hien HTML da render (<meta charset> va <link css> khong lam hong)",
+                h[3].contains("Welcome to My Website"), h[3]);
+
+            String[] c = fetchViaApp(base, base + "/style.css", false);
+            check("99. WebClientApp tab Rendered voi noi dung khong phai HTML -> thong bao, khong loi",
+                c[3].contains("Khong phai HTML") && c[1].contains("Status: 200"), c[3]);
         } catch (Exception e) {
             if (e instanceof java.awt.HeadlessException || e.getCause() instanceof java.awt.HeadlessException) {
-                System.out.println("[SKIP] 95-97. WebClientApp -> HeadlessException, khong co man hinh");
+                System.out.println("[SKIP] 95-99. WebClientApp -> HeadlessException, khong co man hinh");
             } else {
-                System.err.println("[FAIL] 95-97. WebClientApp -> Exception: " + e);
+                System.err.println("[FAIL] 95-99. WebClientApp -> Exception: " + e);
                 fail++;
             }
         }
     }
 
-    /** Tao WebClientApp (khong hien), fetch 1 URL, doi giao dien cap nhat; tra ve {source, status, note}. */
+    /** Tao WebClientApp (khong hien), fetch 1 URL, doi giao dien cap nhat; tra ve {source, status, note, rendered}. */
     private static String[] fetchViaApp(String server, String url, boolean json) throws Exception {
         java.util.concurrent.CountDownLatch done = new java.util.concurrent.CountDownLatch(1);
-        String[] out = new String[3];
+        String[] out = new String[4];
         WebClientApp[] app = new WebClientApp[1];
         javax.swing.SwingUtilities.invokeAndWait(() -> {
             app[0] = new WebClientApp(server);
@@ -369,6 +377,7 @@ public class CrossTestClient {
                 out[0] = app[0].sourceText();
                 out[1] = app[0].statusText();
                 out[2] = app[0].noteText();
+                out[3] = app[0].renderedPlainText();
                 done.countDown();
             });
         });

@@ -6,12 +6,14 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.io.File;
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -24,6 +26,9 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.UIManager;
+import javax.swing.text.Document;
+import javax.swing.text.html.HTMLDocument;
+import javax.swing.text.html.HTMLEditorKit;
 
 /**
  * Web Client (Swing): nhap URL -> goi WebFetch cua Java Server (GET <server>/fetch?url=...) -> hien source.
@@ -37,6 +42,12 @@ public class WebClientApp {
     private static final String BASE_NOTE =
         "Luu y: server /fetch tu chen the <base href=\"...\"> vao <head> cua trang HTML, nen source nay chi khac ban goc dung 1 the do.";
 
+    static {
+        // Gioi han thoi gian URLConnection cu (Swing tai CSS/anh cua trang dich) de cua so khong bi treo
+        System.setProperty("sun.net.client.defaultConnectTimeout", "5000");
+        System.setProperty("sun.net.client.defaultReadTimeout", "8000");
+    }
+
     private final JFrame frame = new JFrame("Web Client - xem source qua WebFetch");
     private final JTextField serverField = new JTextField(22);
     private final JComboBox<String> urlCombo = new JComboBox<>();
@@ -44,6 +55,7 @@ public class WebClientApp {
     private final JButton fetchButton = new JButton("Fetch");
     private final JButton saveButton = new JButton("Save...");
     private final JTextArea sourceArea = new JTextArea();
+    private final JEditorPane renderedPane = new JEditorPane();
     private final JLabel noteLabel = new JLabel(" ");
     private final JLabel statusLabel = new JLabel("San sang. Nhap URL roi bam Fetch.");
     private final JTabbedPane tabs = new JTabbedPane();
@@ -86,6 +98,9 @@ public class WebClientApp {
         sourcePanel.add(new JScrollPane(sourceArea), BorderLayout.CENTER);
         sourcePanel.add(noteLabel, BorderLayout.SOUTH);
         tabs.addTab("Source", sourcePanel);
+        renderedPane.setContentType("text/html");
+        renderedPane.setEditable(false);
+        tabs.addTab("Rendered", new JScrollPane(renderedPane));
 
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.add(top, BorderLayout.NORTH);
@@ -128,6 +143,15 @@ public class WebClientApp {
         return noteLabel.getText();
     }
 
+    String renderedPlainText() {
+        try {
+            Document d = renderedPane.getDocument();
+            return d.getText(0, d.getLength());
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
     private String currentUrl() {
         Object item = urlCombo.getEditor().getItem();
         return item == null ? "" : item.toString().trim();
@@ -143,16 +167,23 @@ public class WebClientApp {
         statusLabel.setText("Dang tai " + target + " ...");
         final boolean json = jsonCheck.isSelected();
         final String server = serverField.getText();
-        new SwingWorker<WebFetchService.Result, Void>() {
+        new SwingWorker<Outcome, Void>() {
             @Override
-            protected WebFetchService.Result doInBackground() {
-                return new WebFetchService(server).fetch(target, json);
+            protected Outcome doInBackground() {
+                WebFetchService.Result r = new WebFetchService(server).fetch(target, json);
+                // Parse HTML (ke ca tai CSS ngoai) o thread nen de EDT khong bi chan
+                Document doc = r.ok() && WebFetchService.isHtml(r.contentType()) ? buildRenderedDocument(r.body()) : null;
+                return new Outcome(r, doc);
             }
 
             @Override
             protected void done() {
                 try {
-                    display(get(), target);
+                    Outcome o = get();
+                    display(o.result(), target);
+                    if (o.result().ok()) {
+                        showRendered(o.rendered());
+                    }
                 } catch (Exception ex) {
                     showFailure("Loi noi bo: " + ex);
                 } finally {
@@ -163,6 +194,30 @@ public class WebClientApp {
                 }
             }
         }.execute();
+    }
+
+    private record Outcome(WebFetchService.Result result, Document rendered) { }
+
+    static HTMLDocument buildRenderedDocument(String html) {
+        HTMLEditorKit kit = new HTMLEditorKit();
+        HTMLDocument doc = (HTMLDocument) kit.createDefaultDocument();
+        // Bat buoc: neu khong, <meta charset> trong trang lam parser nem ChangedCharSetException va cat noi dung
+        doc.putProperty("IgnoreCharsetDirective", Boolean.TRUE);
+        try {
+            kit.read(new StringReader(html), doc, 0);
+        } catch (Exception e) {
+            // Giu phan da parse duoc: loi tai CSS ngoai / HTML hong khong duoc lam hong ca lan fetch
+        }
+        return doc;
+    }
+
+    private void showRendered(Document doc) {
+        if (doc != null) {
+            renderedPane.setDocument(doc);
+            renderedPane.setCaretPosition(0);
+        } else {
+            renderedPane.setText("<html><body><p><i>Khong phai HTML (hoac chua co du lieu) nen khong render duoc.</i></p></body></html>");
+        }
     }
 
     private void display(WebFetchService.Result r, String target) {
@@ -192,6 +247,7 @@ public class WebClientApp {
         noteLabel.setText(" ");
         statusLabel.setForeground(ERROR_COLOR);
         statusLabel.setText("Loi: " + message);
+        showRendered(null);
     }
 
     /** Lich su: moi nhat len dau, khong trung, toi da MAX_HISTORY muc. */
