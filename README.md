@@ -126,6 +126,7 @@ Kiểm thử tự động: `java -cp out client.CrossTestClient` (mục 9 và 10
 Java Server `:8080` có thể quản lý **nhiều web cùng lúc**, giống IIS Sites: mỗi web có **thư mục riêng** `sites/<tên>/` và chạy trên **cổng riêng**. Thêm / bật / tắt / xóa web **khi server đang chạy**; danh sách lưu trong `sites.json` nên khởi động lại vẫn còn (các web đã bật tự chạy lại).
 
 - **Trang quản trị:** mở **`http://localhost:8080/admin.html`** (chỉ dùng được từ máy local).
+- Bấm **Xem file** để xem cây file web trong `sites/<tên>/`. Bấm vào file để mở trên cổng của site (site phải đang bật).
 - Thêm web `blog` ở cổng 9001 → mở `http://localhost:9001/`. Sửa nội dung web trong `sites/blog/` (file `index.html` mặc định được tạo sẵn).
 
 | API (chỉ từ máy local) | Kết quả |
@@ -134,7 +135,8 @@ Java Server `:8080` có thể quản lý **nhiều web cùng lúc**, giống IIS
 | `POST /api/sites` `{"name":"blog","port":9001}` | `201` — tạo thư mục và chạy web; `409` nếu trùng tên/cổng hoặc cổng đang bị dùng; `400` nếu sai tên (a-z, 0-9, `-`) hoặc cổng ngoài 1024–65535 |
 | `POST /api/sites/{tên}/start` · `/stop` | Bật / tắt web (cần header `Content-Type: application/json`) |
 | `DELETE /api/sites/{tên}` | Xóa khỏi danh sách (thư mục file được giữ lại) |
+| `GET /api/sites/{tên}/files` | Cây file web của site (chỉ file mà site phục vụ được) |
 
 Ví dụ: `curl -X POST http://localhost:8080/api/sites -H "Content-Type: application/json" -d "{\"name\":\"blog\",\"port\":9001}"`
 
-Kiểm thử tự động: `java -cp out client.CrossTestClient` (mục 11, test S1–S39).
+Kiểm thử tự động: `java -cp out client.CrossTestClient` (mục 11, test S1–S49).

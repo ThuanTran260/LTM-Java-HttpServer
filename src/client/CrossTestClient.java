@@ -598,6 +598,7 @@ public class CrossTestClient {
     private static void testAdminPage(String base) {
         testRequest("S38. GET /admin.html -> trang quan tri goi /api/sites", "GET", base + "/admin.html", null, null, 200, "text/html", "/api/sites");
         testRequest("S39. GET /index.html -> co link toi trang quan tri", "GET", base + "/index.html", null, null, 200, "text/html", "/admin.html");
+        testRequest("S49. GET /admin.html -> nut Xem file goi /files", "GET", base + "/admin.html", null, null, 200, "text/html", "/files");
     }
 
     private static void testFileTreeUnit() throws Exception {

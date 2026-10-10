@@ -17,6 +17,10 @@ th{background:#f1f5f9}
 .good{color:#1b6e2e}
 .err{color:#b01e1e}
 code{background:#f1f5f9;padding:1px 5px;border-radius:4px}
+.tree, .tree ul{margin:0 0 0 18px;padding:0;list-style:none}
+.tree summary{cursor:pointer;font-weight:600}
+.tree a{color:#0a6cff}
+.files-note{color:#64748b}
 </style></head>
 <body>
 <h1>Quản lý nhiều web (Sites)</h1>
@@ -111,6 +115,7 @@ async function refresh() {
     actions.appendChild(s.running
       ? button('Tắt', 'secondary', () => act('Tắt ' + s.name, () => api('POST', base + '/stop', {})))
       : button('Bật', '', () => act('Bật ' + s.name, () => api('POST', base + '/start', {}))));
+    actions.appendChild(button('Xem file', 'secondary', () => toggleFiles(s, tr)));
     actions.appendChild(button('Xóa', 'danger', () => {
       if (confirm('Xóa web "' + s.name + '" khỏi danh sách? (thư mục file được giữ lại)')) {
         act('Xóa ' + s.name, () => api('DELETE', base));
@@ -118,6 +123,66 @@ async function refresh() {
     }));
     rows.appendChild(tr);
   }
+}
+
+async function toggleFiles(site, tr) {
+  const open = tr.nextElementSibling;
+  if (open && open.dataset.filesFor === site.name) {
+    open.remove();
+    return;
+  }
+  const row = document.createElement('tr');
+  row.dataset.filesFor = site.name;
+  const td = document.createElement('td');
+  td.colSpan = 5;
+  td.textContent = 'Đang tải danh sách file...';
+  row.appendChild(td);
+  tr.after(row);
+  try {
+    const nodes = await api('GET', '/api/sites/' + encodeURIComponent(site.name) + '/files');
+    td.replaceChildren();
+    if (!site.running) {
+      const note = document.createElement('p');
+      note.className = 'files-note';
+      note.textContent = 'Web đang tắt: bấm Bật để mở các file bằng link bên dưới.';
+      td.appendChild(note);
+    }
+    if (nodes.length === 0) {
+      const empty = document.createElement('p');
+      empty.textContent = 'Chưa có file web nào trong thư mục này.';
+      td.appendChild(empty);
+    } else {
+      td.appendChild(buildTree(nodes, site.port));
+    }
+  } catch (e) {
+    td.textContent = 'Không tải được danh sách file: ' + e.message;
+  }
+}
+
+function buildTree(nodes, port) {
+  const ul = document.createElement('ul');
+  ul.className = 'tree';
+  for (const n of nodes) {
+    const li = document.createElement('li');
+    if (n.dir) {
+      const details = document.createElement('details');
+      details.open = true;
+      const summary = document.createElement('summary');
+      summary.textContent = n.name + '/';
+      details.appendChild(summary);
+      details.appendChild(buildTree(n.children, port));
+      li.appendChild(details);
+    } else {
+      const a = document.createElement('a');
+      a.href = 'http://localhost:' + port + '/' + n.path.split('/').map(encodeURIComponent).join('/');
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.textContent = n.name;
+      li.appendChild(a);
+    }
+    ul.appendChild(li);
+  }
+  return ul;
 }
 
 document.getElementById('add-form').addEventListener('submit', async (e) => {
