@@ -6,6 +6,10 @@ import java.io.OutputStream;
 import java.nio.file.*;
 public class StaticFileHandler {
     public static boolean tryServe(HttpExchange ex, String path) throws IOException {
+        return tryServe(ex, path, Paths.get("wwwroot"));
+    }
+
+    public static boolean tryServe(HttpExchange ex, String path, Path webRoot) throws IOException {
         String rel;
         if (path.equals("/")) rel = "index.html";
         else if (path.startsWith("/") && !hasDotDot(path) && contentTypeFor(path) != null) rel = path.substring(1);
@@ -14,7 +18,7 @@ public class StaticFileHandler {
         Path file;
         try {
             rel = RouterHandler.urlDecodeOr(rel, rel);
-            Path root = Paths.get("wwwroot").toAbsolutePath().normalize();
+            Path root = webRoot.toAbsolutePath().normalize();
             file = root.resolve(rel).normalize();
             if (!file.startsWith(root) || file.equals(root) || !Files.exists(file) || Files.isDirectory(file)) return false;
         } catch (IllegalArgumentException e) {
@@ -52,6 +56,9 @@ public class StaticFileHandler {
         if (n.endsWith(".gif")) return "image/gif";
         if (n.endsWith(".txt")) return "text/plain; charset=utf-8";
         if (n.endsWith(".json")) return "application/json";
+        if (n.endsWith(".js")) return "text/javascript; charset=utf-8";
+        if (n.endsWith(".svg")) return "image/svg+xml";
+        if (n.endsWith(".ico")) return "image/x-icon";
         return null;
     }
 }

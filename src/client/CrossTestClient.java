@@ -8,6 +8,7 @@ import java.net.http.*;
 import java.time.Duration;
 import server.RouterHandler;
 import server.SimpleHttpServer;
+import server.SiteManager;
 import mock.MockIisServer;
 
 /**
@@ -216,6 +217,14 @@ public class CrossTestClient {
 
         System.out.println("\n--- 10. WEB CLIENT (client.WebClientApp, Swing) ---");
         testWebClientApp(base);
+
+        System.out.println("\n--- 11. MULTI-SITE (server.SiteManager, /api/sites, admin.html) ---");
+        try {
+            testMultiSite(base);
+        } catch (Exception e) {
+            System.err.println("[FAIL] 11. MULTI-SITE -> Exception: " + e);
+            fail++;
+        }
     }
 
     private static void check(String testName, boolean ok, String detail) {
@@ -387,6 +396,144 @@ public class CrossTestClient {
             throw new IllegalStateException("Qua 20s ma WebClientApp chua tra ket qua cho " + url);
         }
         return out;
+    }
+
+    private static void testMultiSite(String base) throws Exception {
+        testSiteManager();
+    }
+
+    private static int freePort() throws java.io.IOException {
+        try (java.net.ServerSocket ss = new java.net.ServerSocket(0)) {
+            return ss.getLocalPort();
+        }
+    }
+
+    private static boolean canConnect(int port) {
+        try (java.net.Socket s = new java.net.Socket()) {
+            s.connect(new java.net.InetSocketAddress("localhost", port), 500);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private static void deleteTree(java.nio.file.Path root) {
+        try (java.util.stream.Stream<java.nio.file.Path> walk = java.nio.file.Files.walk(root)) {
+            walk.sorted(java.util.Comparator.reverseOrder()).forEach(p -> {
+                try {
+                    java.nio.file.Files.deleteIfExists(p);
+                } catch (Exception ignored) {
+                    // don dep tren co gang: bo qua
+                }
+            });
+        } catch (Exception ignored) {
+            // thu muc khong ton tai: bo qua
+        }
+    }
+
+    private static int siteErrorStatus(SiteManager mgr, String name, int port) {
+        try {
+            mgr.add(name, port);
+            return 0;
+        } catch (SiteManager.SiteException e) {
+            return e.status();
+        }
+    }
+
+    private static int siteRemoveStatus(SiteManager mgr, String name) {
+        try {
+            mgr.remove(name);
+            return 0;
+        } catch (SiteManager.SiteException e) {
+            return e.status();
+        }
+    }
+
+    private static void testSiteManager() throws Exception {
+        java.nio.file.Path tmp = java.nio.file.Files.createTempDirectory("sites-test");
+        java.nio.file.Path sitesDir = tmp.resolve("sites");
+        java.nio.file.Path cfg = tmp.resolve("sites.json");
+        SiteManager mgr = new SiteManager(sitesDir, cfg, 8080);
+        try {
+            int p1 = freePort();
+            SiteManager.SiteView v = mgr.add("alpha", p1);
+            check("S1. SiteManager.add -> chay tren cong rieng, tao thu muc + index.html mac dinh",
+                v.running() && v.enabled() && v.port() == p1
+                    && java.nio.file.Files.isRegularFile(sitesDir.resolve("alpha").resolve("index.html")),
+                v.toString());
+
+            java.nio.file.Files.writeString(sitesDir.resolve("alpha").resolve("app.js"), "var x = 1;");
+            java.nio.file.Files.writeString(sitesDir.resolve("alpha").resolve("hello.txt"), "hi");
+            String site = "http://localhost:" + p1;
+            testRequest("S2. GET site alpha / -> index.html mac dinh", "GET", site + "/", null, null, 200, "text/html", "Site alpha");
+            testRequest("S3. GET site alpha /hello.txt -> text/plain", "GET", site + "/hello.txt", null, null, 200, "text/plain", "hi");
+            testRequest("S4. GET site alpha /app.js -> javascript", "GET", site + "/app.js", null, null, 200, "javascript", "var x");
+            testRequest("S5. GET site alpha /missing.html -> 404 text/plain", "GET", site + "/missing.html", null, null, 404, "text/plain", "404");
+            testRequest("S6. GET site alpha /../sites.json -> chan Directory Traversal 404", "GET", site + "/../sites.json", null, null, 404, "text/plain", "404");
+            testRequest("S7. GET site alpha /%2e%2e/sites.json -> chan traversal ma hoa URL 404", "GET", site + "/%2e%2e/sites.json", null, null, 404, "text/plain", "404");
+            testRequest("S8. POST site alpha -> 405 Allow: GET", "POST", site + "/", "text/plain", "x", 405, "text/plain", "405", "Allow", "GET");
+
+            String saved = java.nio.file.Files.readString(cfg);
+            check("S9. sites.json duoc ghi sau khi them site",
+                saved.contains("\"name\":\"alpha\"") && saved.contains("\"port\":" + p1) && saved.contains("\"enabled\":true"),
+                saved);
+
+            boolean cyclesOk = true;
+            String cycleDetail = "";
+            for (int i = 0; i < 5 && cyclesOk; i++) {
+                SiteManager.SiteView stopped = mgr.stop("alpha");
+                boolean down = !stopped.running() && !canConnect(p1);
+                SiteManager.SiteView started = mgr.start("alpha");
+                boolean up = started.running() && canConnect(p1);
+                if (!down || !up) {
+                    cyclesOk = false;
+                    cycleDetail = "vong " + i + ": down=" + down + ", up=" + up;
+                }
+            }
+            check("S10. tat / bat lai site nhieu lan tren cung mot cong", cyclesOk, cycleDetail);
+
+            mgr.stop("alpha");
+            String afterStop = java.nio.file.Files.readString(cfg);
+            check("S11. tat site -> sites.json ghi enabled=false", afterStop.contains("\"enabled\":false"), afterStop);
+            mgr.start("alpha");
+
+            boolean namesOk = true;
+            for (String bad : new String[]{"", "A", "-x", "a b", "a/b", "..", "a".repeat(33)}) {
+                namesOk &= siteErrorStatus(mgr, bad, freePort()) == 400;
+            }
+            check("S12. ten site khong hop le -> 400", namesOk, "mot ten sai khong bi tu choi bang 400");
+            check("S13. cong ngoai khoang 1024-65535 -> 400",
+                siteErrorStatus(mgr, "beta", 80) == 400 && siteErrorStatus(mgr, "beta", 70000) == 400,
+                "cong sai khong bi tu choi bang 400");
+            check("S14. trung ten / trung cong / cong cua server chinh -> 409",
+                siteErrorStatus(mgr, "alpha", freePort()) == 409 && siteErrorStatus(mgr, "beta", p1) == 409
+                    && siteErrorStatus(mgr, "beta", 8080) == 409,
+                "trung lap khong bi tu choi bang 409");
+            try (java.net.ServerSocket busy = new java.net.ServerSocket(0)) {
+                int status = siteErrorStatus(mgr, "beta", busy.getLocalPort());
+                check("S15. cong dang bi chuong trinh khac dung -> 409 va site khong duoc dang ky",
+                    status == 409 && mgr.list().size() == 1, "status=" + status + ", so site=" + mgr.list().size());
+            }
+
+            mgr.stopAll();
+            SiteManager reloaded = new SiteManager(sitesDir, cfg, 8080);
+            reloaded.load();
+            check("S16. khoi dong lai: load() doc sites.json va bat lai site da bat",
+                reloaded.list().size() == 1 && reloaded.list().get(0).running() && canConnect(p1), reloaded.listJson());
+            reloaded.remove("alpha");
+            check("S17. remove -> dong cong, bo khoi danh sach, giu nguyen thu muc",
+                reloaded.list().isEmpty() && !canConnect(p1) && java.nio.file.Files.isDirectory(sitesDir.resolve("alpha")),
+                reloaded.listJson());
+            check("S18. remove site khong ton tai -> 404", siteRemoveStatus(reloaded, "alpha") == 404, "khong tra 404");
+
+            java.nio.file.Files.writeString(cfg, "{{ khong phai json [[ {\"name\":\"BAD\",\"port\":9} ]");
+            SiteManager broken = new SiteManager(sitesDir, cfg, 8080);
+            broken.load();
+            check("S19. sites.json hong / muc sai -> bo qua, khong nem exception", broken.list().isEmpty(), broken.listJson());
+        } finally {
+            mgr.stopAll();
+            deleteTree(tmp);
+        }
     }
 
     private static void testBaseTagInComment(String testName) {
