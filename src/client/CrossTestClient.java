@@ -198,6 +198,30 @@ public class CrossTestClient {
         testRequest("74. GET /fetch?url=http://localhost:59999/ (Cong khong ton tai -> 502 Bad Gateway)", "GET", base + "/fetch?url=http://localhost:59999/", null, null, 502, "text/plain", "502 Bad Gateway");
         testRequest("75. GET /fetch?url=http://localhost:59999/&format=json (Cong khong ton tai format=json -> 502 JSON)", "GET", base + "/fetch?url=http://localhost:59999/&format=json", null, null, 502, "application/json", "502 Bad Gateway");
         testRequest("76. GET /fetch?url=...%3Fid%3D3&format=json (Fetch target URL co query param nested)", "GET", base + "/fetch?url=http%3A%2F%2Flocalhost%3A8080%2Fapi%2Fstudents%3Fid%3D3&format=json", null, null, 200, "application/json", "Cuong");
+        testRequest("77. GET /fetch?url=.../index.html%23heading (Strip URL fragment for upstream request)", "GET", base + "/fetch?url=" + base + "/index.html%23heading", null, null, 200, "text/html", "<base href=\"" + base + "/index.html#heading\">");
+        testRequest("78. GET /fetch?url=.../api/students?id=3&format=json (Unencoded target query with fetcher format=json)", "GET", base + "/fetch?url=" + base + "/api/students?id=3&format=json", null, null, 200, "application/json", "Cuong");
+        testRequest("79. GET /fetch?format=json&url=... (Parameter order format=json before url)", "GET", base + "/fetch?format=json&url=" + base + "/api/students?id=3", null, null, 200, "application/json", "Cuong");
+        testRequest("80. GET /fetch?url=...&FORMAT=JSON (Case-insensitive format parameter)", "GET", base + "/fetch?url=" + base + "/api/time&FORMAT=JSON", null, null, 200, "application/json", "\"status\":200");
+        testRequest("81. GET /fetch?url=.../api/students?id=3&format=xml (Target URL format=xml query preserved)", "GET", base + "/fetch?url=" + base + "/api/students?id=3&format=xml", null, null, 200, "application/json", "Cuong");
+        testBaseTagInComment("82. Base tag injection ignores <head> inside HTML comments");
+    }
+
+    private static void testBaseTagInComment(String testName) {
+        try {
+            String html = "<!-- <head> inside comment --><html><head><title>Test</title></head><body><h1>Hello</h1></body></html>";
+            String injected = server.WebFetchHandler.injectBaseTag(html, "<base href=\"http://test.com/\">");
+            boolean ok = injected.contains("<head><base href=\"http://test.com/\">") && !injected.contains("<!-- <head><base");
+            if (ok) {
+                System.out.println("[PASS] " + testName + " -> Injected into real <head>");
+                pass++;
+            } else {
+                System.err.println("[FAIL] " + testName + " -> Output: " + injected);
+                fail++;
+            }
+        } catch (Exception e) {
+            System.err.println("[FAIL] " + testName + " -> Exception: " + e.getMessage());
+            fail++;
+        }
     }
 
     private static void testRequest(String testName, String method, String url, String contentType, String reqBody,
