@@ -1,14 +1,14 @@
 package mock;
+
 import com.sun.net.httpserver.HttpServer;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Executors;
+
 // Gia lap IIS that khi may khong co quyen Admin / chua bat IIS.
 // Tra header Server: Microsoft-IIS/10.0 de Client kiem chung duoc.
 public class MockIisServer {
-    public static void main(String[] args) throws Exception {
-        int port = 8081;
-        if (args.length > 0) { try { port = Integer.parseInt(args[0]); } catch (Exception ignored) {} }
+    public static HttpServer startServer(int port) throws Exception {
         HttpServer s = HttpServer.create(new InetSocketAddress(port), 0);
         final int mockPort = port;
         s.createContext("/", ex -> {
@@ -24,5 +24,12 @@ public class MockIisServer {
         catch (Exception e) { s.setExecutor(Executors.newFixedThreadPool(4)); }
         s.start();
         System.out.println("Mock IIS listening on http://localhost:" + port + "/  (Server: Microsoft-IIS/10.0)");
+        return s;
+    }
+
+    public static void main(String[] args) throws Exception {
+        int port = 8081;
+        if (args.length > 0) { try { port = Integer.parseInt(args[0]); } catch (Exception ignored) {} }
+        startServer(port);
     }
 }

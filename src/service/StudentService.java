@@ -5,6 +5,11 @@ public class StudentService {
     private final List<Student> list = new ArrayList<>();
     private int nextId = 1;
     public StudentService() {
+        reset();
+    }
+    public synchronized void reset() {
+        list.clear();
+        nextId = 1;
         add("An", 20);
         add("Binh", 21);
     }

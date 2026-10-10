@@ -20,12 +20,22 @@ public class HttpClientErrorDemo {
         } catch (HttpTimeoutException e) {
             System.out.println("Request bi timeout: " + e.getMessage());
         } catch (ConnectException e) {
-            System.out.println("Loi ket noi: " + e.getMessage());
+            String msg = (e.getMessage() != null && !e.getMessage().isBlank()) ? e.getMessage() : "Connection refused";
+            System.out.println("Loi ket noi: " + msg);
         } catch (InterruptedException e) {
             System.out.println("Bi gian doan: " + e.getMessage());
             Thread.currentThread().interrupt();
         } catch (Exception e) {
-            System.out.println("Loi: " + e.getClass().getSimpleName() + ": " + e.getMessage());
+            Throwable cause = e;
+            while (cause != null && !(cause instanceof ConnectException)) {
+                cause = cause.getCause();
+            }
+            if (cause instanceof ConnectException) {
+                String msg = (cause.getMessage() != null && !cause.getMessage().isBlank()) ? cause.getMessage() : "Connection refused";
+                System.out.println("Loi ket noi: " + msg);
+            } else {
+                System.out.println("Loi: " + e.getClass().getSimpleName() + ": " + e.getMessage());
+            }
         }
     }
 }
