@@ -204,6 +204,116 @@ public class CrossTestClient {
         testRequest("80. GET /fetch?url=...&FORMAT=JSON (Case-insensitive format parameter)", "GET", base + "/fetch?url=" + base + "/api/time&FORMAT=JSON", null, null, 200, "application/json", "\"status\":200");
         testRequest("81. GET /fetch?url=.../api/students?id=3&format=xml (Target URL format=xml query preserved)", "GET", base + "/fetch?url=" + base + "/api/students?id=3&format=xml", null, null, 200, "application/json", "Cuong");
         testBaseTagInComment("82. Base tag injection ignores <head> inside HTML comments");
+
+        System.out.println("\n--- 9. WEB CLIENT (client.WebFetchService) ---");
+        try {
+            testWebFetchService(base);
+        } catch (Exception e) {
+            System.err.println("[FAIL] 83-94. WebFetchService -> Exception: " + e);
+            fail++;
+        }
+    }
+
+    private static void check(String testName, boolean ok, String detail) {
+        if (ok) {
+            System.out.println("[PASS] " + testName);
+            pass++;
+        } else {
+            System.err.println("[FAIL] " + testName + " -> " + detail);
+            fail++;
+        }
+    }
+
+    private static void testWebFetchService(String base) throws Exception {
+        WebFetchService svc = new WebFetchService(base);
+        java.nio.charset.Charset utf8 = java.nio.charset.StandardCharsets.UTF_8;
+
+        String built = svc.buildRequestUrl("http://a.com/x?y=1&z=2", false);
+        String builtJson = svc.buildRequestUrl("http://a.com/", true);
+        check("83. buildRequestUrl ma hoa URL dich va them format=json",
+            built.equals(base + "/fetch?url=http%3A%2F%2Fa.com%2Fx%3Fy%3D1%26z%3D2")
+                && builtJson.equals(base + "/fetch?format=json&url=http%3A%2F%2Fa.com%2F"),
+            built + " | " + builtJson);
+
+        String nasty = "<p class=\"a\">C:\\dir\nline2\ttab\r\n\u2028 ctrl\u0001 d\u0111\u1ea1</p>";
+        String json = server.WebFetchHandler.buildJsonMetadata("http://a.com/", 200, "text/html; charset=utf-8", 123, nasty);
+        java.util.Map<String, String> parsed = WebFetchService.parseFlatJson(json);
+        check("84. parseFlatJson doc nguyen ven JSON do WebFetchHandler sinh ra (ky tu dac biet)",
+            nasty.equals(parsed.get("body")) && "200".equals(parsed.get("status"))
+                && "123".equals(parsed.get("contentLength")) && "http://a.com/".equals(parsed.get("targetUrl"))
+                && "text/html; charset=utf-8".equals(parsed.get("contentType")),
+            String.valueOf(parsed));
+
+        WebFetchService.Result raw = svc.fetch(base + "/index.html", false);
+        check("85. fetch raw /index.html -> 200, HTML, co <base> do server chen, contentLength dung",
+            raw.ok() && raw.status() == 200 && !raw.jsonMode() && WebFetchService.isHtml(raw.contentType())
+                && raw.body().contains("<head><base href=\"" + base + "/index.html\">")
+                && raw.rawResponse().equals(raw.body())
+                && raw.contentLength() == raw.body().getBytes(utf8).length,
+            raw.toString());
+
+        WebFetchService.Result js = svc.fetch(base + "/index.html", true);
+        check("86. fetch json /index.html -> tach dung metadata, body/contentLength trung che do raw",
+            js.ok() && js.jsonMode() && js.status() == 200 && js.rawResponse().startsWith("{\"targetUrl\":")
+                && js.body().equals(raw.body()) && js.contentLength() == raw.contentLength()
+                && !js.rawResponse().equals(js.body()),
+            js.toString());
+
+        WebFetchService.Result ftp = svc.fetch("ftp://speedtest.tele2.net", false);
+        check("87. fetch ftp:// (raw) -> server tu choi 400, client hien thong bao cua server",
+            ftp.ok() && ftp.status() == 400 && ftp.body().contains("unsupported scheme"), ftp.toString());
+
+        WebFetchService.Result ftpJson = svc.fetch("ftp://speedtest.tele2.net", true);
+        check("88. fetch ftp:// (json) -> 400 la text/plain, khong bi coi la loi parse JSON",
+            ftpJson.ok() && ftpJson.status() == 400 && ftpJson.body().contains("unsupported scheme")
+                && ftpJson.body().equals(ftpJson.rawResponse()),
+            ftpJson.toString());
+
+        WebFetchService.Result blank = svc.fetch("   ", false);
+        check("89. fetch URL rong -> loi phia client, khong goi mang",
+            !blank.ok() && blank.status() == -1 && blank.error().contains("trong"), blank.toString());
+
+        WebFetchService.Result bad = svc.fetch("http://localhost:59999/", false);
+        WebFetchService.Result badJson = svc.fetch("http://localhost:59999/", true);
+        check("90. fetch trang dich khong ton tai -> server tra 502 (raw va json)",
+            bad.ok() && bad.status() == 502 && bad.body().contains("502 Bad Gateway")
+                && badJson.ok() && badJson.status() == 502 && badJson.rawResponse().startsWith("{")
+                && badJson.body().contains("502 Bad Gateway"),
+            bad + " | " + badJson);
+
+        WebFetchService.Result down = new WebFetchService("http://localhost:59998").fetch("http://localhost:8081/", false);
+        check("91. WebFetch server tat -> Result.error ro rang (khong nem exception)",
+            !down.ok() && down.status() == -1 && down.error().contains("Khong ket noi"), down.toString());
+
+        WebFetchService.Result png = svc.fetch(base + "/sample.png", false);
+        long pngSize = java.nio.file.Files.size(java.nio.file.Paths.get("wwwroot", "sample.png"));
+        check("92. fetch anh PNG (raw) -> placeholder nhi phan, contentLength = so byte that",
+            png.ok() && png.status() == 200 && png.contentType().contains("image/png")
+                && png.body().contains("nhi phan") && png.contentLength() == pngSize,
+            png.toString());
+
+        WebFetchService.Result jsonOk = new WebFetchService.Result("u", true, 200, "text/html", 1, "b", "{\"a\":1}", null);
+        WebFetchService.Result htmlOk = new WebFetchService.Result("u", false, 200, "text/html; charset=utf-8", 1, "b", "b", null);
+        WebFetchService.Result cssOk = new WebFetchService.Result("u", false, 200, "text/css", 1, "b", "b", null);
+        WebFetchService.Result jsonErr = new WebFetchService.Result("u", true, 400, "text/plain", 5, "400 x", "400 x", null);
+        check("93. isHtml / isTextual / suggestFileName",
+            WebFetchService.isHtml("text/html; charset=utf-8") && !WebFetchService.isHtml("application/json")
+                && !WebFetchService.isHtml(null)
+                && WebFetchService.isTextual("application/json") && WebFetchService.isTextual("")
+                && !WebFetchService.isTextual("image/png")
+                && "response.json".equals(WebFetchService.suggestFileName(jsonOk))
+                && "source.html".equals(WebFetchService.suggestFileName(htmlOk))
+                && "source.txt".equals(WebFetchService.suggestFileName(cssOk))
+                && "source.txt".equals(WebFetchService.suggestFileName(jsonErr)),
+            "isHtml/isTextual/suggestFileName tra ket qua sai");
+
+        check("94. charsetOf uu tien header, roi <meta charset>, mac dinh UTF-8",
+            WebFetchService.charsetOf("text/html; charset=ISO-8859-1", null).equals(java.nio.charset.StandardCharsets.ISO_8859_1)
+                && WebFetchService.charsetOf("text/html", "<meta charset=\"windows-1252\">".getBytes(utf8))
+                    .equals(java.nio.charset.Charset.forName("windows-1252"))
+                && WebFetchService.charsetOf(null, null).equals(utf8)
+                && WebFetchService.charsetOf("text/html; charset=bogus-xyz", null).equals(utf8),
+            "charsetOf tra ket qua sai");
     }
 
     private static void testBaseTagInComment(String testName) {
