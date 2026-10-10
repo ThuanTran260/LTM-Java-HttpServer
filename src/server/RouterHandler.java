@@ -2,22 +2,28 @@ package server;
 import com.sun.net.httpserver.*;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import service.StudentService;
 import model.Student;
+
 public class RouterHandler implements HttpHandler {
     private static final StudentService SVC = new StudentService();
+    private static final DateTimeFormatter HHMMSS = DateTimeFormatter.ofPattern("HH:mm:ss");
+
     @Override
     public void handle(HttpExchange ex) throws IOException {
-        String method = ex.getRequestMethod();
+        // PATH lay tu getPath(), QUERY STRING lay tu getRawQuery() (giu nguyen dang %-encoded)
         String path = ex.getRequestURI().getPath();
+        String query = ex.getRequestURI().getRawQuery();
+        String method = ex.getRequestMethod();
         try {
-            // 1. Static /
-            if (method.equals("GET") && (path.equals("/") || path.equals("/style.css"))) {
+            // 1. Static file: moi GET khong thuoc /api va /iis deu thu phuc vu tu wwwroot/
+            if (method.equals("GET") && !path.startsWith("/api/") && !path.startsWith("/iis/")) {
                 if (StaticFileHandler.tryServe(ex, path)) return;
-                // fallback neu chua co wwwroot
                 if (path.equals("/")) {
                     send(ex, 200, "text/html; charset=utf-8", "<h1>HTTP Server dang hoat dong!</h1><p><a href='/api/time'>/api/time</a> | <a href='/api/students'>/api/students</a> | <a href='/iis/'>/iis/</a></p>");
                     return;
@@ -25,7 +31,7 @@ public class RouterHandler implements HttpHandler {
             }
             // 2. GET /api/time
             if (method.equals("GET") && path.equals("/api/time")) {
-                String json = "{\"time\":\"" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")) + "\"}";
+                String json = "{\"time\":\"" + LocalDateTime.now().format(HHMMSS) + "\"}";
                 send(ex, 200, "application/json", json);
                 return;
             }
@@ -44,9 +50,14 @@ public class RouterHandler implements HttpHandler {
                 send(ex, 201, "application/json", "{\"message\":\"Da nhan du lieu\"}");
                 return;
             }
-            // 4. CRUD /api/students
+            // 4. CRUD /api/students (ho tro query string de loc: ?name= &age= )
             if (path.equals("/api/students")) {
-                if (method.equals("GET")) { send(ex, 200, "application/json", SVC.listJson()); return; }
+                if (method.equals("GET")) {
+                    String nameFilter = param(query, "name");
+                    String ageFilter = param(query, "age");
+                    send(ex, 200, "application/json", filterJson(nameFilter, ageFilter));
+                    return;
+                }
                 if (method.equals("POST")) {
                     String ct = ex.getRequestHeaders().getFirst("Content-Type");
                     if (ct == null || !ct.startsWith("application/json")) {
@@ -92,6 +103,39 @@ public class RouterHandler implements HttpHandler {
             catch (Exception ignored) {}
         }
     }
+
+    // Loc danh sach sinh vien theo tham so tren Query String
+    private String filterJson(String nameFilter, String ageFilter) {
+        List<Student> all = SVC.list();
+        StringBuilder sb = new StringBuilder("[");
+        int count = 0;
+        for (Student s : all) {
+            if (nameFilter != null && (s.name == null || !s.name.toLowerCase().contains(nameFilter.toLowerCase()))) continue;
+            if (ageFilter != null) {
+                try { if (s.age != Integer.parseInt(ageFilter)) continue; }
+                catch (NumberFormatException e) { continue; }
+            }
+            if (count > 0) sb.append(",");
+            sb.append(s.toJson());
+            count++;
+        }
+        return sb.append("]").toString();
+    }
+
+    // Lay 1 tham so tu query string "name=An&age=20", tu giai ma UTF-8
+    static String param(String query, String key) {
+        if (query == null || query.isEmpty()) return null;
+        for (String pair : query.split("&")) {
+            int eq = pair.indexOf('=');
+            if (eq < 0) continue;
+            if (pair.substring(0, eq).equals(key)) {
+                try { return URLDecoder.decode(pair.substring(eq + 1), StandardCharsets.UTF_8); }
+                catch (Exception e) { return pair.substring(eq + 1); }
+            }
+        }
+        return null;
+    }
+
     public static void send(HttpExchange ex, int status, String contentType, String body) throws IOException {
         byte[] data = body.getBytes(StandardCharsets.UTF_8);
         ex.getResponseHeaders().set("Content-Type", contentType);
@@ -99,6 +143,7 @@ public class RouterHandler implements HttpHandler {
         try (OutputStream os = ex.getResponseBody()) { os.write(data); }
         ServerLogger.log(ex.getRequestMethod(), ex.getRequestURI().getPath(), status, data.length, ex.getRemoteAddress().toString());
     }
+
     static String parseJsonString(String json, String key) {
         String k = "\"" + key + "\"";
         int i = json.indexOf(k);
@@ -111,6 +156,7 @@ public class RouterHandler implements HttpHandler {
         if (q2 < 0) return null;
         return json.substring(q1 + 1, q2);
     }
+
     static Integer parseJsonInt(String json, String key) {
         String k = "\"" + key + "\"";
         int i = json.indexOf(k);

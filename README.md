@@ -34,6 +34,21 @@ Nếu giảng viên yêu cầu kiểm tra từng tính năng riêng:
 - **`run_client_error.bat`**: Demo phân biệt giữa **HTTP Error** (mã lỗi 4xx/5xx có phản hồi từ server) và **Lỗi kết nối/Timeout** (không có phản hồi từ server).
 - **`run_cross_test.bat`**: Chạy toàn bộ 6 bài kiểm thử ma trận chéo.
 
+### Các API có sẵn trên `http://localhost:8080/`
+
+| Đường dẫn | Method | Kết quả |
+|:---|:---|:---|
+| `/` hoặc `/index.html` | GET | Trang chủ từ `wwwroot/` (200 `text/html`) |
+| `/style.css`, `/about.html`, `*.png`, ... | GET | Bất kỳ file tĩnh nào trong `wwwroot/` (Content-Type tự theo đuôi file) |
+| `/api/time` | GET | `{"time":"HH:mm:ss"}` |
+| `/api/students` | GET | Danh sách sinh viên (hỗ trợ lọc `?name=` & `age=`) |
+| `/api/students/{id}` | GET | Một sinh viên theo ID |
+| `/api/students` | POST | Thêm sinh viên → `201 Created` |
+| `/api/students/{id}` | PUT | Cập nhật sinh viên theo ID |
+| `/api/students/{id}` | DELETE | Xóa sinh viên theo ID |
+| `/api/message` | POST | Nhận JSON, trả `201`; sai `Content-Type` → `415` |
+| `/iis/` | GET | Proxy sang IIS thật `:80`, dự phòng Mock `:8081` |
+
 ---
 
 ## 🛑 4. Quản Lý IIS Thật Của Windows (w3svc) Bằng Lệnh
@@ -73,12 +88,12 @@ Nhấp đúp vào file:
 ```text
 Http server/
 ├── src/
-│   ├── server/       # SimpleHttpServer, RouterHandler, ProxyHandler, StaticFileHandler, Logger
-│   ├── service/      # StudentService (CRUD sinh viên dạng JSON)
+│   ├── server/       # SimpleHttpServer, RouterHandler, ProxyHandler, StaticFileHandler, ServerLogger
+│   ├── service/      # StudentService (CRUD sinh viên dạng JSON, hỗ trợ lọc theo name/age)
 │   ├── model/        # Student POJO
 │   ├── client/       # HttpClientGetDemo, HttpClientPostDemo, HttpClientErrorDemo, CrossTestClient
 │   └── mock/         # MockIisServer (dự phòng cổng 8081 nếu máy không có IIS thật)
-├── wwwroot/          # index.html, style.css (tài nguyên web tĩnh)
+├── wwwroot/          # index.html, style.css (+ mọi file tĩnh khác: html, css, png, json, txt)
 ├── out/              # Bytecode .class sau khi biên dịch
 └── *.bat             # Các file script chạy nhanh
 ```
