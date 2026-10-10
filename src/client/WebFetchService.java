@@ -106,8 +106,12 @@ public final class WebFetchService {
                 Map<String, String> m = parseFlatJson(rawJson);
                 int status = Integer.parseInt(m.get("status"));
                 long length = Long.parseLong(m.get("contentLength"));
-                return new Result(requestUrl, true, status, m.getOrDefault("contentType", ""), length,
-                    m.getOrDefault("body", ""), rawJson, null);
+                String parsedType = m.getOrDefault("contentType", "");
+                // Server json mode giai ma moi body thanh chuoi, nen body nhi phan phai thay bang placeholder
+                String parsedBody = isTextual(parsedType)
+                    ? m.getOrDefault("body", "")
+                    : binaryPlaceholder(parsedType, length);
+                return new Result(requestUrl, true, status, parsedType, length, parsedBody, rawJson, null);
             } catch (RuntimeException e) {
                 return error(requestUrl, true, "Phan hoi JSON cua server khong hop le: " + e.getMessage());
             }
@@ -117,13 +121,17 @@ public final class WebFetchService {
         if (isTextual(contentType)) {
             body = new String(bytes, charsetOf(contentType, bytes));
         } else {
-            body = "[Noi dung nhi phan: " + contentType + ", " + bytes.length + " bytes - khong hien thi duoc dang text]";
+            body = binaryPlaceholder(contentType, bytes.length);
         }
         return new Result(requestUrl, json, httpStatus, contentType, bytes.length, body, body, null);
     }
 
     private static Result error(String requestUrl, boolean json, String message) {
         return new Result(requestUrl, json, -1, "", 0, "", "", message);
+    }
+
+    private static String binaryPlaceholder(String contentType, long length) {
+        return "[Noi dung nhi phan: " + contentType + ", " + length + " bytes - khong hien thi duoc dang text]";
     }
 
     public static boolean isHtml(String contentType) {

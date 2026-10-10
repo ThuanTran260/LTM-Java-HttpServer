@@ -292,7 +292,14 @@ public class CrossTestClient {
                 && png.body().contains("nhi phan") && png.contentLength() == pngSize,
             png.toString());
 
-        WebFetchService.Result jsonOk = new WebFetchService.Result("u", true, 200, "text/html", 1, "b", "{\"a\":1}", null);
+        WebFetchService.Result pngJson = svc.fetch(base + "/sample.png", true);
+        check("92b. fetch anh PNG (json) -> body la placeholder nhi phan, contentLength = so byte that, rawResponse la JSON",
+            pngJson.ok() && pngJson.jsonMode() && pngJson.status() == 200 && pngJson.contentType().contains("image/png")
+                && pngJson.body().contains("nhi phan") && pngJson.contentLength() == pngSize
+                && pngJson.rawResponse().startsWith("{\"targetUrl\":"),
+            pngJson.toString());
+
+        WebFetchService.Result jsonOk =new WebFetchService.Result("u", true, 200, "text/html", 1, "b", "{\"a\":1}", null);
         WebFetchService.Result htmlOk = new WebFetchService.Result("u", false, 200, "text/html; charset=utf-8", 1, "b", "b", null);
         WebFetchService.Result cssOk = new WebFetchService.Result("u", false, 200, "text/css", 1, "b", "b", null);
         WebFetchService.Result jsonErr = new WebFetchService.Result("u", true, 400, "text/plain", 5, "400 x", "400 x", null);
