@@ -88,7 +88,7 @@ Nhấp đúp vào file:
 ```text
 Http server/
 ├── src/
-│   ├── server/       # SimpleHttpServer, RouterHandler, ProxyHandler, StaticFileHandler, ServerLogger
+│   ├── server/       # SimpleHttpServer, RouterHandler, ProxyHandler, StaticFileHandler, ServerLogger, SiteManager, SiteFileHandler, SitesApiHandler
 │   ├── service/      # StudentService (CRUD sinh viên dạng JSON, hỗ trợ lọc theo name/age)
 │   ├── model/        # Student POJO
 │   ├── client/       # HttpClientGetDemo, HttpClientPostDemo, HttpClientErrorDemo, CrossTestClient, WebFetchService, WebClientApp (Swing)
@@ -118,3 +118,23 @@ Http server/
 | Thanh trạng thái | Status, Content-Type, độ dài, chế độ raw/json; lỗi (ví dụ chưa bật server) hiện màu đỏ |
 
 Kiểm thử tự động: `java -cp out client.CrossTestClient` (mục 9 và 10 kiểm tra `WebFetchService` và `WebClientApp`).
+
+---
+
+## 🌐 8. Quản lý nhiều web (Sites)
+
+Java Server `:8080` có thể quản lý **nhiều web cùng lúc**, giống IIS Sites: mỗi web có **thư mục riêng** `sites/<tên>/` và chạy trên **cổng riêng**. Thêm / bật / tắt / xóa web **khi server đang chạy**; danh sách lưu trong `sites.json` nên khởi động lại vẫn còn (các web đã bật tự chạy lại).
+
+- **Trang quản trị:** mở **`http://localhost:8080/admin.html`** (chỉ dùng được từ máy local).
+- Thêm web `blog` ở cổng 9001 → mở `http://localhost:9001/`. Sửa nội dung web trong `sites/blog/` (file `index.html` mặc định được tạo sẵn).
+
+| API (chỉ từ máy local) | Kết quả |
+|:---|:---|
+| `GET /api/sites` | Danh sách web (tên, cổng, trạng thái, địa chỉ) |
+| `POST /api/sites` `{"name":"blog","port":9001}` | `201` — tạo thư mục và chạy web; `409` nếu trùng tên/cổng hoặc cổng đang bị dùng; `400` nếu sai tên (a-z, 0-9, `-`) hoặc cổng ngoài 1024–65535 |
+| `POST /api/sites/{tên}/start` · `/stop` | Bật / tắt web (cần header `Content-Type: application/json`) |
+| `DELETE /api/sites/{tên}` | Xóa khỏi danh sách (thư mục file được giữ lại) |
+
+Ví dụ: `curl -X POST http://localhost:8080/api/sites -H "Content-Type: application/json" -d "{\"name\":\"blog\",\"port\":9001}"`
+
+Kiểm thử tự động: `java -cp out client.CrossTestClient` (mục 11, test S1–S39).

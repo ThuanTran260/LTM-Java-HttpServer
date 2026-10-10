@@ -15,3 +15,8 @@ bin/
 Thumbs.db
 Desktop.ini
 .DS_Store
+
+# Web do nguoi dung them qua trang quan tri (SiteManager)
+sites/
+sites.json
+sites.json.tmp

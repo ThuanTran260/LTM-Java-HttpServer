@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><title>Quản lý nhiều web (Sites)</title>
+<style>
+body{font-family:system-ui,"Segoe UI",Arial,sans-serif;margin:24px;color:#1e293b}
+h1{margin-top:0}
+form{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+input{padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:14px}
+button{padding:8px 14px;border:none;border-radius:6px;background:#0a6cff;color:#fff;font-weight:bold;cursor:pointer;margin-right:6px}
+button.secondary{background:#64748b}
+button.danger{background:#b01e1e}
+table{border-collapse:collapse;width:100%;margin-top:12px}
+th,td{border:1px solid #d0d7de;padding:8px 10px;text-align:left}
+th{background:#f1f5f9}
+.ok{color:#1b6e2e;font-weight:600}
+.off{color:#b01e1e;font-weight:600}
+#msg{margin:10px 0;min-height:1.4em}
+.good{color:#1b6e2e}
+.err{color:#b01e1e}
+code{background:#f1f5f9;padding:1px 5px;border-radius:4px}
+</style></head>
+<body>
+<h1>Quản lý nhiều web (Sites)</h1>
+<p>Mỗi web chạy trên <b>một cổng riêng</b> và phục vụ thư mục <code>sites/&lt;tên&gt;/</code>. Trang này chỉ dùng được từ máy local. <a href="/">Về trang chủ</a></p>
+
+<form id="add-form">
+<input id="name" placeholder="tên-site (a-z, 0-9, -)" pattern="[a-z0-9][a-z0-9-]{0,31}" required>
+<input id="port" type="number" min="1024" max="65535" placeholder="cổng, ví dụ 9001" required>
+<button type="submit">Thêm web</button>
+</form>
+<div id="msg"></div>
+
+<table>
+<thead><tr><th>Tên</th><th>Cổng</th><th>Trạng thái</th><th>Địa chỉ</th><th>Thao tác</th></tr></thead>
+<tbody id="rows"></tbody>
+</table>
+
+<script>
+const msg = document.getElementById('msg');
+
+function say(text, ok) {
+  msg.textContent = text;
+  msg.className = ok ? 'good' : 'err';
+}
+
+async function api(method, path, body) {
+  const res = await fetch(path, {
+    method,
+    headers: {'Content-Type': 'application/json'},
+    body: body === undefined ? undefined : JSON.stringify(body)
+  });
+  const text = await res.text();
+  if (!res.ok) throw new Error(text || ('HTTP ' + res.status));
+  return text ? JSON.parse(text) : null;
+}
+
+function cell(tr, text) {
+  const td = document.createElement('td');
+  td.textContent = text;
+  tr.appendChild(td);
+  return td;
+}
+
+function button(label, cls, handler) {
+  const b = document.createElement('button');
+  b.textContent = label;
+  if (cls) b.className = cls;
+  b.addEventListener('click', handler);
+  return b;
+}
+
+async function act(label, fn) {
+  try {
+    await fn();
+    say(label + ' thành công', true);
+  } catch (e) {
+    say(e.message, false);
+  }
+  await refresh();
+}
+
+async function refresh() {
+  const rows = document.getElementById('rows');
+  let sites;
+  try {
+    sites = await api('GET', '/api/sites');
+  } catch (e) {
+    say('Không tải được danh sách: ' + e.message, false);
+    return;
+  }
+  rows.replaceChildren();
+  if (sites.length === 0) {
+    const tr = document.createElement('tr');
+    cell(tr, 'Chưa có web nào. Hãy thêm web đầu tiên ở phía trên.').colSpan = 5;
+    rows.appendChild(tr);
+    return;
+  }
+  for (const s of sites) {
+    const base = '/api/sites/' + encodeURIComponent(s.name);
+    const tr = document.createElement('tr');
+    cell(tr, s.name);
+    cell(tr, String(s.port));
+    cell(tr, s.running ? 'Đang chạy' : 'Đã tắt').className = s.running ? 'ok' : 'off';
+    const link = cell(tr, '');
+    const a = document.createElement('a');
+    a.href = s.url;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.textContent = s.url;
+    link.appendChild(a);
+    const actions = cell(tr, '');
+    actions.appendChild(s.running
+      ? button('Tắt', 'secondary', () => act('Tắt ' + s.name, () => api('POST', base + '/stop', {})))
+      : button('Bật', '', () => act('Bật ' + s.name, () => api('POST', base + '/start', {}))));
+    actions.appendChild(button('Xóa', 'danger', () => {
+      if (confirm('Xóa web "' + s.name + '" khỏi danh sách? (thư mục file được giữ lại)')) {
+        act('Xóa ' + s.name, () => api('DELETE', base));
+      }
+    }));
+    rows.appendChild(tr);
+  }
+}
+
+document.getElementById('add-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const name = document.getElementById('name').value.trim();
+  const port = parseInt(document.getElementById('port').value, 10);
+  await act('Thêm ' + name, () => api('POST', '/api/sites', {name, port}));
+});
+
+refresh();
+</script>
+</body></html>

@@ -402,6 +402,7 @@ public class CrossTestClient {
     private static void testMultiSite(String base) throws Exception {
         testSiteManager();
         testSitesApi(base);
+        testAdminPage(base);
     }
 
     private static int freePort() throws java.io.IOException {
@@ -590,6 +591,11 @@ public class CrossTestClient {
             httpDeleteQuietly(siteApi);
             deleteTree(java.nio.file.Paths.get("sites", name));
         }
+    }
+
+    private static void testAdminPage(String base) {
+        testRequest("S38. GET /admin.html -> trang quan tri goi /api/sites", "GET", base + "/admin.html", null, null, 200, "text/html", "/api/sites");
+        testRequest("S39. GET /index.html -> co link toi trang quan tri", "GET", base + "/index.html", null, null, 200, "text/html", "/admin.html");
     }
 
     private static void testBaseTagInComment(String testName) {
