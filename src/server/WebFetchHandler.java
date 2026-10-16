@@ -22,7 +22,7 @@ import java.util.zip.InflaterInputStream;
  * Web Fetcher / Proxy Handler:
  * - GET /fetch?url=<target_url> & GET /api/fetch?url=...
  * - Chi chap nhan scheme http:// va https:// (tu choi file://, ftp://, javascript:, ...) -> 400 Bad Request
- * - Cho phep fetch ca domain internet va localhost (IIS :80/:8081)
+ * - Cho phep fetch ca domain internet va localhost (IIS :80 hoac website Java dang chay)
  * - Mac dinh tra ve Raw content (HTML/text/anh) voi Content-Type goc
  * - Tu dong chen the <base href="TARGET_URL"> vao <head> neu noi dung la HTML (text/html)
  * - format=json tra ve JSON metadata: targetUrl, status, contentType, contentLength, body

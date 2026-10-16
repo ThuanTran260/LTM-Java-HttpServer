@@ -49,7 +49,7 @@ public class RouterHandler implements HttpHandler {
 
             // Fallback neu wwwroot/index.html khong ton tai
             if (method.equals("GET") && path.equals("/")) {
-                send(ex, 200, "text/html; charset=utf-8", "<h1>HTTP Server dang hoat dong!</h1><p><a href='/api/time'>/api/time</a> | <a href='/api/students'>/api/students</a> | <a href='/iis/'>/iis/</a> | <a href='/fetch?url=http://localhost:8081/'>/fetch</a></p>");
+                send(ex, 200, "text/html; charset=utf-8", "<h1>HTTP Server dang hoat dong!</h1><p><a href='/api/time'>/api/time</a> | <a href='/api/students'>/api/students</a> | <a href='/iis/'>/iis/</a> | <a href='/fetch?url=http://localhost/'>/fetch IIS</a></p>");
                 return;
             }
 

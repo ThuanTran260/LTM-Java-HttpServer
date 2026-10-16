@@ -25,7 +25,7 @@ public class SimpleHttpServer {
         server.start();
         System.out.println("HTTP Server started.");
         System.out.println("Listening on http://localhost:" + port + "/");
-        System.out.println("Proxy IIS: http://localhost:" + port + "/iis/  -> 80 that, fallback 8081 mock");
+        System.out.println("Proxy IIS: http://localhost:" + port + "/iis/  -> IIS that :80");
         System.out.println("Web Fetcher: http://localhost:" + port + "/fetch?url=...  (format=json)");
         System.out.println("Quan ly nhieu web: http://localhost:" + port + "/admin.html  (API: /api/sites)");
         return server;

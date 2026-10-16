@@ -59,7 +59,7 @@ Nếu giảng viên yêu cầu kiểm tra từng tính năng riêng:
 | `/api/students/{id}` | PUT | Cập nhật sinh viên theo ID |
 | `/api/students/{id}` | DELETE | Xóa sinh viên theo ID |
 | `/api/message` | POST | Nhận JSON, trả `201`; sai `Content-Type` → `415` |
-| `/iis/` | GET | Proxy sang IIS thật `:80`, dự phòng Mock `:8081` |
+| `/iis/` | GET | Proxy sang IIS thật `:80`; trả `502` nếu không kết nối được IIS |
 
 ---
 
@@ -104,8 +104,7 @@ Http server/
 │   │   └── ftp/      # SimpleFtpServer, FtpSessionHandler, FtpUserAuth, FtpPathSandbox (RFC 959)
 │   ├── service/      # StudentService (CRUD sinh viên dạng JSON, hỗ trợ lọc theo name/age)
 │   ├── model/        # Student POJO
-│   ├── client/       # CrossTestClient, FtpClient, FtpClientApp (Swing GUI), CrossTestFtpClient...
-│   └── mock/         # MockIisServer (dự phòng cổng 8081 nếu máy không có IIS thật)
+│   └── client/       # CrossTestClient, FtpClient, FtpClientApp (Swing GUI), CrossTestFtpClient...
 ├── wwwroot/          # index.html, style.css (+ mọi file tĩnh web HTTP)
 ├── sites/            # Thư mục chứa các website độc lập (Multi-site)
 ├── ftp_workspace/    # Thư mục gốc sandbox của FTP Server (server_root/)
@@ -116,6 +115,10 @@ Http server/
 ---
 
 ## 🖥️ 7. Web Client (Swing) — xem source code qua WebFetch
+
+Project không còn Mock IIS ở cổng `8081`. `/iis/` chỉ chuyển tiếp đến IIS thật ở cổng `80`. Fetch vẫn lấy nội dung từ URL được nhập, ví dụ `http://localhost/` khi IIS đã bật hoặc `http://localhost:9001/demo.html` khi website Java tương ứng đang chạy. URL đích chưa chạy sẽ trả `502`; Fetch không tự bật web server đích.
+
+Các test Fetch tự tạo upstream fixture trên cổng loopback ngẫu nhiên rồi đóng sau khi chạy. Test IIS thật được bỏ qua và ghi `[SKIP]` khi cổng `80` chưa hoạt động; trường hợp proxy không kết nối được IIS vẫn được kiểm tra trả `502`.
 
 Ứng dụng desktop Java thuần (Swing) đóng vai **client**: gọi `GET http://localhost:8080/fetch?url=<URL>` của Java Server rồi hiển thị **mã nguồn** trang web nhận về.
 

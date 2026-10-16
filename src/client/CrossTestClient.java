@@ -10,7 +10,6 @@ import server.RouterHandler;
 import server.SimpleHttpServer;
 import server.SiteManager;
 import server.SitesApiHandler;
-import mock.MockIisServer;
 
 /**
  * Integration Test Runner tu dong xac thuc toan bo ma tran request:
@@ -18,7 +17,7 @@ import mock.MockIisServer;
  * - CRUD /api/students (GET, POST, PUT, DELETE, query filtering ?id=, ?name=, ?age=)
  * - Static files (HTML, CSS, TXT, PNG) va chan Directory Traversal
  * - Route khong ton tai (404 text/plain)
- * - Proxy /iis/ va kiem tra IIS / Mock IIS
+ * - Proxy /iis/ va kiem tra IIS that
  * - Demo Clients (HttpClientGetDemo, HttpClientPostDemo, HttpClientErrorDemo)
  * - Web Fetcher / Proxy: GET /fetch & GET /api/fetch (format=json, base tag injection, safety validation)
  * - Web Client: client.WebFetchService (logic) va client.WebClientApp (Swing, smoke test khong hien cua so)
@@ -26,10 +25,12 @@ import mock.MockIisServer;
  * Co kha nang tu dong khoi dong / goi den Server neu chua chay.
  */
 public class CrossTestClient {
+    private static final int HTTP_PORT = Integer.getInteger("test.http.port", 8080);
     private static int pass = 0;
     private static int fail = 0;
     private static HttpServer autoJavaServer = null;
-    private static HttpServer autoMockServer = null;
+    private static HttpServer fetchFixture = null;
+    private static String fixtureTarget;
 
     public static void main(String[] args) {
         try {
@@ -54,19 +55,15 @@ public class CrossTestClient {
     }
 
     private static void ensureServersRunning() throws Exception {
-        // 1. Kiem tra Mock IIS (:8081)
-        boolean hasMock = probe("http://localhost:8081/");
-        if (!hasMock) {
-            System.out.println("[TEST RUNNER] Mock IIS chua chay, tu dong khoi dong MockIisServer tren cong 8081...");
-            autoMockServer = MockIisServer.startServer(8081);
-            Thread.sleep(200);
-        }
+        // Private upstream fixture: ephemeral loopback port, only alive during tests.
+        fetchFixture = startFetchFixture();
+        fixtureTarget = "http://127.0.0.1:" + fetchFixture.getAddress().getPort();
 
-        // 2. Kiem tra Java Server (:8080)
-        boolean hasJava = probe("http://localhost:8080/");
+        // Kiem tra Java Server tren cong duoc cau hinh.
+        boolean hasJava = probe("http://localhost:" + HTTP_PORT + "/");
         if (!hasJava) {
-            System.out.println("[TEST RUNNER] Java Server chua chay, tu dong khoi dong SimpleHttpServer tren cong 8080...");
-            autoJavaServer = SimpleHttpServer.startServer(8080);
+            System.out.println("[TEST RUNNER] Khoi dong SimpleHttpServer tren cong " + HTTP_PORT);
+            autoJavaServer = SimpleHttpServer.startServer(HTTP_PORT);
             Thread.sleep(200);
         }
 
@@ -79,10 +76,22 @@ public class CrossTestClient {
             System.out.println("[TEST RUNNER] Dung SimpleHttpServer tu khoi dong...");
             try { autoJavaServer.stop(0); } catch (Exception ignored) {}
         }
-        if (autoMockServer != null) {
-            System.out.println("[TEST RUNNER] Dung MockIisServer tu khoi dong...");
-            try { autoMockServer.stop(0); } catch (Exception ignored) {}
+        if (fetchFixture != null) {
+            fetchFixture.stop(0);
         }
+    }
+
+    private static HttpServer startFetchFixture() throws Exception {
+        HttpServer fixture = HttpServer.create(new java.net.InetSocketAddress("127.0.0.1", 0), 0);
+        fixture.createContext("/", ex -> {
+            byte[] body = "<!doctype html><html><head><title>Fetch fixture</title></head><body>FETCH_FIXTURE</body></html>"
+                .getBytes(java.nio.charset.StandardCharsets.UTF_8);
+            ex.getResponseHeaders().set("Content-Type", "text/html; charset=utf-8");
+            ex.sendResponseHeaders(200, body.length);
+            try (var out = ex.getResponseBody()) { out.write(body); }
+        });
+        fixture.start();
+        return fixture;
     }
 
     private static boolean probe(String url) {
@@ -97,8 +106,8 @@ public class CrossTestClient {
     }
 
     private static void runTests() {
-        String base = "http://localhost:8080";
-        String iisTarget = probe("http://localhost:80/") ? "http://localhost:80" : "http://localhost:8081";
+        String base = "http://localhost:" + HTTP_PORT;
+        String fetchTarget = fixtureTarget;
 
         System.out.println("\n--- 1. BASIC ROUTES & SLIDE EXAMPLES ---");
         testRequest("1. GET / (Trang chu HTML)", "GET", base + "/", null, null, 200, "text/html", null);
@@ -132,16 +141,15 @@ public class CrossTestClient {
         testRequest("25. GET /abc (Route khong hop le -> 404 text/plain)", "GET", base + "/abc", null, null, 404, "text/plain", "404 Not Found");
 
         System.out.println("\n--- 4. PROXY & IIS INTEGRATION ---");
-        testRequest("26. GET /iis/ (Proxy sang IIS/Mock IIS -> 200 & Server Header)", "GET", base + "/iis/", null, null, 200, "text/html", null, "Microsoft-IIS");
-        testRequest("27. GET / (Truc tiep IIS / Mock IIS " + iisTarget + ")", "GET", iisTarget + "/", null, null, 200, "text/html", null);
-        try {
-            HttpServer testMock = MockIisServer.startServer(8089);
-            testRequest("27b. Mock IIS doc lap (:8089 Server Header)", "GET", "http://localhost:8089/", null, null, 200, "text/html", "IIS Windows Server", "Microsoft-IIS/10.0");
-            testMock.stop(0);
-        } catch (Exception e) {
-            System.err.println("[FAIL] 27b. Mock IIS doc lap: " + e.getMessage());
-            fail++;
+        if (probe("http://localhost:80/")) {
+            testRequest("26. GET /iis/ (Proxy sang IIS that)", "GET", base + "/iis/", null, null, 200, "text/html", null);
+            testRequest("27. GET / (IIS that :80)", "GET", "http://localhost:80/", null, null, 200, "text/html", null);
+        } else {
+            testRequest("26. GET /iis/ (IIS that chua bat -> 502)", "GET", base + "/iis/", null, null, 502, "text/plain", "IIS :80");
+            System.out.println("[SKIP] 27. IIS that :80 chua bat; khong khoi dong server gia lap.");
         }
+        testRequest("27b. Upstream fixture tren cong tam", "GET", fixtureTarget + "/", null, null, 200, "text/html", "FETCH_FIXTURE");
+        testRequest("27c. Homepage huong dan fetch IIS that", "GET", base + "/index.html", null, null, 200, "text/html", "placeholder=\"https://example.com hoac http://localhost/\"");
 
         System.out.println("\n--- 5. CLIENT DEMO CODE EXECUTION ---");
         testClientDemo("28. HttpClientGetDemo execution", "Status: 200", () -> HttpClientGetDemo.main(new String[]{base + "/api/time"}));
@@ -181,26 +189,26 @@ public class CrossTestClient {
         testEmptyStaticFile("56. Empty static file (0 bytes without chunked transfer)", base);
 
         System.out.println("\n--- 8. WEB FETCHER / PROXY (/fetch & /api/fetch) ---");
-        testRequest("57. GET /fetch?url=... (Raw HTML fetch tu Mock IIS)", "GET", base + "/fetch?url=" + iisTarget + "/", null, null, 200, "text/html", "IIS Windows");
-        testRequest("58. GET /fetch?url=... (Tu dong chen the <base> vao Mock IIS)", "GET", base + "/fetch?url=" + iisTarget + "/", null, null, 200, "text/html", "<base href=\"" + iisTarget + "/\">");
-        testRequest("59. GET /api/fetch?url=... (Route alias /api/fetch Raw HTML)", "GET", base + "/api/fetch?url=" + iisTarget + "/", null, null, 200, "text/html", "<base href=\"" + iisTarget + "/\">");
-        testRequest("60. GET /fetch?url=...&format=json (JSON metadata status & body)", "GET", base + "/fetch?url=" + iisTarget + "/&format=json", null, null, 200, "application/json", "\"status\":200");
-        testRequest("61. GET /api/fetch?url=...&format=json (Route alias /api/fetch format=json)", "GET", base + "/api/fetch?url=" + iisTarget + "/&format=json", null, null, 200, "application/json", "\"targetUrl\":\"" + iisTarget + "/\"");
+        testRequest("57. GET /fetch?url=... (Raw HTML fetch tu upstream fixture)", "GET", base + "/fetch?url=" + fetchTarget + "/", null, null, 200, "text/html", "FETCH_FIXTURE");
+        testRequest("58. GET /fetch?url=... (Tu dong chen the <base> vao upstream fixture)", "GET", base + "/fetch?url=" + fetchTarget + "/", null, null, 200, "text/html", "<base href=\"" + fetchTarget + "/\">");
+        testRequest("59. GET /api/fetch?url=... (Route alias /api/fetch Raw HTML)", "GET", base + "/api/fetch?url=" + fetchTarget + "/", null, null, 200, "text/html", "<base href=\"" + fetchTarget + "/\">");
+        testRequest("60. GET /fetch?url=...&format=json (JSON metadata status & body)", "GET", base + "/fetch?url=" + fetchTarget + "/&format=json", null, null, 200, "application/json", "\"status\":200");
+        testRequest("61. GET /api/fetch?url=...&format=json (Route alias /api/fetch format=json)", "GET", base + "/api/fetch?url=" + fetchTarget + "/&format=json", null, null, 200, "application/json", "\"targetUrl\":\"" + fetchTarget + "/\"");
         testRequest("62. GET /fetch?url=.../index.html (Chen <base> chinh xac vao trong <head>)", "GET", base + "/fetch?url=" + base + "/index.html", null, null, 200, "text/html", "<head><base href=\"" + base + "/index.html\">");
         testRequest("63. GET /fetch?url=.../api/time&format=json (Fetch noi bo API thoi gian qua format=json)", "GET", base + "/fetch?url=" + base + "/api/time&format=json", null, null, 200, "application/json", "time");
         testRequest("64. GET /fetch?url=.../style.css (Fetch asset tinh text/css giu nguyen raw)", "GET", base + "/fetch?url=" + base + "/style.css", null, null, 200, "text/css", "background");
-        testRequest("65. GET /fetch?url=http%3A%2F%2F... (Fetch URL duoc percent-encode)", "GET", base + "/fetch?url=http%3A%2F%2Flocalhost%3A8081%2F", null, null, 200, "text/html", "<base href=\"http://localhost:8081/\">");
+        testRequest("65. GET /fetch?url=http%3A%2F%2F... (Fetch URL duoc percent-encode)", "GET", base + "/fetch?url=" + java.net.URLEncoder.encode(fixtureTarget + "/", java.nio.charset.StandardCharsets.UTF_8), null, null, 200, "text/html", "<base href=\"" + fixtureTarget + "/\">");
         testRequest("66. GET /fetch?url=file:///C:/Windows/win.ini (Chan scheme file:// -> 400)", "GET", base + "/fetch?url=file:///C:/Windows/win.ini", null, null, 400, "text/plain", "400 Bad Request");
         testRequest("67. GET /fetch?url=ftp://speedtest.tele2.net (Chan scheme ftp:// -> 400)", "GET", base + "/fetch?url=ftp://speedtest.tele2.net", null, null, 400, "text/plain", "400 Bad Request");
         testRequest("68. GET /fetch?url=javascript:alert(1) (Chan scheme javascript: -> 400)", "GET", base + "/fetch?url=javascript:alert(1)", null, null, 400, "text/plain", "400 Bad Request");
         testRequest("69. GET /fetch?url=data:text/plain,hello (Chan scheme data: -> 400)", "GET", base + "/fetch?url=data:text/plain,hello", null, null, 400, "text/plain", "400 Bad Request");
         testRequest("70. GET /fetch (Thieu url query param -> 400)", "GET", base + "/fetch", null, null, 400, "text/plain", "400 Bad Request");
         testRequest("71. GET /fetch?url= (Url rong -> 400)", "GET", base + "/fetch?url=", null, null, 400, "text/plain", "400 Bad Request");
-        testRequest("72. POST /fetch?url=... (Method Not Allowed -> 405 Allow: GET)", "POST", base + "/fetch?url=" + iisTarget + "/", null, null, 405, "text/plain", "405", "Allow", "GET");
+        testRequest("72. POST /fetch?url=... (Method Not Allowed -> 405 Allow: GET)", "POST", base + "/fetch?url=" + fetchTarget + "/", null, null, 405, "text/plain", "405", "Allow", "GET");
         testRequest("73. GET /index.html (Giao dien UI chua form Web Fetcher)", "GET", base + "/index.html", null, null, 200, "text/html", "action=\"/fetch\"");
         testRequest("74. GET /fetch?url=http://localhost:59999/ (Cong khong ton tai -> 502 Bad Gateway)", "GET", base + "/fetch?url=http://localhost:59999/", null, null, 502, "text/plain", "502 Bad Gateway");
         testRequest("75. GET /fetch?url=http://localhost:59999/&format=json (Cong khong ton tai format=json -> 502 JSON)", "GET", base + "/fetch?url=http://localhost:59999/&format=json", null, null, 502, "application/json", "502 Bad Gateway");
-        testRequest("76. GET /fetch?url=...%3Fid%3D3&format=json (Fetch target URL co query param nested)", "GET", base + "/fetch?url=http%3A%2F%2Flocalhost%3A8080%2Fapi%2Fstudents%3Fid%3D3&format=json", null, null, 200, "application/json", "Cuong");
+        testRequest("76. GET /fetch?url=...%3Fid%3D3&format=json (Fetch target URL co query param nested)", "GET", base + "/fetch?url=" + java.net.URLEncoder.encode(base + "/api/students?id=3", java.nio.charset.StandardCharsets.UTF_8) + "&format=json", null, null, 200, "application/json", "Cuong");
         testRequest("77. GET /fetch?url=.../index.html%23heading (Strip URL fragment for upstream request)", "GET", base + "/fetch?url=" + base + "/index.html%23heading", null, null, 200, "text/html", "<base href=\"" + base + "/index.html#heading\">");
         testRequest("78. GET /fetch?url=.../api/students?id=3&format=json (Unencoded target query with fetcher format=json)", "GET", base + "/fetch?url=" + base + "/api/students?id=3&format=json", null, null, 200, "application/json", "Cuong");
         testRequest("79. GET /fetch?format=json&url=... (Parameter order format=json before url)", "GET", base + "/fetch?format=json&url=" + base + "/api/students?id=3", null, null, 200, "application/json", "Cuong");
@@ -295,7 +303,7 @@ public class CrossTestClient {
                 && badJson.body().contains("502 Bad Gateway"),
             bad + " | " + badJson);
 
-        WebFetchService.Result down = new WebFetchService("http://localhost:59998").fetch("http://localhost:8081/", false);
+        WebFetchService.Result down = new WebFetchService("http://localhost:59998").fetch(fixtureTarget + "/", false);
         check("91. WebFetch server tat -> Result.error ro rang (khong nem exception)",
             !down.ok() && down.status() == -1 && down.error().contains("Khong ket noi"), down.toString());
 

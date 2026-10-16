@@ -6,8 +6,8 @@
 <ul>
 <li><a href="/api/time">GET /api/time (JSON)</a></li>
 <li><a href="/api/students">GET /api/students (JSON)</a></li>
-<li><a href="/iis/">GET /iis/ (Proxy sang IIS :80 / Mock :8081)</a></li>
-<li><a href="/fetch?url=http://localhost:8081/">GET /fetch?url=http://localhost:8081/ (Web Fetcher / Proxy)</a></li>
+<li><a href="/iis/">GET /iis/ (Proxy sang IIS :80)</a></li>
+<li><a href="/fetch?url=http://localhost/">GET /fetch?url=http://localhost/ (Fetch IIS thật, cần bật IIS)</a></li>
 <li><a href="/admin.html">Quản lý nhiều web (Sites) - thêm / bật / tắt / xóa web chạy trên cổng riêng</a></li>
 </ul>
 
@@ -15,7 +15,7 @@
 <h2 style="margin-top:0;font-size:1.2rem;color:#1a3a8f">Web Fetcher / Proxy</h2>
 <p style="margin-bottom:12px;font-size:0.95rem;color:#475569">Nhập địa chỉ web (hỗ trợ <code>http://</code> và <code>https://</code>) để tải và hiển thị trang web:</p>
 <form action="/fetch" method="GET" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
-<input type="url" name="url" placeholder="https://example.com hoặc http://localhost:8081/" required style="flex:1;min-width:240px;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:14px">
+<input type="url" name="url" placeholder="https://example.com hoac http://localhost/" required style="flex:1;min-width:240px;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:14px">
 <select name="format" style="padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:14px;background:#fff">
 <option value="">Raw (HTML/Text/Ảnh)</option>
 <option value="json">JSON Metadata</option>

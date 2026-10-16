@@ -1,18 +1,14 @@
 @echo off
+setlocal
 cd /d "%~dp0"
 call compile.bat
 if errorlevel 1 exit /b 1
-echo [1/3] Start Mock IIS :8081 (fallback neu chua co IIS that :80)...
-start "MockIIS" java -cp out mock.MockIisServer 8081
-timeout /t 2 >nul
-echo [2/3] Start Java Server :8080 (virtual threads)...
-start "JavaServer" java -cp out server.SimpleHttpServer 8080
-timeout /t 2 >nul
-echo [3/3] Chay ma tran moc cheo...
+echo Running HTTP integration tests. Real IIS checks require IIS on port 80.
 java -cp out client.CrossTestClient
+set "testExit=%ERRORLEVEL%"
 echo.
-echo Firefox kiem tra tay:
-echo   http://localhost:8080/  (Java Server)
-echo   http://localhost:8080/iis/  (Proxy -^> IIS/Mock)
-echo   http://localhost:80/  (IIS that, neu co)
-pause
+echo Browser checks:
+echo   http://localhost:8080/       Java Server - run_server.bat
+echo   http://localhost:8080/iis/   Proxy to real IIS on port 80
+echo   http://localhost/            Real IIS, if enabled
+endlocal & exit /b %testExit%
