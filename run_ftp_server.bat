@@ -1,5 +1,5 @@
 @echo off
-setlocal
+setlocal DisableDelayedExpansion
 cd /d "%~dp0"
 
 if "%~1"=="--help" (
@@ -17,6 +17,8 @@ if "%~1"=="-h" (
     endlocal
     exit /b 0
 )
+
+if exist "%~dp0ftp.local.bat" call "%~dp0ftp.local.bat"
 
 call compile.bat
 if errorlevel 1 exit /b 1
