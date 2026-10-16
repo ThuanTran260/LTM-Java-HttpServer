@@ -1642,7 +1642,438 @@ public class CrossTestFilesClient {
 
     public static void runConcurrencyTests() {
         System.out.println("\n--- [GROUP: CONCURRENCY] Cross-Process Concurrency & OS Locks ---");
-        // To be populated in Task 7
+        try (ProcessFixture fixture = new ProcessFixture()) {
+            Path ws = fixture.createWorkspace();
+            Path root = ws.resolve("ftp_workspace/server_root");
+            Files.createDirectories(root);
+
+            Map<String, String> env = new HashMap<>();
+            env.put("FTP_ROOT", root.toString());
+            env.put("FTP_ADMIN_PASSWORD", "SharedPass_2026!");
+            env.put("WEB_FILES_ALLOW_GUEST", "true");
+
+            // Start BOTH HTTP and FTP servers on the SAME shared storage
+            ProcessFixture.ServerInstance http = fixture.startHttp(ws, env);
+            ProcessFixture.ServerInstance ftp = fixture.startFtp(ws, env, null);
+            if (http == null || !http.isAlive() || ftp == null || !ftp.isAlive()) {
+                fail("Concurrency Group Startup", "Failed to start concurrent HTTP and FTP servers");
+                return;
+            }
+
+            int httpPort = http.port();
+            int ftpPort = ftp.port();
+
+            HttpClient webClient = HttpClient.newBuilder()
+                    .connectTimeout(Duration.ofSeconds(5))
+                    .followRedirects(HttpClient.Redirect.NEVER)
+                    .build();
+
+            // Web login
+            HttpRequest loginReq = HttpRequest.newBuilder()
+                    .uri(URI.create("http://localhost:" + httpPort + "/api/files/login"))
+                    .header("X-File-Explorer", "1")
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString("{\"username\":\"admin\",\"password\":\"SharedPass_2026!\"}"))
+                    .build();
+            HttpResponse<String> loginResp = webClient.send(loginReq, HttpResponse.BodyHandlers.ofString());
+            if (loginResp.statusCode() != 200) {
+                fail("Concurrency Setup: Web Login", "Status: " + loginResp.statusCode());
+                return;
+            }
+            String webCookie = extractCookie(loginResp.headers().firstValue("set-cookie").orElse(""), "FileExplorerSession");
+            String webCsrf = extractJson(loginResp.body(), "csrfToken");
+
+            // 7.1: HTTP upload binary/ZIP -> FTP RETR, verify matching SHA-256
+            try {
+                byte[] binaryPayload = new byte[65536];
+                for (int i = 0; i < binaryPayload.length; i++) {
+                    binaryPayload[i] = (byte) ((i * 31 + 17) & 0xFF);
+                }
+                String expectedHash = computeSha256(binaryPayload);
+
+                // Web upload
+                HttpRequest upReq = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + httpPort + "/api/files/content?path=/shared_binary.dat"))
+                        .header("Cookie", webCookie)
+                        .header("X-File-Explorer", "1")
+                        .header("X-CSRF-Token", webCsrf)
+                        .header("X-File-Size", String.valueOf(binaryPayload.length))
+                        .PUT(HttpRequest.BodyPublishers.ofByteArray(binaryPayload))
+                        .build();
+                HttpResponse<String> upResp = webClient.send(upReq, HttpResponse.BodyHandlers.ofString());
+                if (upResp.statusCode() != 201) {
+                    fail("concurrency_7_1_http_upload_ftp_retr_sha256", "HTTP upload failed: " + upResp.statusCode());
+                    return;
+                }
+
+                // FTP RETR
+                byte[] retrBytes;
+                try (FtpWireClient ftpCli = new FtpWireClient("127.0.0.1", ftpPort)) {
+                    ftpCli.sendCommand("USER admin");
+                    ftpCli.sendCommand("PASS SharedPass_2026!");
+                    ftpCli.sendCommand("TYPE I");
+                    String pasv = ftpCli.sendCommand("PASV");
+                    int dPort = ftpCli.parsePasvPort(pasv);
+                    try (Socket dataSock = new Socket("127.0.0.1", dPort)) {
+                        String retrReply = ftpCli.sendCommand("RETR shared_binary.dat");
+                        if (!retrReply.startsWith("150")) {
+                            fail("concurrency_7_1_http_upload_ftp_retr_sha256", "FTP RETR 150 failed: " + retrReply);
+                            return;
+                        }
+                        retrBytes = dataSock.getInputStream().readAllBytes();
+                    }
+                    ftpCli.readReply(); // 226
+                }
+
+                String actualHash = computeSha256(retrBytes);
+                if (expectedHash.equals(actualHash)) {
+                    pass("concurrency_7_1_http_upload_ftp_retr_sha256");
+                } else {
+                    fail("concurrency_7_1_http_upload_ftp_retr_sha256", "SHA-256 mismatch! expected=" + expectedHash + " actual=" + actualHash);
+                }
+            } catch (Exception e) {
+                fail("concurrency_7_1_http_upload_ftp_retr_sha256", e.getMessage());
+            }
+
+            // 7.2: FTP STOR binary/ZIP -> Web download, verify matching SHA-256
+            try {
+                byte[] ftpPayload = new byte[32768];
+                for (int i = 0; i < ftpPayload.length; i++) {
+                    ftpPayload[i] = (byte) ((i * 47 + 53) & 0xFF);
+                }
+                String expectedFtpHash = computeSha256(ftpPayload);
+
+                try (FtpWireClient ftpCli = new FtpWireClient("127.0.0.1", ftpPort)) {
+                    ftpCli.sendCommand("USER admin");
+                    ftpCli.sendCommand("PASS SharedPass_2026!");
+                    ftpCli.sendCommand("TYPE I");
+                    String pasv = ftpCli.sendCommand("PASV");
+                    int dPort = ftpCli.parsePasvPort(pasv);
+                    try (Socket dataSock = new Socket("127.0.0.1", dPort)) {
+                        String storReply = ftpCli.sendCommand("STOR ftp_archive.zip");
+                        if (!storReply.startsWith("150")) {
+                            fail("concurrency_7_2_ftp_stor_http_download_sha256", "FTP STOR 150 failed: " + storReply);
+                            return;
+                        }
+                        dataSock.getOutputStream().write(ftpPayload);
+                        dataSock.getOutputStream().flush();
+                    }
+                    ftpCli.readReply(); // 226
+                }
+
+                // Web download
+                HttpRequest dlReq = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + httpPort + "/api/files/download?path=/ftp_archive.zip"))
+                        .header("Cookie", webCookie)
+                        .GET().build();
+                HttpResponse<byte[]> dlResp = webClient.send(dlReq, HttpResponse.BodyHandlers.ofByteArray());
+                if (dlResp.statusCode() != 200) {
+                    fail("concurrency_7_2_ftp_stor_http_download_sha256", "Web download failed: " + dlResp.statusCode());
+                    return;
+                }
+
+                String actualWebHash = computeSha256(dlResp.body());
+                if (expectedFtpHash.equals(actualWebHash)) {
+                    pass("concurrency_7_2_ftp_stor_http_download_sha256");
+                } else {
+                    fail("concurrency_7_2_ftp_stor_http_download_sha256", "SHA-256 mismatch! expected=" + expectedFtpHash + " actual=" + actualWebHash);
+                }
+            } catch (Exception e) {
+                fail("concurrency_7_2_ftp_stor_http_download_sha256", e.getMessage());
+            }
+
+            // 7.3: Unicode Vietnamese and symbol filenames across both channels
+            try {
+                String uPath = "/d\u1eef_li\u1ec7u.txt";
+                String encU = URLEncoder.encode(uPath, StandardCharsets.UTF_8).replace("+", "%20");
+                byte[] uContent = "Noi dung tieng Viet co dau".getBytes(StandardCharsets.UTF_8);
+                HttpRequest upUni = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + httpPort + "/api/files/content?path=" + encU))
+                        .header("Cookie", webCookie)
+                        .header("X-File-Explorer", "1")
+                        .header("X-CSRF-Token", webCsrf)
+                        .header("X-File-Size", String.valueOf(uContent.length))
+                        .PUT(HttpRequest.BodyPublishers.ofByteArray(uContent))
+                        .build();
+                HttpResponse<String> upUniResp = webClient.send(upUni, HttpResponse.BodyHandlers.ofString());
+
+                String symPath = "/a+b c.txt";
+                String encSym = URLEncoder.encode(symPath, StandardCharsets.UTF_8).replace("+", "%20");
+                byte[] symContent = "Plus and percent content".getBytes(StandardCharsets.UTF_8);
+                HttpRequest upSym = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + httpPort + "/api/files/content?path=" + encSym))
+                        .header("Cookie", webCookie)
+                        .header("X-File-Explorer", "1")
+                        .header("X-CSRF-Token", webCsrf)
+                        .header("X-File-Size", String.valueOf(symContent.length))
+                        .PUT(HttpRequest.BodyPublishers.ofByteArray(symContent))
+                        .build();
+                HttpResponse<String> upSymResp = webClient.send(upSym, HttpResponse.BodyHandlers.ofString());
+
+                if (upUniResp.statusCode() != 201 || upSymResp.statusCode() != 201) {
+                    fail("concurrency_7_3_unicode_and_symbols_both_channels", "Web upload failed: uni=" + upUniResp.statusCode() + " sym=" + upSymResp.statusCode());
+                    return;
+                }
+
+                // Verify via FTP LIST
+                String listStr;
+                try (FtpWireClient ftpCli = new FtpWireClient("127.0.0.1", ftpPort)) {
+                    ftpCli.sendCommand("USER admin");
+                    ftpCli.sendCommand("PASS SharedPass_2026!");
+                    String pasv = ftpCli.sendCommand("PASV");
+                    int dPort = ftpCli.parsePasvPort(pasv);
+                    try (Socket dataSock = new Socket("127.0.0.1", dPort)) {
+                        ftpCli.sendCommand("LIST");
+                        listStr = new String(dataSock.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+                    }
+                    ftpCli.readReply(); // 226
+                }
+
+                if (listStr.contains("d\u1eef_li\u1ec7u.txt") && listStr.contains("a+b c.txt")) {
+                    pass("concurrency_7_3_unicode_and_symbols_both_channels");
+                } else {
+                    fail("concurrency_7_3_unicode_and_symbols_both_channels", "LIST output missing files: " + listStr);
+                }
+            } catch (Exception e) {
+                fail("concurrency_7_3_unicode_and_symbols_both_channels", e.getMessage());
+            }
+
+            // 7.4: Conflict handling: Web never overwrites (409), FTP STOR replaces (226)
+            try {
+                byte[] v1 = "version_1_from_web".getBytes(StandardCharsets.UTF_8);
+                HttpRequest upV1 = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + httpPort + "/api/files/content?path=/versioned.txt"))
+                        .header("Cookie", webCookie)
+                        .header("X-File-Explorer", "1")
+                        .header("X-CSRF-Token", webCsrf)
+                        .header("X-File-Size", String.valueOf(v1.length))
+                        .PUT(HttpRequest.BodyPublishers.ofByteArray(v1))
+                        .build();
+                HttpResponse<String> upV1Resp = webClient.send(upV1, HttpResponse.BodyHandlers.ofString());
+                if (upV1Resp.statusCode() != 201) {
+                    fail("concurrency_7_4_web_never_overwrites_ftp_replaces", "v1 upload failed: " + upV1Resp.statusCode());
+                    return;
+                }
+
+                // Web upload to existing target -> 409 CONFLICT
+                byte[] v2 = "version_2_forbidden".getBytes(StandardCharsets.UTF_8);
+                HttpRequest upV2 = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + httpPort + "/api/files/content?path=/versioned.txt"))
+                        .header("Cookie", webCookie)
+                        .header("X-File-Explorer", "1")
+                        .header("X-CSRF-Token", webCsrf)
+                        .header("X-File-Size", String.valueOf(v2.length))
+                        .PUT(HttpRequest.BodyPublishers.ofByteArray(v2))
+                        .build();
+                HttpResponse<String> upV2Resp = webClient.send(upV2, HttpResponse.BodyHandlers.ofString());
+                if (upV2Resp.statusCode() != 409) {
+                    fail("concurrency_7_4_web_never_overwrites_ftp_replaces", "expected 409 on Web overwrite attempt, got " + upV2Resp.statusCode());
+                    return;
+                }
+
+                // FTP STOR to existing target -> replaces atomically (226)
+                byte[] v3 = "version_3_from_ftp".getBytes(StandardCharsets.UTF_8);
+                try (FtpWireClient ftpCli = new FtpWireClient("127.0.0.1", ftpPort)) {
+                    ftpCli.sendCommand("USER admin");
+                    ftpCli.sendCommand("PASS SharedPass_2026!");
+                    ftpCli.sendCommand("TYPE I");
+                    String pasv = ftpCli.sendCommand("PASV");
+                    int dPort = ftpCli.parsePasvPort(pasv);
+                    try (Socket dataSock = new Socket("127.0.0.1", dPort)) {
+                        ftpCli.sendCommand("STOR versioned.txt");
+                        dataSock.getOutputStream().write(v3);
+                        dataSock.getOutputStream().flush();
+                    }
+                    String storReply = ftpCli.readReply();
+                    if (!storReply.startsWith("226")) {
+                        fail("concurrency_7_4_web_never_overwrites_ftp_replaces", "FTP STOR replace failed: " + storReply);
+                        return;
+                    }
+                }
+
+                // Web download verifies content is v3
+                HttpRequest dlV3 = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + httpPort + "/api/files/download?path=/versioned.txt"))
+                        .header("Cookie", webCookie)
+                        .GET().build();
+                HttpResponse<String> dlV3Resp = webClient.send(dlV3, HttpResponse.BodyHandlers.ofString());
+                if (dlV3Resp.statusCode() == 200 && "version_3_from_ftp".equals(dlV3Resp.body())) {
+                    pass("concurrency_7_4_web_never_overwrites_ftp_replaces");
+                } else {
+                    fail("concurrency_7_4_web_never_overwrites_ftp_replaces", "unexpected content: " + dlV3Resp.body());
+                }
+            } catch (Exception e) {
+                fail("concurrency_7_4_web_never_overwrites_ftp_replaces", e.getMessage());
+            }
+
+            // 7.5: Staging and state directories completely hidden on both Web and FTP
+            try {
+                HttpRequest listReq = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + httpPort + "/api/files?path=/"))
+                        .header("Cookie", webCookie)
+                        .GET().build();
+                HttpResponse<String> listResp = webClient.send(listReq, HttpResponse.BodyHandlers.ofString());
+                boolean webHidden = !listResp.body().contains(".state") && !listResp.body().contains(".tmp");
+
+                String ftpListStr;
+                try (FtpWireClient ftpCli = new FtpWireClient("127.0.0.1", ftpPort)) {
+                    ftpCli.sendCommand("USER admin");
+                    ftpCli.sendCommand("PASS SharedPass_2026!");
+                    String pasv = ftpCli.sendCommand("PASV");
+                    int dPort = ftpCli.parsePasvPort(pasv);
+                    try (Socket dataSock = new Socket("127.0.0.1", dPort)) {
+                        ftpCli.sendCommand("LIST");
+                        ftpListStr = new String(dataSock.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+                    }
+                    ftpCli.readReply();
+                }
+                boolean ftpHidden = !ftpListStr.contains(".state") && !ftpListStr.contains(".tmp");
+
+                if (webHidden && ftpHidden) {
+                    pass("concurrency_7_5_staging_hidden_both_channels");
+                } else {
+                    fail("concurrency_7_5_staging_hidden_both_channels", "webHidden=" + webHidden + " ftpHidden=" + ftpHidden);
+                }
+            } catch (Exception e) {
+                fail("concurrency_7_5_staging_hidden_both_channels", e.getMessage());
+            }
+
+            // 7.6: Two SharedFileStore instances in same JVM coordinate without OverlappingFileLockException
+            try {
+                Path multiRoot = fixture.createWorkspace().resolve("multi_store");
+                Files.createDirectories(multiRoot);
+                SharedFileStore storeA = new SharedFileStore(multiRoot, 1024 * 1024);
+                SharedFileStore storeB = new SharedFileStore(multiRoot, 1024 * 1024);
+
+                // Concurrent writes from both stores to different files
+                ExecutorService pool = Executors.newFixedThreadPool(2);
+                Future<?> f1 = pool.submit(() -> {
+                    try {
+                        storeA.upload("/from_a.txt", new ByteArrayInputStream("data-a".getBytes(StandardCharsets.UTF_8)), 6, false);
+                    } catch (Exception ex) {
+                        throw new RuntimeException(ex);
+                    }
+                });
+                Future<?> f2 = pool.submit(() -> {
+                    try {
+                        storeB.upload("/from_b.txt", new ByteArrayInputStream("data-b".getBytes(StandardCharsets.UTF_8)), 6, false);
+                    } catch (Exception ex) {
+                        throw new RuntimeException(ex);
+                    }
+                });
+
+                f1.get(5, TimeUnit.SECONDS);
+                f2.get(5, TimeUnit.SECONDS);
+                pool.shutdown();
+
+                if (Files.exists(multiRoot.resolve("from_a.txt")) && Files.exists(multiRoot.resolve("from_b.txt"))) {
+                    pass("concurrency_7_6_two_stores_same_jvm_no_overlapping_lock");
+                } else {
+                    fail("concurrency_7_6_two_stores_same_jvm_no_overlapping_lock", "files not written");
+                }
+            } catch (Exception e) {
+                fail("concurrency_7_6_two_stores_same_jvm_no_overlapping_lock", e.getMessage());
+            }
+
+            // 7.7: Atomic move unsupported simulation cleans up staging and preserves target
+            try {
+                Path atomicRoot = fixture.createWorkspace().resolve("atomic_store");
+                Files.createDirectories(atomicRoot);
+                SharedFileStore atomicStore = new SharedFileStore(atomicRoot, 1024 * 1024);
+                atomicStore.upload("/original.txt", new ByteArrayInputStream("keep_me".getBytes(StandardCharsets.UTF_8)), 7, false);
+
+                atomicStore.setSimulateAtomicUnsupported(true);
+                try {
+                    atomicStore.upload("/original.txt", new ByteArrayInputStream("bad_payload".getBytes(StandardCharsets.UTF_8)), 11, true);
+                    fail("concurrency_7_7_atomic_unsupported_recovery", "expected ATOMIC_UNSUPPORTED exception");
+                } catch (SharedFileStore.StoreException se) {
+                    if ("ATOMIC_UNSUPPORTED".equals(se.code())) {
+                        byte[] content = Files.readAllBytes(atomicRoot.resolve("original.txt"));
+                        if ("keep_me".equals(new String(content, StandardCharsets.UTF_8))) {
+                            pass("concurrency_7_7_atomic_unsupported_recovery");
+                        } else {
+                            fail("concurrency_7_7_atomic_unsupported_recovery", "original content corrupted");
+                        }
+                    } else {
+                        fail("concurrency_7_7_atomic_unsupported_recovery", "wrong error code: " + se.code());
+                    }
+                } finally {
+                    atomicStore.setSimulateAtomicUnsupported(false);
+                }
+            } catch (Exception e) {
+                fail("concurrency_7_7_atomic_unsupported_recovery", e.getMessage());
+            }
+
+            // 7.8: Web operates seamlessly when FTP server is killed/stopped
+            try {
+                ftp.process().destroyForcibly();
+                ftp.process().waitFor(1000, TimeUnit.MILLISECONDS);
+
+                byte[] soloBytes = "web lives without ftp".getBytes(StandardCharsets.UTF_8);
+                HttpRequest upAfterDeath = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + httpPort + "/api/files/content?path=/post_ftp_killed.txt"))
+                        .header("Cookie", webCookie)
+                        .header("X-File-Explorer", "1")
+                        .header("X-CSRF-Token", webCsrf)
+                        .header("X-File-Size", String.valueOf(soloBytes.length))
+                        .PUT(HttpRequest.BodyPublishers.ofByteArray(soloBytes))
+                        .build();
+                HttpResponse<String> upDeathResp = webClient.send(upAfterDeath, HttpResponse.BodyHandlers.ofString());
+
+                HttpRequest dlAfterDeath = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + httpPort + "/api/files/download?path=/post_ftp_killed.txt"))
+                        .header("Cookie", webCookie)
+                        .GET().build();
+                HttpResponse<byte[]> dlDeathResp = webClient.send(dlAfterDeath, HttpResponse.BodyHandlers.ofByteArray());
+
+                if (upDeathResp.statusCode() == 201 && dlDeathResp.statusCode() == 200 && Arrays.equals(soloBytes, dlDeathResp.body())) {
+                    pass("concurrency_7_8_web_operates_when_ftp_terminated");
+                } else {
+                    fail("concurrency_7_8_web_operates_when_ftp_terminated", "up=" + upDeathResp.statusCode() + " dl=" + dlDeathResp.statusCode());
+                }
+            } catch (Exception e) {
+                fail("concurrency_7_8_web_operates_when_ftp_terminated", e.getMessage());
+            }
+
+            // 7.9: Upstream isolation policy: CSP sandbox and nosniff on untrusted HTML
+            try {
+                HttpRequest fetchReq = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + httpPort + "/fetch?url=http://127.0.0.1:" + httpPort + "/api/time"))
+                        .GET().build();
+                HttpResponse<String> fetchResp = webClient.send(fetchReq, HttpResponse.BodyHandlers.ofString());
+                String csp = fetchResp.headers().firstValue("content-security-policy").orElse("");
+                String nosniff = fetchResp.headers().firstValue("x-content-type-options").orElse("");
+
+                boolean cspOk = csp.contains("sandbox") && csp.contains("form-action 'none'") && csp.contains("frame-ancestors 'none'") && !csp.contains("allow-scripts") && !csp.contains("allow-same-origin");
+                boolean nosniffOk = "nosniff".equalsIgnoreCase(nosniff);
+
+                if (cspOk && nosniffOk) {
+                    pass("concurrency_7_9_upstream_isolation_browser_guard");
+                } else {
+                    fail("concurrency_7_9_upstream_isolation_browser_guard", "csp=" + csp + " nosniff=" + nosniff);
+                }
+            } catch (Exception e) {
+                fail("concurrency_7_9_upstream_isolation_browser_guard", e.getMessage());
+            }
+
+        } catch (Exception e) {
+            fail("Concurrency Group Execution", e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public static String computeSha256(byte[] data) {
+        try {
+            java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
+            byte[] digest = md.digest(data);
+            StringBuilder sb = new StringBuilder();
+            for (byte b : digest) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     // =========================================================================

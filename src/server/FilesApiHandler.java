@@ -423,15 +423,35 @@ public class FilesApiHandler implements HttpHandler {
         for (String pair : query.split("&")) {
             int eq = pair.indexOf('=');
             if (eq > 0) {
-                String k = URLDecoder.decode(pair.substring(0, eq), StandardCharsets.UTF_8);
-                String v = URLDecoder.decode(pair.substring(eq + 1), StandardCharsets.UTF_8);
+                String k = decodePercent(pair.substring(0, eq));
+                String v = decodePercent(pair.substring(eq + 1));
                 map.put(k, v);
             } else if (eq == -1 && !pair.isBlank()) {
-                String k = URLDecoder.decode(pair, StandardCharsets.UTF_8);
+                String k = decodePercent(pair);
                 map.put(k, "");
             }
         }
         return map;
+    }
+
+    private static String decodePercent(String input) {
+        if (input == null || input.isEmpty()) return input;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        for (int i = 0; i < input.length(); i++) {
+            char c = input.charAt(i);
+            if (c == '%' && i + 2 < input.length()) {
+                int d1 = Character.digit(input.charAt(i + 1), 16);
+                int d2 = Character.digit(input.charAt(i + 2), 16);
+                if (d1 != -1 && d2 != -1) {
+                    baos.write((d1 << 4) + d2);
+                    i += 2;
+                    continue;
+                }
+            }
+            byte[] charBytes = Character.toString(c).getBytes(StandardCharsets.UTF_8);
+            baos.write(charBytes, 0, charBytes.length);
+        }
+        return baos.toString(StandardCharsets.UTF_8);
     }
 
     private static String extractJsonField(String json, String field) {
