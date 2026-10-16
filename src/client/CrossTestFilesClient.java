@@ -900,7 +900,744 @@ public class CrossTestFilesClient {
 
     public static void runApiTests() {
         System.out.println("\n--- [GROUP: API] Files HTTP API Wire Tests ---");
-        // To be populated in Task 5
+        try (ProcessFixture fixture = new ProcessFixture()) {
+            Path ws = fixture.createWorkspace();
+            HttpClient client = HttpClient.newBuilder()
+                    .connectTimeout(Duration.ofSeconds(5))
+                    .followRedirects(HttpClient.Redirect.NEVER)
+                    .build();
+
+            // 1. Missing config returns 503 SETUP_REQUIRED and legacy route unaffected
+            try {
+                ProcessFixture.ServerInstance httpNoPass = fixture.startHttp(ws, Map.of());
+                int p1 = httpNoPass.port();
+
+                HttpRequest req = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + p1 + "/api/files/login"))
+                        .header("X-File-Explorer", "1")
+                        .header("Content-Type", "application/json")
+                        .POST(HttpRequest.BodyPublishers.ofString("{\"username\":\"admin\",\"password\":\"foo\"}"))
+                        .build();
+                HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
+                if (resp.statusCode() == 503 && resp.body().contains("SETUP_REQUIRED")) {
+                    pass("api_unconfigured_password_returns_503");
+                } else {
+                    fail("api_unconfigured_password_returns_503", "status=" + resp.statusCode() + " body=" + resp.body());
+                }
+
+                HttpRequest timeReq = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + p1 + "/api/time"))
+                        .GET().build();
+                HttpResponse<String> timeResp = client.send(timeReq, HttpResponse.BodyHandlers.ofString());
+                if (timeResp.statusCode() == 200 && timeResp.body().contains("time")) {
+                    pass("api_legacy_routes_unaffected_when_unconfigured");
+                } else {
+                    fail("api_legacy_routes_unaffected_when_unconfigured", "status=" + timeResp.statusCode());
+                }
+                httpNoPass.process().destroyForcibly();
+            } catch (Exception e) {
+                fail("api_unconfigured_password_returns_503", e.getMessage());
+            }
+
+            // Start HTTP server with configured admin password & guest enabled
+            Path ws2 = fixture.createWorkspace();
+            Map<String, String> env = Map.of(
+                    "FTP_ADMIN_PASSWORD", "AdminPass_2026!",
+                    "WEB_FILES_ALLOW_GUEST", "true"
+            );
+            ProcessFixture.ServerInstance http = fixture.startHttp(ws2, env);
+            int port = http.port();
+
+            // 2. Exact routing: /api/filesXYZ and invalid subroutes return 404 JSON
+            try {
+                HttpRequest r1 = HttpRequest.newBuilder().uri(URI.create("http://localhost:" + port + "/api/filesXYZ")).GET().build();
+                HttpResponse<String> resp1 = client.send(r1, HttpResponse.BodyHandlers.ofString());
+                HttpRequest r2 = HttpRequest.newBuilder().uri(URI.create("http://localhost:" + port + "/api/files/nonexistent_subroute")).GET().build();
+                HttpResponse<String> resp2 = client.send(r2, HttpResponse.BodyHandlers.ofString());
+
+                if (resp1.statusCode() == 404 && resp1.body().contains("NOT_FOUND") &&
+                    resp2.statusCode() == 404 && resp2.body().contains("NOT_FOUND")) {
+                    pass("api_exact_routing_and_404_json");
+                } else {
+                    fail("api_exact_routing_and_404_json", "r1=" + resp1.statusCode() + ", r2=" + resp2.statusCode());
+                }
+            } catch (Exception e) {
+                fail("api_exact_routing_and_404_json", e.getMessage());
+            }
+
+            // 3. Method not allowed (405) with Allow header
+            try {
+                HttpRequest m1 = HttpRequest.newBuilder().uri(URI.create("http://localhost:" + port + "/api/files")).POST(HttpRequest.BodyPublishers.noBody()).build();
+                HttpResponse<String> res1 = client.send(m1, HttpResponse.BodyHandlers.ofString());
+
+                HttpRequest m2 = HttpRequest.newBuilder().uri(URI.create("http://localhost:" + port + "/api/files/login")).GET().build();
+                HttpResponse<String> res2 = client.send(m2, HttpResponse.BodyHandlers.ofString());
+
+                HttpRequest m3 = HttpRequest.newBuilder().uri(URI.create("http://localhost:" + port + "/api/files/download")).POST(HttpRequest.BodyPublishers.noBody()).build();
+                HttpResponse<String> res3 = client.send(m3, HttpResponse.BodyHandlers.ofString());
+
+                boolean ok = res1.statusCode() == 405 && res1.headers().firstValue("Allow").orElse("").contains("GET")
+                        && res2.statusCode() == 405 && res2.headers().firstValue("Allow").orElse("").contains("POST")
+                        && res3.statusCode() == 405 && res3.headers().firstValue("Allow").orElse("").contains("GET");
+                if (ok) {
+                    pass("api_method_not_allowed_405_with_allow_header");
+                } else {
+                    fail("api_method_not_allowed_405_with_allow_header", "status codes: " + res1.statusCode() + ", " + res2.statusCode() + ", " + res3.statusCode());
+                }
+            } catch (Exception e) {
+                fail("api_method_not_allowed_405_with_allow_header", e.getMessage());
+            }
+
+            // 4. Unsupported Media Type (415)
+            try {
+                HttpRequest req = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + "/api/files/login"))
+                        .header("X-File-Explorer", "1")
+                        .header("Content-Type", "text/plain")
+                        .POST(HttpRequest.BodyPublishers.ofString("{\"username\":\"admin\",\"password\":\"AdminPass_2026!\"}"))
+                        .build();
+                HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
+                if (resp.statusCode() == 415 && resp.body().contains("UNSUPPORTED_MEDIA_TYPE")) {
+                    pass("api_unsupported_media_type_415");
+                } else {
+                    fail("api_unsupported_media_type_415", "status=" + resp.statusCode());
+                }
+            } catch (Exception e) {
+                fail("api_unsupported_media_type_415", e.getMessage());
+            }
+
+            // 5. Missing or invalid X-File-Explorer header returns 403
+            try {
+                HttpRequest r1 = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + "/api/files/login"))
+                        .header("Content-Type", "application/json")
+                        .POST(HttpRequest.BodyPublishers.ofString("{\"username\":\"admin\",\"password\":\"AdminPass_2026!\"}"))
+                        .build();
+                HttpResponse<String> resp1 = client.send(r1, HttpResponse.BodyHandlers.ofString());
+
+                HttpRequest r2 = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + "/api/files/login"))
+                        .header("X-File-Explorer", "0")
+                        .header("Content-Type", "application/json")
+                        .POST(HttpRequest.BodyPublishers.ofString("{\"username\":\"admin\",\"password\":\"AdminPass_2026!\"}"))
+                        .build();
+                HttpResponse<String> resp2 = client.send(r2, HttpResponse.BodyHandlers.ofString());
+
+                if (resp1.statusCode() == 403 && resp2.statusCode() == 403) {
+                    pass("api_explorer_header_required_on_mutation");
+                } else {
+                    fail("api_explorer_header_required_on_mutation", "r1=" + resp1.statusCode() + ", r2=" + resp2.statusCode());
+                }
+            } catch (Exception e) {
+                fail("api_explorer_header_required_on_mutation", e.getMessage());
+            }
+
+            // 6. Unauthenticated requests return 401 UNAUTHORIZED
+            try {
+                HttpRequest r1 = HttpRequest.newBuilder().uri(URI.create("http://localhost:" + port + "/api/files")).GET().build();
+                HttpResponse<String> resp1 = client.send(r1, HttpResponse.BodyHandlers.ofString());
+
+                HttpRequest r2 = HttpRequest.newBuilder().uri(URI.create("http://localhost:" + port + "/api/files/session")).GET().build();
+                HttpResponse<String> resp2 = client.send(r2, HttpResponse.BodyHandlers.ofString());
+
+                HttpRequest r3 = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + "/api/files/mkdir"))
+                        .header("X-File-Explorer", "1")
+                        .header("Content-Type", "application/json")
+                        .POST(HttpRequest.BodyPublishers.ofString("{\"path\":\"/test\"}"))
+                        .build();
+                HttpResponse<String> resp3 = client.send(r3, HttpResponse.BodyHandlers.ofString());
+
+                if (resp1.statusCode() == 401 && resp2.statusCode() == 401 && resp3.statusCode() == 401) {
+                    pass("api_unauthenticated_requests_return_401");
+                } else {
+                    fail("api_unauthenticated_requests_return_401", "r1=" + resp1.statusCode() + ", r2=" + resp2.statusCode() + ", r3=" + resp3.statusCode());
+                }
+            } catch (Exception e) {
+                fail("api_unauthenticated_requests_return_401", e.getMessage());
+            }
+
+            // 7. Admin login and session verification
+            String adminCookie;
+            String adminCsrf;
+            try {
+                HttpRequest badLogin = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + "/api/files/login"))
+                        .header("X-File-Explorer", "1")
+                        .header("Content-Type", "application/json")
+                        .POST(HttpRequest.BodyPublishers.ofString("{\"username\":\"admin\",\"password\":\"wrong\"}"))
+                        .build();
+                HttpResponse<String> badResp = client.send(badLogin, HttpResponse.BodyHandlers.ofString());
+                if (badResp.statusCode() != 401) {
+                    fail("api_admin_login_and_session", "bad login status=" + badResp.statusCode());
+                    return;
+                }
+
+                HttpRequest goodLogin = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + "/api/files/login"))
+                        .header("X-File-Explorer", "1")
+                        .header("Content-Type", "application/json")
+                        .POST(HttpRequest.BodyPublishers.ofString("{\"username\":\"admin\",\"password\":\"AdminPass_2026!\"}"))
+                        .build();
+                HttpResponse<String> goodResp = client.send(goodLogin, HttpResponse.BodyHandlers.ofString());
+                if (goodResp.statusCode() != 200) {
+                    fail("api_admin_login_and_session", "good login status=" + goodResp.statusCode());
+                    return;
+                }
+
+                String setCookie = goodResp.headers().firstValue("set-cookie").orElse("");
+                if (!setCookie.contains("FileExplorerSession=") || !setCookie.contains("HttpOnly") || !setCookie.contains("SameSite=Strict")) {
+                    fail("api_admin_login_and_session", "missing or malformed Set-Cookie header");
+                    return;
+                }
+                adminCookie = extractCookie(setCookie, "FileExplorerSession");
+                adminCsrf = extractJson(goodResp.body(), "csrfToken");
+                String user = extractJson(goodResp.body(), "user");
+                String role = extractJson(goodResp.body(), "role");
+
+                if (!"admin".equals(user) || !"ADMIN".equals(role) || adminCsrf == null || adminCsrf.isBlank()) {
+                    fail("api_admin_login_and_session", "unexpected body content: user=" + user + ", role=" + role);
+                    return;
+                }
+
+                HttpRequest sessReq = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + "/api/files/session"))
+                        .header("Cookie", adminCookie)
+                        .GET().build();
+                HttpResponse<String> sessResp = client.send(sessReq, HttpResponse.BodyHandlers.ofString());
+                if (sessResp.statusCode() == 200 && sessResp.body().contains("\"ADMIN\"")) {
+                    pass("api_admin_login_and_session");
+                } else {
+                    fail("api_admin_login_and_session", "sess status=" + sessResp.statusCode());
+                }
+            } catch (Exception e) {
+                fail("api_admin_login_and_session", e.getMessage());
+                return;
+            }
+
+            // 8. Host and Origin header guards
+            try {
+                String rawReq = "GET /api/files/session HTTP/1.1\r\n" +
+                        "Host: evil.attacker.com:" + port + "\r\n" +
+                        "Cookie: " + adminCookie + "\r\n" +
+                        "Connection: close\r\n\r\n";
+                RawResponse rawResp = sendRawHttp(port, rawReq);
+                if (rawResp.statusCode() != 403) {
+                    fail("api_host_and_origin_guards", "Host check expected 403, got " + rawResp.statusCode());
+                    return;
+                }
+
+                HttpRequest originReq = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + "/api/files/session"))
+                        .header("Cookie", adminCookie)
+                        .header("Origin", "http://attacker.com")
+                        .GET().build();
+                HttpResponse<String> originResp = client.send(originReq, HttpResponse.BodyHandlers.ofString());
+                if (originResp.statusCode() != 403) {
+                    fail("api_host_and_origin_guards", "Origin check expected 403, got " + originResp.statusCode());
+                    return;
+                }
+
+                HttpRequest nullOriginReq = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + "/api/files/session"))
+                        .header("Cookie", adminCookie)
+                        .header("Origin", "null")
+                        .GET().build();
+                HttpResponse<String> nullOriginResp = client.send(nullOriginReq, HttpResponse.BodyHandlers.ofString());
+                if (nullOriginResp.statusCode() != 403) {
+                    fail("api_host_and_origin_guards", "Null origin check expected 403, got " + nullOriginResp.statusCode());
+                    return;
+                }
+
+                pass("api_host_and_origin_guards");
+            } catch (Exception e) {
+                fail("api_host_and_origin_guards", e.getMessage());
+            }
+
+            // 9. CSRF protection on mutations
+            try {
+                HttpRequest noCsrfReq = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + "/api/files/mkdir"))
+                        .header("Cookie", adminCookie)
+                        .header("X-File-Explorer", "1")
+                        .header("Content-Type", "application/json")
+                        .POST(HttpRequest.BodyPublishers.ofString("{\"path\":\"/csrf_test\"}"))
+                        .build();
+                HttpResponse<String> noCsrfResp = client.send(noCsrfReq, HttpResponse.BodyHandlers.ofString());
+
+                HttpRequest badCsrfReq = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + "/api/files/mkdir"))
+                        .header("Cookie", adminCookie)
+                        .header("X-File-Explorer", "1")
+                        .header("X-CSRF-Token", "completely_bogus_csrf_token")
+                        .header("Content-Type", "application/json")
+                        .POST(HttpRequest.BodyPublishers.ofString("{\"path\":\"/csrf_test\"}"))
+                        .build();
+                HttpResponse<String> badCsrfResp = client.send(badCsrfReq, HttpResponse.BodyHandlers.ofString());
+
+                if (noCsrfResp.statusCode() == 403 && badCsrfResp.statusCode() == 403) {
+                    pass("api_csrf_protection_on_mutations");
+                } else {
+                    fail("api_csrf_protection_on_mutations", "noCsrf=" + noCsrfResp.statusCode() + ", badCsrf=" + badCsrfResp.statusCode());
+                }
+            } catch (Exception e) {
+                fail("api_csrf_protection_on_mutations", e.getMessage());
+            }
+
+            // 10. Admin full CRUD workflow
+            try {
+                // mkdir /docs
+                HttpRequest mkdirReq = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + "/api/files/mkdir"))
+                        .header("Cookie", adminCookie)
+                        .header("X-File-Explorer", "1")
+                        .header("X-CSRF-Token", adminCsrf)
+                        .header("Content-Type", "application/json")
+                        .POST(HttpRequest.BodyPublishers.ofString("{\"path\":\"/docs\"}"))
+                        .build();
+                HttpResponse<String> mkdirResp = client.send(mkdirReq, HttpResponse.BodyHandlers.ofString());
+                if (mkdirResp.statusCode() != 201) {
+                    fail("api_admin_crud_workflow", "mkdir status=" + mkdirResp.statusCode());
+                    return;
+                }
+
+                // list /
+                HttpRequest listReq = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + "/api/files?path=/"))
+                        .header("Cookie", adminCookie)
+                        .GET().build();
+                HttpResponse<String> listResp = client.send(listReq, HttpResponse.BodyHandlers.ofString());
+                if (listResp.statusCode() != 200 || !listResp.body().contains("\"name\":\"docs\"")) {
+                    fail("api_admin_crud_workflow", "list status=" + listResp.statusCode() + " body=" + listResp.body());
+                    return;
+                }
+
+                // upload /docs/hello.txt
+                byte[] fileBytes = "hello world from web".getBytes(StandardCharsets.UTF_8);
+                HttpRequest upReq = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + "/api/files/content?path=/docs/hello.txt"))
+                        .header("Cookie", adminCookie)
+                        .header("X-File-Explorer", "1")
+                        .header("X-CSRF-Token", adminCsrf)
+                        .header("X-File-Size", String.valueOf(fileBytes.length))
+                        .PUT(HttpRequest.BodyPublishers.ofByteArray(fileBytes))
+                        .build();
+                HttpResponse<String> upResp = client.send(upReq, HttpResponse.BodyHandlers.ofString());
+                if (upResp.statusCode() != 201) {
+                    fail("api_admin_crud_workflow", "upload status=" + upResp.statusCode());
+                    return;
+                }
+
+                // download /docs/hello.txt and verify attachment headers
+                HttpRequest dlReq = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + "/api/files/download?path=/docs/hello.txt"))
+                        .header("Cookie", adminCookie)
+                        .GET().build();
+                HttpResponse<byte[]> dlResp = client.send(dlReq, HttpResponse.BodyHandlers.ofByteArray());
+                if (dlResp.statusCode() != 200 || !Arrays.equals(fileBytes, dlResp.body())) {
+                    fail("api_admin_crud_workflow", "download status=" + dlResp.statusCode());
+                    return;
+                }
+                String cd = dlResp.headers().firstValue("content-disposition").orElse("");
+                String ct = dlResp.headers().firstValue("content-type").orElse("");
+                if (!ct.contains("application/octet-stream") || !cd.contains("attachment") || !cd.contains("filename*=UTF-8''hello.txt")) {
+                    fail("api_admin_crud_workflow", "unexpected headers: ct=" + ct + ", cd=" + cd);
+                    return;
+                }
+
+                // rename /docs/hello.txt -> /docs/renamed.txt
+                HttpRequest renReq = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + "/api/files/rename"))
+                        .header("Cookie", adminCookie)
+                        .header("X-File-Explorer", "1")
+                        .header("X-CSRF-Token", adminCsrf)
+                        .header("Content-Type", "application/json")
+                        .POST(HttpRequest.BodyPublishers.ofString("{\"from\":\"/docs/hello.txt\",\"to\":\"/docs/renamed.txt\"}"))
+                        .build();
+                HttpResponse<String> renResp = client.send(renReq, HttpResponse.BodyHandlers.ofString());
+                if (renResp.statusCode() != 200) {
+                    fail("api_admin_crud_workflow", "rename status=" + renResp.statusCode());
+                    return;
+                }
+
+                // delete non-empty directory /docs -> 409
+                HttpRequest delDirFailReq = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + "/api/files?path=/docs"))
+                        .header("Cookie", adminCookie)
+                        .header("X-File-Explorer", "1")
+                        .header("X-CSRF-Token", adminCsrf)
+                        .DELETE().build();
+                HttpResponse<String> delDirFailResp = client.send(delDirFailReq, HttpResponse.BodyHandlers.ofString());
+                if (delDirFailResp.statusCode() != 409) {
+                    fail("api_admin_crud_workflow", "expected 409 for non-empty dir delete, got " + delDirFailResp.statusCode());
+                    return;
+                }
+
+                // delete /docs/renamed.txt -> 204
+                HttpRequest delFileReq = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + "/api/files?path=/docs/renamed.txt"))
+                        .header("Cookie", adminCookie)
+                        .header("X-File-Explorer", "1")
+                        .header("X-CSRF-Token", adminCsrf)
+                        .DELETE().build();
+                HttpResponse<Void> delFileResp = client.send(delFileReq, HttpResponse.BodyHandlers.discarding());
+                if (delFileResp.statusCode() != 204) {
+                    fail("api_admin_crud_workflow", "delete file status=" + delFileResp.statusCode());
+                    return;
+                }
+
+                // delete empty directory /docs -> 204
+                HttpRequest delDirReq = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + "/api/files?path=/docs"))
+                        .header("Cookie", adminCookie)
+                        .header("X-File-Explorer", "1")
+                        .header("X-CSRF-Token", adminCsrf)
+                        .DELETE().build();
+                HttpResponse<Void> delDirResp = client.send(delDirReq, HttpResponse.BodyHandlers.discarding());
+                if (delDirResp.statusCode() != 204) {
+                    fail("api_admin_crud_workflow", "delete dir status=" + delDirResp.statusCode());
+                    return;
+                }
+
+                // delete root / -> 403
+                HttpRequest delRootReq = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + "/api/files?path=/"))
+                        .header("Cookie", adminCookie)
+                        .header("X-File-Explorer", "1")
+                        .header("X-CSRF-Token", adminCsrf)
+                        .DELETE().build();
+                HttpResponse<String> delRootResp = client.send(delRootReq, HttpResponse.BodyHandlers.ofString());
+                if (delRootResp.statusCode() != 403) {
+                    fail("api_admin_crud_workflow", "delete root expected 403, got " + delRootResp.statusCode());
+                    return;
+                }
+
+                pass("api_admin_crud_workflow");
+            } catch (Exception e) {
+                fail("api_admin_crud_workflow", e.getMessage());
+            }
+
+            // 11. Upload validation, zero-byte file, size mismatch, no-overwrite
+            try {
+                HttpRequest noSizeReq = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + "/api/files/content?path=/test.bin"))
+                        .header("Cookie", adminCookie)
+                        .header("X-File-Explorer", "1")
+                        .header("X-CSRF-Token", adminCsrf)
+                        .PUT(HttpRequest.BodyPublishers.ofByteArray(new byte[]{1, 2, 3}))
+                        .build();
+                HttpResponse<String> noSizeResp = client.send(noSizeReq, HttpResponse.BodyHandlers.ofString());
+                if (noSizeResp.statusCode() != 400) {
+                    fail("api_upload_validation_and_zero_byte", "expected 400 for missing size header, got " + noSizeResp.statusCode());
+                    return;
+                }
+
+                HttpRequest zeroReq = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + "/api/files/content?path=/empty.dat"))
+                        .header("Cookie", adminCookie)
+                        .header("X-File-Explorer", "1")
+                        .header("X-CSRF-Token", adminCsrf)
+                        .header("X-File-Size", "0")
+                        .PUT(HttpRequest.BodyPublishers.noBody())
+                        .build();
+                HttpResponse<String> zeroResp = client.send(zeroReq, HttpResponse.BodyHandlers.ofString());
+                if (zeroResp.statusCode() != 201) {
+                    fail("api_upload_validation_and_zero_byte", "expected 201 for zero-byte upload, got " + zeroResp.statusCode());
+                    return;
+                }
+
+                HttpRequest dlZeroReq = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + "/api/files/download?path=/empty.dat"))
+                        .header("Cookie", adminCookie)
+                        .GET().build();
+                HttpResponse<byte[]> dlZeroResp = client.send(dlZeroReq, HttpResponse.BodyHandlers.ofByteArray());
+                if (dlZeroResp.statusCode() != 200 || dlZeroResp.body().length != 0) {
+                    fail("api_upload_validation_and_zero_byte", "download zero-byte failed");
+                    return;
+                }
+
+                HttpRequest dupReq = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + "/api/files/content?path=/empty.dat"))
+                        .header("Cookie", adminCookie)
+                        .header("X-File-Explorer", "1")
+                        .header("X-CSRF-Token", adminCsrf)
+                        .header("X-File-Size", "3")
+                        .PUT(HttpRequest.BodyPublishers.ofByteArray(new byte[]{1, 2, 3}))
+                        .build();
+                HttpResponse<String> dupResp = client.send(dupReq, HttpResponse.BodyHandlers.ofString());
+                if (dupResp.statusCode() != 409) {
+                    fail("api_upload_validation_and_zero_byte", "expected 409 on duplicate upload, got " + dupResp.statusCode());
+                    return;
+                }
+
+                HttpRequest misReq = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + "/api/files/content?path=/mismatch.dat"))
+                        .header("Cookie", adminCookie)
+                        .header("X-File-Explorer", "1")
+                        .header("X-CSRF-Token", adminCsrf)
+                        .header("X-File-Size", "10")
+                        .PUT(HttpRequest.BodyPublishers.ofByteArray(new byte[]{1, 2, 3, 4}))
+                        .build();
+                HttpResponse<String> misResp = client.send(misReq, HttpResponse.BodyHandlers.ofString());
+                if (misResp.statusCode() != 409) {
+                    fail("api_upload_validation_and_zero_byte", "expected 409 on size mismatch, got " + misResp.statusCode());
+                    return;
+                }
+
+                pass("api_upload_validation_and_zero_byte");
+            } catch (Exception e) {
+                fail("api_upload_validation_and_zero_byte", e.getMessage());
+            }
+
+            // 12. HTML download attachment isolation
+            try {
+                byte[] htmlPayload = "<script>alert('xss')</script>".getBytes(StandardCharsets.UTF_8);
+                HttpRequest upHtml = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + "/api/files/content?path=/untrusted.html"))
+                        .header("Cookie", adminCookie)
+                        .header("X-File-Explorer", "1")
+                        .header("X-CSRF-Token", adminCsrf)
+                        .header("X-File-Size", String.valueOf(htmlPayload.length))
+                        .PUT(HttpRequest.BodyPublishers.ofByteArray(htmlPayload))
+                        .build();
+                HttpResponse<String> upHtmlResp = client.send(upHtml, HttpResponse.BodyHandlers.ofString());
+                if (upHtmlResp.statusCode() != 201) {
+                    fail("api_html_download_attachment_isolation", "upload status=" + upHtmlResp.statusCode());
+                    return;
+                }
+
+                HttpRequest dlHtml = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + "/api/files/download?path=/untrusted.html"))
+                        .header("Cookie", adminCookie)
+                        .GET().build();
+                HttpResponse<byte[]> dlHtmlResp = client.send(dlHtml, HttpResponse.BodyHandlers.ofByteArray());
+                String ct = dlHtmlResp.headers().firstValue("content-type").orElse("");
+                String cd = dlHtmlResp.headers().firstValue("content-disposition").orElse("");
+                String nosniff = dlHtmlResp.headers().firstValue("x-content-type-options").orElse("");
+
+                if (dlHtmlResp.statusCode() == 200 &&
+                    ct.contains("application/octet-stream") &&
+                    cd.contains("attachment") &&
+                    "nosniff".equalsIgnoreCase(nosniff)) {
+                    pass("api_html_download_attachment_isolation");
+                } else {
+                    fail("api_html_download_attachment_isolation", "status=" + dlHtmlResp.statusCode() + " ct=" + ct + " cd=" + cd);
+                }
+            } catch (Exception e) {
+                fail("api_html_download_attachment_isolation", e.getMessage());
+            }
+
+            // 13. Guest read-only enforcement
+            try {
+                HttpRequest guestLogin = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + "/api/files/login"))
+                        .header("X-File-Explorer", "1")
+                        .header("Content-Type", "application/json")
+                        .POST(HttpRequest.BodyPublishers.ofString("{\"username\":\"guest\",\"password\":\"\"}"))
+                        .build();
+                HttpResponse<String> guestResp = client.send(guestLogin, HttpResponse.BodyHandlers.ofString());
+                if (guestResp.statusCode() != 200) {
+                    fail("api_guest_read_only_enforcement", "guest login status=" + guestResp.statusCode());
+                    return;
+                }
+
+                String guestCookie = extractCookie(guestResp.headers().firstValue("set-cookie").orElse(""), "FileExplorerSession");
+                String guestCsrf = extractJson(guestResp.body(), "csrfToken");
+
+                HttpRequest gList = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + "/api/files?path=/"))
+                        .header("Cookie", guestCookie)
+                        .GET().build();
+                HttpResponse<String> gListResp = client.send(gList, HttpResponse.BodyHandlers.ofString());
+                if (gListResp.statusCode() != 200) {
+                    fail("api_guest_read_only_enforcement", "guest list failed: " + gListResp.statusCode());
+                    return;
+                }
+
+                HttpRequest gMkdir = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + "/api/files/mkdir"))
+                        .header("Cookie", guestCookie)
+                        .header("X-File-Explorer", "1")
+                        .header("X-CSRF-Token", guestCsrf)
+                        .header("Content-Type", "application/json")
+                        .POST(HttpRequest.BodyPublishers.ofString("{\"path\":\"/guest_dir\"}"))
+                        .build();
+                HttpResponse<String> gMkdirResp = client.send(gMkdir, HttpResponse.BodyHandlers.ofString());
+
+                HttpRequest gUp = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + "/api/files/content?path=/guest.dat"))
+                        .header("Cookie", guestCookie)
+                        .header("X-File-Explorer", "1")
+                        .header("X-CSRF-Token", guestCsrf)
+                        .header("X-File-Size", "1")
+                        .PUT(HttpRequest.BodyPublishers.ofByteArray(new byte[]{1}))
+                        .build();
+                HttpResponse<String> gUpResp = client.send(gUp, HttpResponse.BodyHandlers.ofString());
+
+                HttpRequest gDel = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + "/api/files?path=/empty.dat"))
+                        .header("Cookie", guestCookie)
+                        .header("X-File-Explorer", "1")
+                        .header("X-CSRF-Token", guestCsrf)
+                        .DELETE().build();
+                HttpResponse<String> gDelResp = client.send(gDel, HttpResponse.BodyHandlers.ofString());
+
+                if (gMkdirResp.statusCode() == 403 && gUpResp.statusCode() == 403 && gDelResp.statusCode() == 403) {
+                    pass("api_guest_read_only_enforcement");
+                } else {
+                    fail("api_guest_read_only_enforcement", "mkdir=" + gMkdirResp.statusCode() + " up=" + gUpResp.statusCode() + " del=" + gDelResp.statusCode());
+                }
+            } catch (Exception e) {
+                fail("api_guest_read_only_enforcement", e.getMessage());
+            }
+
+            // 14. Logout workflow
+            try {
+                HttpRequest logoutReq = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + "/api/files/logout"))
+                        .header("Cookie", adminCookie)
+                        .header("X-File-Explorer", "1")
+                        .header("X-CSRF-Token", adminCsrf)
+                        .POST(HttpRequest.BodyPublishers.noBody())
+                        .build();
+                HttpResponse<Void> logoutResp = client.send(logoutReq, HttpResponse.BodyHandlers.discarding());
+                if (logoutResp.statusCode() != 204) {
+                    fail("api_logout_workflow", "logout status=" + logoutResp.statusCode());
+                    return;
+                }
+
+                HttpRequest oldSessReq = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + "/api/files/session"))
+                        .header("Cookie", adminCookie)
+                        .GET().build();
+                HttpResponse<String> oldSessResp = client.send(oldSessReq, HttpResponse.BodyHandlers.ofString());
+                if (oldSessResp.statusCode() == 401) {
+                    pass("api_logout_workflow");
+                } else {
+                    fail("api_logout_workflow", "expected 401 after logout, got " + oldSessResp.statusCode());
+                }
+            } catch (Exception e) {
+                fail("api_logout_workflow", e.getMessage());
+            }
+
+            // 15. files.html loopback guard
+            try {
+                InetAddress nonLoopback = InetAddress.getByName("192.168.1.100");
+                MockHttpExchange exNonLoop = new MockHttpExchange(nonLoopback, 12345);
+                exNonLoop.setRequestURI(URI.create("/files.html"));
+                new server.RouterHandler().handle(exNonLoop);
+
+                InetAddress loopback = InetAddress.getByName("127.0.0.1");
+                MockHttpExchange exLoop = new MockHttpExchange(loopback, 12345);
+                exLoop.setRequestURI(URI.create("/files.html"));
+                new server.RouterHandler().handle(exLoop);
+
+                if (exNonLoop.getResponseCode() == 403 && exLoop.getResponseCode() != 403) {
+                    pass("api_files_html_loopback_guard");
+                } else {
+                    fail("api_files_html_loopback_guard", "nonLoop=" + exNonLoop.getResponseCode() + " loop=" + exLoop.getResponseCode());
+                }
+            } catch (Exception e) {
+                fail("api_files_html_loopback_guard", e.getMessage());
+            }
+
+            // 16. Web functions when FTP server is not running
+            try {
+                HttpRequest loginAgain = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + "/api/files/login"))
+                        .header("X-File-Explorer", "1")
+                        .header("Content-Type", "application/json")
+                        .POST(HttpRequest.BodyPublishers.ofString("{\"username\":\"admin\",\"password\":\"AdminPass_2026!\"}"))
+                        .build();
+                HttpResponse<String> loginAgainResp = client.send(loginAgain, HttpResponse.BodyHandlers.ofString());
+                String newCookie = extractCookie(loginAgainResp.headers().firstValue("set-cookie").orElse(""), "FileExplorerSession");
+                String newCsrf = extractJson(loginAgainResp.body(), "csrfToken");
+
+                byte[] standaloneBytes = "web works without ftp".getBytes(StandardCharsets.UTF_8);
+                HttpRequest upSolo = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + "/api/files/content?path=/standalone.txt"))
+                        .header("Cookie", newCookie)
+                        .header("X-File-Explorer", "1")
+                        .header("X-CSRF-Token", newCsrf)
+                        .header("X-File-Size", String.valueOf(standaloneBytes.length))
+                        .PUT(HttpRequest.BodyPublishers.ofByteArray(standaloneBytes))
+                        .build();
+                HttpResponse<String> upSoloResp = client.send(upSolo, HttpResponse.BodyHandlers.ofString());
+
+                HttpRequest dlSolo = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + "/api/files/download?path=/standalone.txt"))
+                        .header("Cookie", newCookie)
+                        .GET().build();
+                HttpResponse<byte[]> dlSoloResp = client.send(dlSolo, HttpResponse.BodyHandlers.ofByteArray());
+
+                if (upSoloResp.statusCode() == 201 && dlSoloResp.statusCode() == 200 && Arrays.equals(standaloneBytes, dlSoloResp.body())) {
+                    pass("api_web_operates_when_ftp_stopped");
+                } else {
+                    fail("api_web_operates_when_ftp_stopped", "up=" + upSoloResp.statusCode() + " dl=" + dlSoloResp.statusCode());
+                }
+            } catch (Exception e) {
+                fail("api_web_operates_when_ftp_stopped", e.getMessage());
+            }
+        } catch (Exception e) {
+            fail("Api Group Execution", e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private static String extractCookie(String setCookieHeader, String cookieName) {
+        if (setCookieHeader == null || !setCookieHeader.contains(cookieName + "=")) {
+            return "";
+        }
+        int start = setCookieHeader.indexOf(cookieName + "=");
+        int end = setCookieHeader.indexOf(';', start);
+        return (end != -1) ? setCookieHeader.substring(start, end) : setCookieHeader.substring(start);
+    }
+
+    private static String extractJson(String json, String key) {
+        if (json == null) return null;
+        java.util.regex.Pattern p = java.util.regex.Pattern.compile("\"" + java.util.regex.Pattern.quote(key) + "\"\\s*:\\s*\"((?:\\\\\"|[^\"])*)\"");
+        java.util.regex.Matcher m = p.matcher(json);
+        if (m.find()) return m.group(1).replace("\\\"", "\"");
+        return null;
+    }
+
+    public static record RawResponse(int statusCode, Map<String, String> headers, String body) {}
+
+    public static RawResponse sendRawHttp(int port, String request) throws IOException {
+        try (Socket s = new Socket("127.0.0.1", port)) {
+            s.setSoTimeout(5000);
+            s.getOutputStream().write(request.getBytes(StandardCharsets.UTF_8));
+            s.getOutputStream().flush();
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            byte[] buf = new byte[2048];
+            int r;
+            try {
+                while ((r = s.getInputStream().read(buf)) != -1) {
+                    baos.write(buf, 0, r);
+                }
+            } catch (SocketTimeoutException ignored) {}
+            String raw = baos.toString(StandardCharsets.UTF_8);
+            int idx = raw.indexOf("\r\n\r\n");
+            if (idx == -1) idx = raw.indexOf("\n\n");
+            String head = idx != -1 ? raw.substring(0, idx) : raw;
+            String body = idx != -1 ? raw.substring(idx + (raw.contains("\r\n\r\n") ? 4 : 2)) : "";
+            String[] lines = head.split("\r?\n");
+            int code = 0;
+            if (lines.length > 0) {
+                String[] statusParts = lines[0].split(" ");
+                if (statusParts.length > 1) {
+                    try { code = Integer.parseInt(statusParts[1]); } catch (Exception ignored) {}
+                }
+            }
+            Map<String, String> headers = new HashMap<>();
+            for (int i = 1; i < lines.length; i++) {
+                int col = lines[i].indexOf(':');
+                if (col > 0) {
+                    headers.put(lines[i].substring(0, col).trim().toLowerCase(Locale.ROOT), lines[i].substring(col + 1).trim());
+                }
+            }
+            return new RawResponse(code, headers, body);
+        }
     }
 
     public static void runConcurrencyTests() {
@@ -1244,6 +1981,8 @@ public class CrossTestFilesClient {
         private final com.sun.net.httpserver.Headers resHeaders = new com.sun.net.httpserver.Headers();
         private InetSocketAddress remote;
         private String method = "GET";
+        private URI uri = URI.create("/api/files");
+        private int responseCode = 200;
 
         public MockHttpExchange(InetAddress addr, int port) {
             this.remote = new InetSocketAddress(addr, port);
@@ -1253,18 +1992,19 @@ public class CrossTestFilesClient {
             this.remote = new InetSocketAddress(addr, port);
         }
 
+        public void setRequestURI(URI u) { this.uri = u; }
         @Override public com.sun.net.httpserver.Headers getRequestHeaders() { return reqHeaders; }
         @Override public com.sun.net.httpserver.Headers getResponseHeaders() { return resHeaders; }
-        @Override public URI getRequestURI() { return URI.create("/api/files"); }
+        @Override public URI getRequestURI() { return uri; }
         @Override public String getRequestMethod() { return method; }
         public void setRequestMethod(String m) { this.method = m; }
         @Override public com.sun.net.httpserver.HttpContext getHttpContext() { return null; }
         @Override public void close() {}
         @Override public InputStream getRequestBody() { return InputStream.nullInputStream(); }
         @Override public OutputStream getResponseBody() { return OutputStream.nullOutputStream(); }
-        @Override public void sendResponseHeaders(int rCode, long responseLength) {}
+        @Override public void sendResponseHeaders(int rCode, long responseLength) { this.responseCode = rCode; }
         @Override public InetSocketAddress getRemoteAddress() { return remote; }
-        @Override public int getResponseCode() { return 200; }
+        @Override public int getResponseCode() { return responseCode; }
         @Override public InetSocketAddress getLocalAddress() { return new InetSocketAddress("127.0.0.1", 8080); }
         @Override public String getProtocol() { return "HTTP/1.1"; }
         @Override public Object getAttribute(String name) { return null; }
