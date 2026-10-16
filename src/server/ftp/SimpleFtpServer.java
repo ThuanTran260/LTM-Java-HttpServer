@@ -93,9 +93,18 @@ public class SimpleFtpServer implements AutoCloseable {
                 port = Integer.parseInt(args[0]);
             } catch (NumberFormatException e) {
                 System.err.println("Invalid port number: " + args[0]);
+                System.exit(1);
             }
         }
-        Path root = Paths.get(DEFAULT_ROOT);
+        server.FileStoreConfig config;
+        try {
+            config = server.FileStoreConfig.fromEnvironment();
+        } catch (Exception e) {
+            System.err.println("[SimpleFtpServer] Configuration error: " + e.getMessage());
+            System.exit(1);
+            return;
+        }
+        Path root = config.root();
         if (args.length > 1) {
             root = Paths.get(args[1]);
         }
