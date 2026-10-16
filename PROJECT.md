@@ -72,6 +72,12 @@ A 100% Pure Java implementation of File Transfer Protocol (RFC 959) using Raw TC
 | 23 | SHA-256 Binary Integrity Test | Byte-for-byte checksum verification across text, image, 2MB binary, and ZIP | E2E/M4 | ORIGINAL_REQUEST §R3 |
 | 24 | Socket Leak Verification Test | Rapid sequential PASV transfers (50x) and verification of closed ephemeral ports | E2E/M4 | ORIGINAL_REQUEST §R3 |
 | 25 | Windows IIS FTP & FileZilla Matrix | Conditional probe of port 21, and FileZilla RFC compliance verification | E2E/M4 | ORIGINAL_REQUEST §R3 |
+| 26 | Shared Atomic File Store | `SharedFileStore` with JVM ReentrantLock + OS `FileChannel.lock` on `write.lock` | M5 | SPEC 2026-10-17 |
+| 27 | Local Session & CSRF Auth | `FileSessionAuth` (loopback check, HttpOnly cookie, bounded sessions, CSRF token) | M5 | SPEC 2026-10-17 |
+| 28 | Untrusted Upstream Isolation | `UpstreamContentPolicy` applying CSP sandbox and nosniff to `/fetch` and `/iis` | M5 | SPEC 2026-10-17 |
+| 29 | HTTP File Explorer REST API | `FilesApiHandler` on `/api/files` (exact routing, login, list, download, upload, mkdir, rename, delete) | M5 | SPEC 2026-10-17 |
+| 30 | Dedicated Web File Explorer UI | `wwwroot/files.html`, `files.css`, `files.js` (RAM CSRF, max 2 concurrent XHR, textContent safety) | M5 | SPEC 2026-10-17 |
+| 31 | Cross-Process Test Matrix (82 tests) | `CrossTestFilesClient.java` & `run_cross_test_files.bat` (config, storage, ftp, session, isolation, api, concurrency) | M5 | SPEC 2026-10-17 |
 
 ---
 
@@ -83,6 +89,7 @@ A 100% Pure Java implementation of File Transfer Protocol (RFC 959) using Raw TC
 | M2 | FTP Client & Swing GUI | `client.*`: `FtpClient`, `FtpFile`, `FtpCommandListener`, `FtpReply`, `FtpClientApp`, WebClient button | M1 interface | DONE |
 | M3 | System Integration & Scripts | `compile.bat`, `run_ftp_server.bat`, `run_ftp_client.bat`, launcher verification | M1, M2 | DONE |
 | M4 | Final E2E Test Pass & Hardening | Execute `run_cross_test_ftp.bat` (100% PASS), adversarial coverage hardening | E2E, M1, M2, M3 | DONE |
+| M5 | Web File Explorer (Approach A) | Shared storage, atomic locking, HTTP API, dedicated UI, cross-process test suite (82 tests) | M1, M3 | DONE |
 
 ---
 

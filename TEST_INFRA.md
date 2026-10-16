@@ -121,3 +121,19 @@
 - **Tier 3 (Security & Permissions)**: Path traversal variations, pre-auth, role isolation (16 implemented).
 - **Tier 4 (Real-World & Integrity)**: Multi-type SHA-256 checksums, socket leak stress, FileZilla & IIS compatibility (24 implemented).
 - **Total Test Cases**: 58 automated tests, all required to pass with exit code 0.
+
+---
+
+## Web File Explorer & Shared Storage Test Runner (`CrossTestFilesClient`)
+
+- **Source Location**: `src/client/CrossTestFilesClient.java`
+- **Batch Script**: `run_cross_test_files.bat [group]`
+- **Supported Groups**: `config`, `storage`, `ftp`, `session`, `isolation`, `api`, `concurrency`, `all`
+- **Total Test Cases**: **82 Automated Tests**
+- **Architecture**:
+  - Independent process fixture spawning temporary HTTP (`server.SimpleHttpServer`) and FTP (`server.ftp.SimpleFtpServer`) instances on ephemeral dynamic ports.
+  - Isolated test workspaces in temporary directories (`crosstest-ws-*`).
+  - Zero cross-talk with production servers or live ports (:8080, :2121).
+  - Pure Java standard library HTTP client (`java.net.http.HttpClient`) and raw socket FTP wire client (`FtpWireClient`).
+  - SHA-256 byte-for-byte verification for cross-process transfer validation.
+  - Clean shutdown of all spawned processes and recursive workspace cleanup.

@@ -1,59 +1,66 @@
-# Graph Report - Http server  (2026-10-16)
+# Graph Report - Http server  (2026-10-17)
 
 ## Corpus Check
-- 44 files · ~561,182 words
+- 52 files · ~586,437 words
 - Verdict: corpus is large enough that graph structure adds value.
-- Unclassified: 16 file(s) not represented in the graph (top: .bat 13, (none) 1, .bin 1)
+- Unclassified: 18 file(s) not represented in the graph (top: .bat 14, .css 2, (none) 1)
 
 ## Summary
-- 722 nodes · 1655 edges · 34 communities (18 shown, 16 thin omitted)
-- Extraction: 84% EXTRACTED · 16% INFERRED · 0% AMBIGUOUS · INFERRED: 259 edges (avg confidence: 0.86)
+- 959 nodes · 2267 edges · 40 communities (24 shown, 16 thin omitted)
+- Extraction: 86% EXTRACTED · 14% INFERRED · 0% AMBIGUOUS · INFERRED: 318 edges (avg confidence: 0.86)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `5cb07ff1`
+- Built from commit: `511970ee`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-- .handle
+- StudentService
+- ioexception
 - FtpClient
-- CrossTestClient.java
+- MockHttpExchange
 - BÀI 12: HTTP SERVER VÀ GIAO TIẾP MẠNG CHÉO (JAVA)
 - CrossTestClient
 - FtpSessionHandler
 - CrossTestFtpClient
 - WebFetchHandler
-- WebFetchService
-- FtpClientApp
+- FlatJsonReader
 - Local/LAN Security Hardening Implementation Plan
 - Phát hiện
-- FtpCommandListener
+- com.sun.net.httpserver.HttpExchange
 - Detailed Test Tiers (58 Test Cases)
 - FtpFile
 - Kế Hoạch Triển Khai: Java FTP Server & Java FTP Client (RFC 959)
 - Cay file cua tung site tren trang quan tri - Design
 - WebClientApp
-- SimpleFtpServer
+- SharedFileStore
 - Original User Request
 - .handle
-- SafePaths
+- files.js
+- Web File Explorer — Option A Implementation Plan
 - .tryServe
-- java.net.URI
+- FtpClientApp
+- CrossTestClient.java
 - .isLoopback
 - .startServer
+- Thiết kế Web File Explorer — phương án A
+- .handle
+- FileStoreConfig
+- 🚀 9. Java FTP Server (RFC 959) & Swing GUI Client
+- ⚡ 1. Khởi Động Nhanh (1-Click)
 
 ## God Nodes (most connected - your core abstractions)
 1. `FtpClient` - 46 edges
-2. `CrossTestClient` - 43 edges
+2. `CrossTestClient` - 45 edges
 3. `FtpClientApp` - 35 edges
-4. `SiteManager` - 34 edges
-5. `CrossTestFtpClient` - 31 edges
-6. `FtpSessionHandler` - 30 edges
-7. `WebClientApp` - 29 edges
-8. `WebFetchHandler` - 20 edges
-9. `FtpRawSession` - 17 edges
-10. `FtpFile` - 16 edges
+4. `SharedFileStore` - 35 edges
+5. `SiteManager` - 34 edges
+6. `FtpSessionHandler` - 34 edges
+7. `CrossTestFtpClient` - 32 edges
+8. `WebClientApp` - 29 edges
+9. `FilesApiHandler` - 29 edges
+10. `MockHttpExchange` - 26 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `4. Kiem thu` --references--> `CrossTestClient`  [INFERRED]
@@ -62,47 +69,43 @@
   ORIGINAL_REQUEST.md → src/client/CrossTestClient.java
 - `4. Cross-Test Runner Contract (`client.CrossTestFtpClient`)` --references--> `CrossTestFtpClient`  [INFERRED]
   PROJECT.md → src/client/CrossTestFtpClient.java
+- `3.1 Test Groups Breakdown` --references--> `FileStoreConfig`  [INFERRED]
+  TEST_READY.md → src/server/FileStoreConfig.java
 - `7. Rui ro da biet` --references--> `StaticFileHandler`  [INFERRED]
   docs/superpowers/specs/2026-10-10-file-tree-design.md → src/server/StaticFileHandler.java
-- `Task 1: `WebFetchService` + test logic trong `CrossTestClient`` --references--> `CrossTestClient`  [INFERRED]
-  docs/superpowers/plans/2026-10-10-webclient.md → src/client/CrossTestClient.java
 
 ## Import Cycles
 - None detected.
 
-## Communities (34 total, 16 thin omitted)
-
-### Community 1 - ".handle"
-Cohesion: 0.16
-Nodes (3): Student, RouterHandler, StudentService
+## Communities (40 total, 16 thin omitted)
 
 ### Community 3 - "FtpClient"
-Cohesion: 0.09
-Nodes (4): B. Gói Máy Khách FTP (`src/client/ftp/`), DataConnection, FtpClient, FtpReply
+Cohesion: 0.06
+Nodes (15): B. Gói Máy Khách FTP (`src/client/ftp/`), 1. Control Wire Interface (RFC 959 Client <-> Server), 2. Data Wire Interface (Passive & Active), 3. Client Library Interface (`client.FtpClient`), 4. Cross-Test Runner Contract (`client.CrossTestFtpClient`), Architecture, Code Layout, Feature Inventory (+7 more)
+
+### Community 4 - "MockHttpExchange"
+Cohesion: 0.06
+Nodes (7): CrossTestFilesClient, FtpWireClient, MockHttpExchange, MutableClock, ProcessFixture, RawResponse, ServerInstance
 
 ### Community 5 - "BÀI 12: HTTP SERVER VÀ GIAO TIẾP MẠNG CHÉO (JAVA)"
-Cohesion: 0.11
-Nodes (18): ⚡ 1. Khởi Động Nhanh (1-Click), 🌐 2. Kiểm Tra Bằng Trình Duyệt (Firefox / Chrome), 🧪 3. Các File Kiểm Thử Riêng Lẻ (Chạy Bằng 1 Click), 🛑 4. Quản Lý IIS Thật Của Windows (w3svc) Bằng Lệnh, 🛠️ 5. Biên Dịch Lại Mã Nguồn (Khi Có Sửa Code), 📁 6. Cấu Trúc Mã Nguồn, 🖥️ 7. Web Client (Swing) — xem source code qua WebFetch, 🌐 8. Quản lý nhiều web (Sites) (+10 more)
+Cohesion: 0.20
+Nodes (9): 🌐 2. Kiểm Tra Bằng Trình Duyệt (Firefox / Chrome), 🧪 3. Các File Kiểm Thử Riêng Lẻ (Chạy Bằng 1 Click), 🛑 4. Quản Lý IIS Thật Của Windows (w3svc) Bằng Lệnh, 🛠️ 5. Biên Dịch Lại Mã Nguồn (Khi Có Sửa Code), 📁 6. Cấu Trúc Mã Nguồn, 🖥️ 7. Web Client (Swing) — xem source code qua WebFetch, 🌐 8. Quản lý nhiều web (Sites), BÀI 12: HTTP SERVER VÀ GIAO TIẾP MẠNG CHÉO (JAVA) (+1 more)
 
 ### Community 7 - "CrossTestClient"
-Cohesion: 0.08
-Nodes (20): File tree on the admin page Implementation Plan, Global Constraints, Review Focus, Task 1: `SiteManager.filesJson` + test S40-S45, Task 2: Route `GET /api/sites/{ten}/files` + test S46-S48, Task 3: Trang quan tri hien cay file + README + test S49, Global Constraints, Multi-site hosting (quan ly nhieu web) Implementation Plan (+12 more)
+Cohesion: 0.06
+Nodes (30): File tree on the admin page Implementation Plan, Global Constraints, Review Focus, Task 1: `SiteManager.filesJson` + test S40-S45, Task 2: Route `GET /api/sites/{ten}/files` + test S46-S48, Task 3: Trang quan tri hien cay file + README + test S49, Global Constraints, Multi-site hosting (quan ly nhieu web) Implementation Plan (+22 more)
 
 ### Community 8 - "FtpSessionHandler"
 Cohesion: 0.10
-Nodes (8): FtpDataChannel, FtpPathSandbox, FtpSessionHandler, FtpUserAuth, Role, ADMIN, GUEST, USER
+Nodes (9): Hợp đồng nội bộ dùng xuyên suốt, FtpDataChannel, FtpPathSandbox, FtpSessionHandler, FtpUserAuth, Role, ADMIN, GUEST (+1 more)
 
 ### Community 9 - "CrossTestFtpClient"
-Cohesion: 0.10
-Nodes (10): CrossTestFtpClient, FtpRawSession, 1. Autonomous Server Lifecycle Management, 2. Comprehensive 8-Tier Test Matrix (58 Cases), 3. How to Run the Tests, 4. Verification Evidence, Executive Summary, Manual CLI Execution: (+2 more)
+Cohesion: 0.09
+Nodes (13): CrossTestFtpClient, FtpRawSession, 1. Autonomous Server Lifecycle Management, 2. Comprehensive 8-Tier Test Matrix (58 Cases), 3.1 Test Groups Breakdown, 3.2 Regression Verification Summary, 3. How to Run the Tests, 3. Web File Explorer & Shared Storage Cross-Test Suite (+5 more)
 
 ### Community 10 - "WebFetchHandler"
 Cohesion: 0.12
 Nodes (9): 1. Muc tieu, 2. Quyet dinh da chot voi nguoi dung, 4. Kiem thu, 5. Rui ro da biet, Ngoai pham vi (YAGNI), Tieu chi thanh cong, Web Client (Swing) - Design, FetchParams (+1 more)
-
-### Community 11 - "WebFetchService"
-Cohesion: 0.14
-Nodes (11): Global Constraints, Review Focus, Task 1: `WebFetchService` + test logic trong `CrossTestClient`, Task 2: `WebClientApp` (Swing) + `run_webclient.bat` + smoke test, Web Client (Swing) Implementation Plan, 3.1 `src/client/WebFetchService.java` (khong dung Swing), 3.2 `src/client/WebClientApp.java` (Swing), 3. Kien truc (+3 more)
 
 ### Community 14 - "Local/LAN Security Hardening Implementation Plan"
 Cohesion: 0.11
@@ -112,13 +115,13 @@ Nodes (18): Fetch/proxy, File map, Filesystem, Giới hạn ban đầu, Global C
 Cohesion: 0.11
 Nodes (17): Kết luận, Lựa chọn và đề xuất, Những bảo vệ đã có, Phát hiện, Phạm vi và bằng chứng, SEC-01 — Cao: sandbox HTTP/FTP theo đường dẫn chuỗi, không theo đích filesystem, SEC-02 — Cao: fetch vượt hạn chế localhost của API quản trị, SEC-03 — Cao, suy luận từ response: HTML không tin cậy được phục vụ cùng origin quản trị (+9 more)
 
-### Community 16 - "FtpCommandListener"
-Cohesion: 0.12
-Nodes (11): 1. Control Wire Interface (RFC 959 Client <-> Server), 2. Data Wire Interface (Passive & Active), 3. Client Library Interface (`client.FtpClient`), 4. Cross-Test Runner Contract (`client.CrossTestFtpClient`), Architecture, Code Layout, Feature Inventory, Interface Contracts (+3 more)
+### Community 16 - "com.sun.net.httpserver.HttpExchange"
+Cohesion: 0.09
+Nodes (8): FilesApiHandler, WatchdogInputStream, AuthException, FileSessionAuth, LoginThrottle, SessionRecord, SessionView, UpstreamContentPolicy
 
 ### Community 17 - "Detailed Test Tiers (58 Test Cases)"
-Cohesion: 0.13
-Nodes (14): Coverage Thresholds, Detailed Test Tiers (58 Test Cases), E2E Test Infra: Java FTP Server & Client System, Feature Inventory & Test Mapping, Test Architecture, Test Philosophy, Tier 1: Connection & Protocol Handshake (7 Cases), Tier 2: Authentication & Authorization (6 Cases) (+6 more)
+Cohesion: 0.12
+Nodes (15): Coverage Thresholds, Detailed Test Tiers (58 Test Cases), E2E Test Infra: Java FTP Server & Client System, Feature Inventory & Test Mapping, Test Architecture, Test Philosophy, Tier 1: Connection & Protocol Handshake (7 Cases), Tier 2: Authentication & Authorization (6 Cases) (+7 more)
 
 ### Community 20 - "Kế Hoạch Triển Khai: Java FTP Server & Java FTP Client (RFC 959)"
 Cohesion: 0.18
@@ -128,41 +131,69 @@ Nodes (10): 1. Tổng Quan Kiến Trúc & Bối Cảnh, 2. Các Quyết Định 
 Cohesion: 0.20
 Nodes (9): 1. Muc tieu, 2. Quyet dinh da chot, 3.1 API, 3.2 Trang quan tri, 3. Thiet ke, 4. Ngoai pham vi, 6. Kiem thu, 7. Rui ro da biet (+1 more)
 
+### Community 23 - "SharedFileStore"
+Cohesion: 0.09
+Nodes (9): SimpleFtpServer, SafePaths, DirectoryPage, Download, Entry, MutationAction, RenameTicket, SharedFileStore (+1 more)
+
 ### Community 25 - "Original User Request"
 Cohesion: 0.22
 Nodes (8): Acceptance Criteria, Initial Request — 2026-10-10T02:30:55Z, Kiểm thử độc lập (Programmatic Verification), Original User Request, R1. Đối chiếu và Chuẩn hóa 100% Java, R3. Bộ kịch bản kiểm thử tự động độc lập, Requirements, Tính chính xác về HTTP Protocol & Slide Specs
+
+### Community 27 - "files.js"
+Cohesion: 0.26
+Nodes (17): checkSession(), clearStatus(), enqueueFiles(), formatBytes(), formatIsoDate(), loadDirectory(), onLoginSuccess(), processUploadQueue() (+9 more)
+
+### Community 28 - "Web File Explorer — Option A Implementation Plan"
+Cohesion: 0.15
+Nodes (12): Baseline và file map, Dependencies, rollback và thứ tự thực hiện, Global Constraints, Self-review của bản kế hoạch, Task 2 — SharedFileStore và atomic mutation, Task 3 — FTP dùng shared store, giữ tương thích client, Task 4 — Session local và cô lập Fetch/IIS upstream, Task 5 — HTTP file API hoàn chỉnh (+4 more)
 
 ### Community 29 - ".tryServe"
 Cohesion: 0.22
 Nodes (7): 3.2 `server.SiteFileHandler` (moi) va `StaticFileHandler` (sua nho), 3.3 `server.SitesApiHandler` (moi), gan vao `SimpleHttpServer` tai `/api/sites`, 3.4 Trang quan tri `wwwroot/admin.html` (moi) + link tu `wwwroot/index.html`, 3.5 Cau hinh va cleanup, 3. Kien truc, ServerLogger, StaticFileHandler
 
-### Community 31 - "java.net.URI"
-Cohesion: 0.22
+### Community 31 - "CrossTestClient.java"
+Cohesion: 0.14
 Nodes (4): R2. Bảo đảm đầy đủ các Route và Bài tập mở rộng của Slide, HttpClientErrorDemo, HttpClientGetDemo, HttpClientPostDemo
 
 ### Community 32 - ".isLoopback"
 Cohesion: 0.20
 Nodes (8): 5. Rang buoc chung, 1. Muc tieu, 2. Quyet dinh da chot voi nguoi dung, 4. Kiem thu (them vao `CrossTestClient`), 5. Rui ro da biet, Multi-site hosting (quan ly nhieu web) - Design, Ngoai pham vi (YAGNI), Tieu chi thanh cong
 
+### Community 34 - "Thiết kế Web File Explorer — phương án A"
+Cohesion: 0.20
+Nodes (9): 1. Mục tiêu và giới hạn, 2. Phân vai và dữ liệu, 4. Ranh giới filesystem và đồng thời giữa hai JVM, 5. Đăng nhập, session và cô lập nội dung không tin cậy, 6. Hợp đồng HTTP API, 7. Giao diện, 8. Kiểm thử và nghiệm thu, 9. Ngoài phạm vi (+1 more)
+
+### Community 36 - "FileStoreConfig"
+Cohesion: 0.22
+Nodes (8): Task 1 — Test harness, cấu hình dùng chung và startup, 3. Cấu hình dùng chung, 10.1 Khởi động và cấu hình chung, 10.2 Xác thực, phiên làm việc và bảo mật, 10.3 Giới hạn kỹ thuật và an toàn dữ liệu, 10.4 Chạy kiểm thử tự động toàn diện, 🗄️ 10. Quản Lý Tệp Qua Web (Web File Explorer & Shared Storage), FileStoreConfig
+
+### Community 37 - "🚀 9. Java FTP Server (RFC 959) & Swing GUI Client"
+Cohesion: 0.33
+Nodes (6): 9.1 Khởi động nhanh (1-Click), 9.2 Phân quyền tài khoản (Role-Based Authorization), 9.3 Hướng dẫn kết nối bằng FileZilla Client, 9.4 Các tính năng bảo mật nâng cao (Security Hardening), 9.5 Dừng dịch vụ an toàn sau buổi thực hành, 🚀 9. Java FTP Server (RFC 959) & Swing GUI Client
+
+### Community 39 - "⚡ 1. Khởi Động Nhanh (1-Click)"
+Cohesion: 0.67
+Nodes (3): ⚡ 1. Khởi Động Nhanh (1-Click), Dịch vụ FTP Server & Client (RFC 959), Dịch vụ HTTP & Web
+
 ## Knowledge Gaps
-- **95 isolated node(s):** `GUEST`, `USER`, `ADMIN`, `Initial Request — 2026-10-10T02:30:55Z`, `R1. Đối chiếu và Chuẩn hóa 100% Java` (+90 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 212 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **117 isolated node(s):** `GUEST`, `USER`, `ADMIN`, `Initial Request — 2026-10-10T02:30:55Z`, `R1. Đối chiếu và Chuẩn hóa 100% Java` (+112 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 251 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **16 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `FtpClient` connect `FtpClient` to `FtpClient.java`, `CrossTestFtpClient`, `FtpClientApp`, `FtpCommandListener`, `.initListeners`?**
-  _High betweenness centrality (0.143) - this node is a cross-community bridge._
-- **Why does `CrossTestClient` connect `CrossTestClient` to `.isLoopback`, `CrossTestClient.java`, `WebFetchHandler`, `WebFetchService`, `Original User Request`?**
-  _High betweenness centrality (0.117) - this node is a cross-community bridge._
-- **Why does `CrossTestFtpClient` connect `CrossTestFtpClient` to `FtpCommandListener`, `CrossTestFtpClient.java`?**
-  _High betweenness centrality (0.116) - this node is a cross-community bridge._
-- **Are the 13 inferred relationships involving `CrossTestClient` (e.g. with `Task 1: `SiteManager.filesJson` + test S40-S45` and `Task 2: Route `GET /api/sites/{ten}/files` + test S46-S48`) actually correct?**
-  _`CrossTestClient` has 13 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 3 inferred relationships involving `CrossTestFtpClient` (e.g. with `4. Cross-Test Runner Contract (`client.CrossTestFtpClient`)` and `1. Autonomous Server Lifecycle Management`) actually correct?**
-  _`CrossTestFtpClient` has 3 INFERRED edges - model-reasoned connections that need verification._
+- **Why does `CrossTestFilesClient` connect `MockHttpExchange` to `CrossTestFilesClient.java`, `Detailed Test Tiers (58 Test Cases)`, `FileStoreConfig`, `SharedFileStore`?**
+  _High betweenness centrality (0.124) - this node is a cross-community bridge._
+- **Why does `CrossTestClient` connect `CrossTestClient` to `.isLoopback`, `CrossTestFtpClient`, `WebFetchHandler`, `Original User Request`, `CrossTestClient.java`?**
+  _High betweenness centrality (0.114) - this node is a cross-community bridge._
+- **Why does `FtpClient` connect `FtpClient` to `CrossTestFtpClient`, `FtpClient.java`, `FtpClientApp`?**
+  _High betweenness centrality (0.107) - this node is a cross-community bridge._
+- **Are the 14 inferred relationships involving `CrossTestClient` (e.g. with `Task 1: `SiteManager.filesJson` + test S40-S45` and `Task 2: Route `GET /api/sites/{ten}/files` + test S46-S48`) actually correct?**
+  _`CrossTestClient` has 14 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `GUEST`, `USER`, `ADMIN` to the rest of the system?**
-  _95 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _117 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `SiteManager.java` be split into smaller, more focused modules?**
+  _Cohesion score 0.14736842105263157 - nodes in this community are weakly interconnected._
 - **Should `FtpClient` be split into smaller, more focused modules?**
-  _Cohesion score 0.08701298701298701 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.06025039123630673 - nodes in this community are weakly interconnected._

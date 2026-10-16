@@ -197,3 +197,29 @@ Duration     : 1188 ms
 ===============================================================================
 >>> OVERALL STATUS: ALL TESTS PASSED (100% SUCCESS) <<<
 ```
+
+---
+
+## 3. Web File Explorer & Shared Storage Cross-Test Suite
+
+- **Test Runner Source**: `src/client/CrossTestFilesClient.java`
+- **1-Click Execution Script**: `run_cross_test_files.bat all`
+- **Total Test Cases**: **82 Automated Wire & Integration Tests across 7 Groups**
+- **Test Execution Result**: **82 / 82 PASS (100% PASS, 0 FAIL, 0 FLAKE, Exit Code 0)**
+
+### 3.1 Test Groups Breakdown
+
+| Group | Target Component | Assertions | Key Validations | Status |
+|:---:|:---|:---:|:---|:---:|
+| **CONFIG** | `FileStoreConfig` | 9 | Defaults, negative limits rejected, password exclamation mark preserved, CLI root precedence, SafePaths junction root rejection | **PASS** |
+| **STORAGE** | `SharedFileStore` | 18 | Atomic staging, short/long body rejection, limit bounds, 0-byte commit, no Web overwrite (409), non-empty directory delete rejection (409), rename ticket, canonical path traversal rejection, outside canary preservation | **PASS** |
+| **FTP** | `FtpSessionHandler` | 11 | Wire STOR/RETR with literal `+` (`a+b.txt`), `%` (`100%.txt`), Vietnamese unicode, atomic STOR overwrite (226), `.state` staging concealment, RNFR/RNTO rename tickets | **PASS** |
+| **SESSION** | `FileSessionAuth` | 15 | Loopback socket check, X-Forwarded-For ignored, Host/Origin spoof rejection (403), no default fallback password (503), brute-force rate limiter (429), token redaction in toString(), CSRF tokens, guest read-only | **PASS** |
+| **ISOLATION** | `UpstreamContentPolicy` | 3 | CSP sandbox (`sandbox; form-action 'none'; frame-ancestors 'none'`) and nosniff applied to raw `/fetch` and `/iis`, app UI (`index.html`) unaffected | **PASS** |
+| **API** | `FilesApiHandler` | 17 | Exact routing (`/api/filesXYZ` -> 404), method not allowed (405 with Allow), unauthenticated (401), full CRUD (mkdir, list, upload, download attachment, rename, delete), 0-byte file, HTML download isolation, guest rejection, logout, files.html loopback guard | **PASS** |
+| **CONCURRENCY** | Cross-Process Locking | 9 | Web upload -> FTP RETR SHA-256 match, FTP STOR -> Web download SHA-256 match, unicode/symbol handling on both, conflict semantics, 2 stores in same JVM (no overlapping lock), atomic unsupported simulation rollback, Web operates after FTP killed, CSP sandbox browser proof | **PASS** |
+
+### 3.2 Regression Verification Summary
+- `CrossTestFilesClient all`: 82 / 82 PASS (0 FAIL)
+- `CrossTestFtpClient`: 80 / 80 PASS (0 FAIL)
+- `CrossTestClient`: 148 / 148 PASS (0 FAIL)

@@ -228,3 +228,64 @@ Thư mục gốc lưu trữ tệp của FTP Server: `ftp_workspace/server_root/`
 1. Trong FileZilla, chọn **Server → Disconnect**. Đóng ứng dụng Java FTP Client GUI.
 2. Tại cửa sổ terminal đang chạy **`run_ftp_server.bat`**, nhấn tổ hợp phím **Ctrl+C**. Khi CMD hỏi `Terminate batch job (Y/N)?`, nhập **Y** và nhấn **Enter**.
 3. Cổng `2121` được giải phóng hoàn toàn ngay lập tức. Dữ liệu upload nằm an toàn trong thư mục `ftp_workspace/server_root/`.
+
+---
+
+## 🗄️ 10. Quản Lý Tệp Qua Web (Web File Explorer & Shared Storage)
+
+Trang quản lý tệp tin chuyên biệt (**`http://localhost:8080/files.html`**) hoạt động trực tiếp qua HTTP REST API (`/api/files`), dùng chung kho lưu trữ vật lý với FTP Server (`ftp_workspace/server_root/`), hoàn toàn độc lập với trang quản trị website (`/admin.html`).
+
+### 10.1 Khởi động và cấu hình chung
+
+1. **Khởi động dịch vụ:**
+   - Bật Web Server: `run_server.bat` (lắng nghe tại `http://localhost:8080/`)
+   - Bật FTP Server: `run_ftp_server.bat` (lắng nghe tại `127.0.0.1:2121`)
+   - Cả hai script đều tự động nạp cấu hình mật khẩu từ `ftp.local.bat`.
+   - Web hoạt động độc lập khi FTP Server tắt, và FTP hoạt động độc lập khi Web Server tắt.
+
+2. **Cấu hình môi trường (`FileStoreConfig`):**
+
+| Biến môi trường | Mặc định | Ý nghĩa |
+|:---|:---|:---|
+| `FTP_ROOT` | `ftp_workspace/server_root` | Thư mục kho dùng chung cho cả Web và FTP |
+| `FTP_MAX_FILE_BYTES` | `67108864` (64 MiB) | Giới hạn dung lượng tối đa mỗi tệp tải lên |
+| `WEB_FILES_ALLOW_GUEST` | `false` | Cho phép tài khoản `guest` đăng nhập chỉ đọc trên Web |
+| `FTP_ADMIN_PASSWORD` | *(không mặc định)* | Mật khẩu admin cục bộ cấu hình trong `ftp.local.bat` |
+
+> [!NOTE]
+> Web không sử dụng mật khẩu fallback mặc định. Nếu `FTP_ADMIN_PASSWORD` chưa được đặt, Web API trả về `503 SETUP_REQUIRED` và giao diện sẽ hướng dẫn cấu hình `ftp.local.bat` rồi khởi động lại server.
+
+### 10.2 Xác thực, phiên làm việc và bảo mật
+
+- **Ranh giới Localhost:** Chỉ chấp nhận kết nối từ loopback socket (`127.0.0.1`, `::1`, `localhost`). Các request từ mạng ngoài bị từ chối `403 FORBIDDEN`. Không tin cậy `X-Forwarded-For`.
+- **Phiên làm việc (Session):** Quản lý hoàn toàn trong bộ nhớ RAM server, tự hủy khi restart server. Cookie `FileExplorerSession` (`HttpOnly; SameSite=Strict; Path=/api/files`). Hết hạn sau 30 phút không hoạt động (idle) hoặc tối đa 8 giờ.
+- **Chống CSRF:** Mọi thao tác ghi (upload, mkdir, rename, delete) yêu cầu bắt buộc header `X-File-Explorer: 1` và token `X-CSRF-Token` khớp với phiên đăng nhập.
+- **Phân quyền người dùng:**
+  - `admin`: Toàn quyền duyệt, tải về, tạo thư mục, đổi tên, xóa và tải lên tệp tin.
+  - `guest`: Chỉ đọc (duyệt thư mục, tải về tệp tin). Mọi thao tác ghi bị chặn `403 FORBIDDEN` ở cả UI lẫn API.
+- **Cô lập nội dung không tin cậy (Upstream Isolation):** Toàn bộ nội dung thô trả về từ `/fetch` và proxy IIS được gắn chính sách CSP sandbox nghiêm ngặt (`sandbox; form-action 'none'; frame-ancestors 'none'`) cùng `X-Content-Type-Options: nosniff`. Trình duyệt sẽ ngăn chặn tuyệt đối các mã script trong trang web bên ngoài cố tình truy cập vào `/api/files`.
+
+### 10.3 Giới hạn kỹ thuật và an toàn dữ liệu
+
+- **Không ghi đè qua Web:** Web upload từ chối ghi đè tệp tin đã tồn tại (`409 CONFLICT`). FTP `STOR` hỗ trợ thay thế nguyên tử tệp tin cũ.
+- **Giới hạn đồng thời:** Tối đa 2 tiến trình upload HTTP đồng thời trên server. Upload có deadline 120 giây và watchdog đọc 30 giây.
+- **Không xóa thư mục có nội dung:** Chỉ cho phép xóa thư mục rỗng (`204`). Thư mục có chứa tệp tin hoặc thư mục con bị từ chối với `409 NOT_EMPTY`.
+- **Không xem trước (Preview):** Tải về tệp tin luôn trả về dạng luồng nhị phân với `Content-Type: application/octet-stream` và `Content-Disposition: attachment`, ngăn chặn thực thi mã độc.
+- **Phân trang thư mục:** Danh sách hiển thị theo từng trang (1..200 tệp/trang), tối đa 10.000 tệp mỗi thư mục. Thư mục vượt quá 10.000 mục trả về `422`.
+- **Khóa đa tiến trình (Cross-Process Concurrency):** Mọi thao tác ghi được bảo vệ bởi khóa đồng bộ trong JVM kết hợp khóa tệp OS trên `write.lock` (`<root>.state/write.lock`), đảm bảo không xung đột dữ liệu giữa hai tiến trình Web và FTP Server.
+- **Dọn dẹp tệp tạm (Staging):** Tệp upload được nhận tại thư mục riêng `<root>.state/staging/` trước khi chuyển nguyên tử vào kho. Nếu server gặp sự cố crash, hãy **dừng cả hai tiến trình** trước khi xóa các tệp `.tmp` tồn đọng.
+
+### 10.4 Chạy kiểm thử tự động toàn diện
+
+Chạy toàn bộ 82 ca kiểm thử ma trận chéo Web File Explorer & Shared Storage:
+```cmd
+run_cross_test_files.bat all
+```
+Hoặc chạy từng nhóm kiểm thử riêng lẻ:
+- `run_cross_test_files.bat config`: Kiểm tra cấu hình và biến môi trường (9 tests).
+- `run_cross_test_files.bat storage`: Kiểm tra `SharedFileStore` và khóa nguyên tử (18 tests).
+- `run_cross_test_files.bat ftp`: Kiểm tra tích hợp FTP qua wire protocol (11 tests).
+- `run_cross_test_files.bat session`: Kiểm tra đăng nhập, session, CSRF và local guard (15 tests).
+- `run_cross_test_files.bat isolation`: Kiểm tra chính sách cô lập nội dung upstream CSP sandbox (3 tests).
+- `run_cross_test_files.bat api`: Kiểm tra toàn diện HTTP REST API `/api/files` qua wire (17 tests).
+- `run_cross_test_files.bat concurrency`: Kiểm tra đồng thời hai tiến trình Web & FTP với mã băm SHA-256 (9 tests).
