@@ -51,8 +51,11 @@ public final class SafePaths {
         }
 
         // Sanitize string characters
-        if (relativePath.indexOf('\0') >= 0) {
-            throw new SecurityException("Null byte injection detected");
+        for (int i = 0; i < relativePath.length(); i++) {
+            char c = relativePath.charAt(i);
+            if (c < 0x20 || c == 0x7F) {
+                throw new SecurityException("Control characters forbidden: 0x" + Integer.toHexString(c));
+            }
         }
         if (relativePath.contains(":")) {
             throw new SecurityException("Alternate Data Streams or drive letters forbidden");
@@ -63,6 +66,12 @@ public final class SafePaths {
 
         // Reject Windows reserved device names and trailing dot/space
         String clean = relativePath.replace('\\', '/');
+        while (clean.startsWith("/")) {
+            clean = clean.substring(1);
+        }
+        if (clean.isEmpty()) {
+            return normRoot;
+        }
         for (String segment : clean.split("/")) {
             if (segment.isEmpty()) continue;
             if (!segment.equals(".") && !segment.equals("..")) {

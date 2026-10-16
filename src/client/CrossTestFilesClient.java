@@ -11,6 +11,7 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import server.FileStoreConfig;
 import server.SafePaths;
+import server.SharedFileStore;
 
 /**
  * Autonomous Cross-Test Runner for Web File Explorer and Shared FTP Storage.
@@ -222,10 +223,228 @@ public class CrossTestFilesClient {
         }
     }
 
-    // Placeholders for future tasks (will be implemented as we proceed)
+    // =========================================================================
+    // 2. STORAGE TESTS (Task 2)
+    // =========================================================================
+
     public static void runStorageTests() {
         System.out.println("\n--- [GROUP: STORAGE] SharedFileStore & Atomic Mutation ---");
-        // To be populated in Task 2
+
+        try {
+            Path ws = Files.createTempDirectory("files-store-test-");
+            Path root = ws.resolve("root");
+            Files.createDirectory(root);
+            Path canary = ws.resolve("canary.txt");
+            Files.writeString(canary, "CANARY_ALIVE", StandardCharsets.UTF_8);
+
+            SharedFileStore store = new SharedFileStore(root, 64); // 64 bytes max
+
+            // Test 2.1: Plan's minimal assertion: Web upload replace=false conflict check
+            store.upload("/a.bin", new ByteArrayInputStream(new byte[]{1, 2, 3}), 3, false);
+            try {
+                store.upload("/a.bin", new ByteArrayInputStream(new byte[]{9}), 1, false);
+                fail("Storage 2.1: Duplicate upload replace=false must throw CONFLICT", "No exception thrown");
+            } catch (SharedFileStore.StoreException expected) {
+                if ("CONFLICT".equals(expected.code())) {
+                    if (Arrays.equals(Files.readAllBytes(root.resolve("a.bin")), new byte[]{1, 2, 3})) {
+                        pass("Storage 2.1: Minimal assertion: Web duplicate upload rejected with CONFLICT, original bytes intact");
+                    } else {
+                        fail("Storage 2.1: Original bytes corrupted", "Bytes did not match");
+                    }
+                } else {
+                    fail("Storage 2.1: Wrong error code", "Expected CONFLICT, got " + expected.code());
+                }
+            }
+
+            // Test 2.2: 0-byte file upload
+            SharedFileStore.Entry zeroEntry = store.upload("/zero.bin", new ByteArrayInputStream(new byte[0]), 0, false);
+            if (zeroEntry.size() == 0 && Files.size(root.resolve("zero.bin")) == 0) {
+                pass("Storage 2.2: 0-byte file upload committed with size 0");
+            } else {
+                fail("Storage 2.2: 0-byte upload", "Size: " + zeroEntry.size());
+            }
+
+            // Test 2.3: Short body: expected 5 bytes, sent 3 bytes -> CONFLICT, staging cleaned
+            try {
+                store.upload("/short.bin", new ByteArrayInputStream(new byte[]{1, 2, 3}), 5, false);
+                fail("Storage 2.3: Short body rejected", "Expected CONFLICT exception");
+            } catch (SharedFileStore.StoreException e) {
+                if ("CONFLICT".equals(e.code()) && !Files.exists(root.resolve("short.bin"))) {
+                    pass("Storage 2.3: Short body upload rejected with CONFLICT and target not published");
+                } else {
+                    fail("Storage 2.3: Short body", "Code: " + e.code());
+                }
+            }
+
+            // Test 2.4: Long body: expected 3 bytes, sent 5 bytes -> TOO_LARGE, staging cleaned
+            try {
+                store.upload("/long.bin", new ByteArrayInputStream(new byte[]{1, 2, 3, 4, 5}), 3, false);
+                fail("Storage 2.4: Long body rejected", "Expected TOO_LARGE exception");
+            } catch (SharedFileStore.StoreException e) {
+                if ("TOO_LARGE".equals(e.code()) && !Files.exists(root.resolve("long.bin"))) {
+                    pass("Storage 2.4: Long body upload rejected with TOO_LARGE and target not published");
+                } else {
+                    fail("Storage 2.4: Long body", "Code: " + e.code());
+                }
+            }
+
+            // Test 2.5: Limit N vs N+1: maxFileBytes is 64 bytes. Upload 65 bytes -> TOO_LARGE
+            try {
+                byte[] oversized = new byte[65];
+                store.upload("/over.bin", new ByteArrayInputStream(oversized), 65, false);
+                fail("Storage 2.5: Oversized upload rejected", "Expected TOO_LARGE exception");
+            } catch (SharedFileStore.StoreException e) {
+                if ("TOO_LARGE".equals(e.code())) {
+                    pass("Storage 2.5: File exceeding maxFileBytes rejected with TOO_LARGE");
+                } else {
+                    fail("Storage 2.5: Oversized", "Code: " + e.code());
+                }
+            }
+
+            // Test 2.6: Web upload without mkdir must NOT auto-create parent directories
+            try {
+                store.upload("/missing_dir/file.txt", new ByteArrayInputStream(new byte[]{1}), 1, false);
+                fail("Storage 2.6: Auto-creating missing directory forbidden", "Expected NOT_FOUND exception");
+            } catch (SharedFileStore.StoreException e) {
+                if ("NOT_FOUND".equals(e.code()) && !Files.exists(root.resolve("missing_dir"))) {
+                    pass("Storage 2.6: Upload into non-existent directory strictly rejected with NOT_FOUND");
+                } else {
+                    fail("Storage 2.6: Missing parent", "Code: " + e.code());
+                }
+            }
+
+            // Test 2.7: Mkdir and duplicate mkdir
+            SharedFileStore.Entry dirEntry = store.mkdir("/folder1");
+            if (dirEntry.directory() && Files.isDirectory(root.resolve("folder1"))) {
+                try {
+                    store.mkdir("/folder1");
+                    fail("Storage 2.7: Duplicate mkdir rejected", "Expected CONFLICT");
+                } catch (SharedFileStore.StoreException e) {
+                    if ("CONFLICT".equals(e.code())) {
+                        pass("Storage 2.7: Mkdir creates directory and duplicate mkdir rejected with CONFLICT");
+                    } else {
+                        fail("Storage 2.7: Duplicate mkdir code", "Code: " + e.code());
+                    }
+                }
+            } else {
+                fail("Storage 2.7: Mkdir", "Directory not created");
+            }
+
+            // Test 2.8: Delete empty directory vs non-empty directory vs root
+            store.mkdir("/empty_dir");
+            store.mkdir("/non_empty_dir");
+            store.upload("/non_empty_dir/sub.txt", new ByteArrayInputStream(new byte[]{1}), 1, false);
+
+            try {
+                store.delete("/");
+                fail("Storage 2.8: Root delete rejected", "Expected FORBIDDEN");
+            } catch (SharedFileStore.StoreException e) {
+                if ("FORBIDDEN".equals(e.code())) {
+                    pass("Storage 2.8a: Root directory deletion forbidden (FORBIDDEN)");
+                } else {
+                    fail("Storage 2.8a: Root delete code", "Code: " + e.code());
+                }
+            }
+
+            try {
+                store.delete("/non_empty_dir");
+                fail("Storage 2.8: Non-empty delete rejected", "Expected NOT_EMPTY");
+            } catch (SharedFileStore.StoreException e) {
+                if ("NOT_EMPTY".equals(e.code())) {
+                    pass("Storage 2.8b: Non-empty directory deletion rejected with NOT_EMPTY");
+                } else {
+                    fail("Storage 2.8b: Non-empty delete code", "Code: " + e.code());
+                }
+            }
+
+            store.delete("/empty_dir");
+            if (!Files.exists(root.resolve("empty_dir"))) {
+                pass("Storage 2.8c: Empty directory deleted successfully");
+            } else {
+                fail("Storage 2.8c: Empty directory delete", "Directory still exists");
+            }
+
+            // Test 2.9: Rename ticket, rename target exists conflict, rename directory
+            store.upload("/rename_me.txt", new ByteArrayInputStream(new byte[]{1, 2}), 2, false);
+            SharedFileStore.RenameTicket ticket = store.prepareRename("/rename_me.txt");
+            store.rename(ticket, "/renamed.txt");
+            if (Files.exists(root.resolve("renamed.txt")) && !Files.exists(root.resolve("rename_me.txt"))) {
+                pass("Storage 2.9a: File rename via ticket succeeded");
+            } else {
+                fail("Storage 2.9a: File rename", "Files state invalid");
+            }
+
+            // Rename to existing target -> CONFLICT
+            try {
+                store.rename("/renamed.txt", "/a.bin");
+                fail("Storage 2.9b: Rename to existing target rejected", "Expected CONFLICT");
+            } catch (SharedFileStore.StoreException e) {
+                if ("CONFLICT".equals(e.code())) {
+                    pass("Storage 2.9b: Rename to existing target rejected with CONFLICT");
+                } else {
+                    fail("Storage 2.9b: Rename conflict", "Code: " + e.code());
+                }
+            }
+
+            // Test 2.10: AtomicMoveNotSupportedException test seam
+            store.setSimulateAtomicUnsupported(true);
+            try {
+                store.upload("/atomic_test.bin", new ByteArrayInputStream(new byte[]{4, 5, 6}), 3, false);
+                fail("Storage 2.10: Simulated unsupported atomic move", "Expected ATOMIC_UNSUPPORTED");
+            } catch (SharedFileStore.StoreException e) {
+                if ("ATOMIC_UNSUPPORTED".equals(e.code()) && !Files.exists(root.resolve("atomic_test.bin"))) {
+                    pass("Storage 2.10: Atomic move unsupported fails safely without leaving partial target");
+                } else {
+                    fail("Storage 2.10: Atomic unsupported code", "Code: " + e.code());
+                }
+            } finally {
+                store.setSimulateAtomicUnsupported(false);
+            }
+
+            // Test 2.11: List pagination and sorting (folders first)
+            SharedFileStore.DirectoryPage page = store.list("/", 0, 10);
+            if (page.total() >= 3 && !page.entries().isEmpty() && page.entries().get(0).directory()) {
+                pass("Storage 2.11: List returns directory page with folders sorted before files");
+            } else {
+                fail("Storage 2.11: List sorting", "Entries: " + page.entries());
+            }
+
+            // Test 2.12: Open download streams exact bytes
+            try (SharedFileStore.Download dl = store.openDownload("/renamed.txt")) {
+                byte[] downloaded = dl.stream().readAllBytes();
+                if (dl.size() == 2 && Arrays.equals(downloaded, new byte[]{1, 2})) {
+                    pass("Storage 2.12: Open download provides stream and exact size");
+                } else {
+                    fail("Storage 2.12: Download bytes", "Size: " + dl.size());
+                }
+            }
+
+            // Test 2.13: SafePaths control characters & traversal rejection
+            try {
+                store.openDownload("/../canary.txt");
+                fail("Storage 2.13a: Traversal escape rejected", "Expected SecurityException");
+            } catch (SecurityException e) {
+                pass("Storage 2.13a: Path traversal strictly rejected outside root boundary");
+            }
+
+            try {
+                store.openDownload("/test\r\n.txt");
+                fail("Storage 2.13b: Control characters rejected", "Expected SecurityException");
+            } catch (SecurityException e) {
+                pass("Storage 2.13b: CRLF / control character injection strictly rejected");
+            }
+
+            // Verify canary outside root was never touched
+            if ("CANARY_ALIVE".equals(Files.readString(canary, StandardCharsets.UTF_8))) {
+                pass("Storage 2.14: Canary file outside root remains 100% untouched");
+            } else {
+                fail("Storage 2.14: Canary corrupted", "Canary modified");
+            }
+
+        } catch (Exception e) {
+            fail("Storage Group Fixture Execution", e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     public static void runFtpTests() {
