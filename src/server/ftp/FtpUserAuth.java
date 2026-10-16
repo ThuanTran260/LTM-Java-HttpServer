@@ -18,7 +18,19 @@ public class FtpUserAuth {
         return (env != null && !env.isBlank()) ? env.trim() : "admin123";
     }
 
+    public static boolean isDemoExplicitlyDisabled() {
+        String env = System.getenv("FTP_ENABLE_DEMO_ACCOUNT");
+        if (env != null && ("false".equalsIgnoreCase(env.trim()) || "0".equals(env.trim()))) {
+            return true;
+        }
+        String prop = System.getProperty("ftp.enable.demo");
+        return prop != null && ("false".equalsIgnoreCase(prop.trim()) || "0".equals(prop.trim()));
+    }
+
     public static boolean isDemoAccountEnabled() {
+        if (isDemoExplicitlyDisabled()) {
+            return false;
+        }
         String env = System.getenv("FTP_ENABLE_DEMO_ACCOUNT");
         if (env != null && ("true".equalsIgnoreCase(env.trim()) || "1".equals(env.trim()))) {
             return true;
@@ -27,6 +39,9 @@ public class FtpUserAuth {
     }
 
     public static String getStudentPassword() {
+        if (isDemoExplicitlyDisabled()) {
+            return null;
+        }
         String env = System.getenv("FTP_STUDENT_PASSWORD");
         if (env != null && !env.isBlank()) {
             return env.trim();

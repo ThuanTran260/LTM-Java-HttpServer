@@ -20,6 +20,11 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -248,11 +253,30 @@ public class FtpClient implements AutoCloseable {
         if (localTarget == null) {
             throw new IllegalArgumentException("Target local file cannot be null");
         }
-        if (localTarget.getParentFile() != null && !localTarget.getParentFile().exists()) {
-            localTarget.getParentFile().mkdirs();
+        File parentDir = localTarget.getParentFile();
+        if (parentDir != null && !parentDir.exists()) {
+            parentDir.mkdirs();
         }
-        try (OutputStream out = new BufferedOutputStream(new FileOutputStream(localTarget))) {
-            downloadStream(remoteName, out);
+        Path parentPath = (parentDir != null) ? parentDir.toPath() : Paths.get(".");
+        Path tempFile = null;
+        try {
+            tempFile = Files.createTempFile(parentPath, localTarget.getName() + ".", ".tmp");
+            try (OutputStream out = new BufferedOutputStream(Files.newOutputStream(tempFile))) {
+                downloadStream(remoteName, out);
+            }
+            // Stream is closed before move to prevent Windows file locking issues
+            try {
+                Files.move(tempFile, localTarget.toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+            } catch (AtomicMoveNotSupportedException e) {
+                Files.move(tempFile, localTarget.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            }
+            tempFile = null; // Successfully transferred and moved
+        } finally {
+            if (tempFile != null) {
+                try {
+                    Files.deleteIfExists(tempFile);
+                } catch (Exception ignored) {}
+            }
         }
     }
 

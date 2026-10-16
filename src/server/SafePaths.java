@@ -26,8 +26,28 @@ public final class SafePaths {
         if (root == null) {
             throw new SecurityException("Root path cannot be null");
         }
-        if (relativePath == null || relativePath.isEmpty()) {
-            return getRealOrNormalized(root);
+        Path normRoot = root.toAbsolutePath().normalize();
+        if (!Files.exists(normRoot, java.nio.file.LinkOption.NOFOLLOW_LINKS)) {
+            throw new SecurityException("Sandbox root does not exist: " + normRoot);
+        }
+        if (!Files.isDirectory(normRoot, java.nio.file.LinkOption.NOFOLLOW_LINKS)) {
+            throw new SecurityException("Sandbox root must be a directory: " + normRoot);
+        }
+        if (isLinkOrReparsePoint(normRoot)) {
+            throw new SecurityException("Sandbox root cannot be a filesystem link or junction: " + normRoot);
+        }
+        Path realRoot;
+        try {
+            realRoot = normRoot.toRealPath();
+        } catch (IOException e) {
+            throw new SecurityException("Cannot resolve real path for sandbox root: " + e.getMessage());
+        }
+        if (!Files.isDirectory(realRoot)) {
+            throw new SecurityException("Sandbox real root must be a directory: " + realRoot);
+        }
+
+        if (relativePath == null || relativePath.isEmpty() || "/".equals(relativePath)) {
+            return normRoot;
         }
 
         // Sanitize string characters
@@ -54,9 +74,6 @@ public final class SafePaths {
                 throw new SecurityException("Windows reserved device name forbidden: " + segment);
             }
         }
-
-        Path normRoot = root.toAbsolutePath().normalize();
-        Path realRoot = getRealOrNormalized(normRoot);
 
         Path resolved = normRoot.resolve(clean).normalize().toAbsolutePath();
         if (!resolved.startsWith(normRoot)) {

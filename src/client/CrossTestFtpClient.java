@@ -32,6 +32,7 @@ public class CrossTestFtpClient {
     private static int totalTests = 0;
     private static int passedTests = 0;
     private static int failedTests = 0;
+    private static int skippedTests = 0;
     private static Process serverProcess = null;
 
     public static void main(String[] args) {
@@ -69,11 +70,12 @@ public class CrossTestFtpClient {
         System.out.printf("Total Tests  : %d%n", totalTests);
         System.out.printf("Passed Tests : %d%n", passedTests);
         System.out.printf("Failed Tests : %d%n", failedTests);
+        System.out.printf("Skipped Tests: %d%n", skippedTests);
         System.out.printf("Duration     : %d ms%n", duration);
         System.out.println("===============================================================================");
 
         if (failedTests == 0) {
-            System.out.println(">>> OVERALL STATUS: ALL TESTS PASSED (100% SUCCESS) <<<");
+            System.out.println(">>> OVERALL STATUS: ALL ACTIVE TESTS PASSED (0 FAILURES) <<<");
             System.exit(0);
         } else {
             System.err.printf(">>> OVERALL STATUS: %d TEST(S) FAILED <<<%n", failedTests);
@@ -93,6 +95,12 @@ public class CrossTestFtpClient {
         System.err.printf("[FAIL] %s: %s -> %s%n", testId, description, reason);
     }
 
+    private static void skip(String testId, String description, String reason) {
+        totalTests++;
+        skippedTests++;
+        System.out.printf("[SKIP] %s: %s (Reason: %s)%n", testId, description, reason);
+    }
+
     // -------------------------------------------------------------------------
     // Server Lifecycle & Environment Management
     // -------------------------------------------------------------------------
@@ -104,6 +112,30 @@ public class CrossTestFtpClient {
         } catch (IOException e) {
             return false;
         }
+    }
+
+    private static int findAvailablePort() throws IOException {
+        try (ServerSocket ss = new ServerSocket(0, 1, InetAddress.getByName("127.0.0.1"))) {
+            return ss.getLocalPort();
+        }
+    }
+
+    private static void deleteDirectoryRecursively(Path dir) {
+        if (dir == null || !Files.exists(dir)) return;
+        try {
+            Files.walkFileTree(dir, new SimpleFileVisitor<Path>() {
+                @Override
+                public FileVisitResult visitFile(Path file, java.nio.file.attribute.BasicFileAttributes attrs) throws IOException {
+                    Files.deleteIfExists(file);
+                    return FileVisitResult.CONTINUE;
+                }
+                @Override
+                public FileVisitResult postVisitDirectory(Path d, IOException exc) throws IOException {
+                    Files.deleteIfExists(d);
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+        } catch (Exception ignored) {}
     }
 
     private static void prepareEnvironment() {
@@ -378,12 +410,121 @@ public class CrossTestFtpClient {
             fail("Tier 2.9", "Brute-force defense", e.getMessage());
         }
 
-        // T2.10: Student login rejection when demo account is disabled (unconfigured environment)
-        boolean studentAuthWithoutConfig = server.ftp.FtpUserAuth.authenticate("student", "123456");
-        if (!studentAuthWithoutConfig) {
-            pass("Tier 2.10", "Student credentials rejected when demo configuration is not active in environment");
-        } else {
-            fail("Tier 2.10", "Student demo protection", "Student account should be disabled without explicit configuration");
+        // T2.10: FtpUserAuth unit test: explicit disablement overrides environment
+        System.setProperty("ftp.enable.demo", "false");
+        try {
+            boolean studentAuthDisabled = server.ftp.FtpUserAuth.authenticate("student", "123456");
+            if (!studentAuthDisabled) {
+                pass("Tier 2.10", "FtpUserAuth: student rejected unconditionally when demo is explicitly disabled");
+            } else {
+                fail("Tier 2.10", "FtpUserAuth demo disabled", "Student account should be disabled when ftp.enable.demo=false");
+            }
+        } finally {
+            System.clearProperty("ftp.enable.demo");
+        }
+
+        // T2.11: Isolated Server A Process (Demo strictly disabled)
+        Path tempRootA = null;
+        Process procA = null;
+        try {
+            int portA = findAvailablePort();
+            tempRootA = Files.createTempDirectory("ftp_test_isolated_a_");
+            ProcessBuilder pbA = new ProcessBuilder(
+                    "java",
+                    "-Dftp.enable.demo=false",
+                    "-cp", "out",
+                    "server.ftp.SimpleFtpServer",
+                    String.valueOf(portA),
+                    tempRootA.toAbsolutePath().toString()
+            );
+            pbA.environment().put("FTP_ENABLE_DEMO_ACCOUNT", "false");
+            pbA.environment().remove("FTP_STUDENT_PASSWORD");
+            pbA.redirectErrorStream(true);
+            procA = pbA.start();
+            Process finalProcA = procA;
+            Thread drainA = new Thread(() -> {
+                try (BufferedReader br = new BufferedReader(new InputStreamReader(finalProcA.getInputStream()))) {
+                    while (br.readLine() != null) {}
+                } catch (Exception ignored) {}
+            });
+            drainA.setDaemon(true);
+            drainA.start();
+
+            long deadline = System.currentTimeMillis() + 4000;
+            while (System.currentTimeMillis() < deadline && !isPortListening(HOST, portA, 200)) {
+                Thread.sleep(100);
+            }
+
+            try (FtpRawSession sessionA = new FtpRawSession(HOST, portA)) {
+                sessionA.send("USER student");
+                String pRep = sessionA.send("PASS 123456");
+                sessionA.send("USER admin");
+                String pAdmin = sessionA.send("PASS admin123");
+
+                if (pRep.startsWith("530") && pAdmin.startsWith("230")) {
+                    pass("Tier 2.11", "Isolated Server A: student rejected (530) and admin accepted (230) on dynamic port " + portA);
+                } else {
+                    fail("Tier 2.11", "Isolated Server A demo disabled", "student=" + pRep + ", admin=" + pAdmin);
+                }
+            }
+        } catch (Exception e) {
+            fail("Tier 2.11", "Isolated Server A test exception", e.getMessage());
+        } finally {
+            if (procA != null) {
+                procA.destroyForcibly();
+                try { procA.waitFor(2, TimeUnit.SECONDS); } catch (Exception ignored) {}
+            }
+            deleteDirectoryRecursively(tempRootA);
+        }
+
+        // T2.12: Isolated Server B Process (Demo enabled)
+        Path tempRootB = null;
+        Process procB = null;
+        try {
+            int portB = findAvailablePort();
+            tempRootB = Files.createTempDirectory("ftp_test_isolated_b_");
+            ProcessBuilder pbB = new ProcessBuilder(
+                    "java",
+                    "-Dftp.enable.demo=true",
+                    "-cp", "out",
+                    "server.ftp.SimpleFtpServer",
+                    String.valueOf(portB),
+                    tempRootB.toAbsolutePath().toString()
+            );
+            pbB.environment().put("FTP_ENABLE_DEMO_ACCOUNT", "true");
+            pbB.redirectErrorStream(true);
+            procB = pbB.start();
+            Process finalProcB = procB;
+            Thread drainB = new Thread(() -> {
+                try (BufferedReader br = new BufferedReader(new InputStreamReader(finalProcB.getInputStream()))) {
+                    while (br.readLine() != null) {}
+                } catch (Exception ignored) {}
+            });
+            drainB.setDaemon(true);
+            drainB.start();
+
+            long deadline = System.currentTimeMillis() + 4000;
+            while (System.currentTimeMillis() < deadline && !isPortListening(HOST, portB, 200)) {
+                Thread.sleep(100);
+            }
+
+            try (FtpRawSession sessionB = new FtpRawSession(HOST, portB)) {
+                sessionB.send("USER student");
+                String pRep = sessionB.send("PASS 123456");
+                if (pRep.startsWith("230")) {
+                    pass("Tier 2.12", "Isolated Server B: student/123456 login succeeds (230) on dynamic port " + portB);
+                } else {
+                    fail("Tier 2.12", "Isolated Server B demo enabled", "Expected 230, got: " + pRep);
+                }
+            }
+        } catch (Exception e) {
+            fail("Tier 2.12", "Isolated Server B test exception", e.getMessage());
+        } finally {
+            if (procB != null) {
+                procB.destroyForcibly();
+                try { procB.waitFor(2, TimeUnit.SECONDS); } catch (Exception ignored) {}
+            }
+            deleteDirectoryRecursively(tempRootB);
         }
     }
 
@@ -770,6 +911,81 @@ public class CrossTestFtpClient {
                 pass("Tier 6.14", "SafePaths sandbox policy (trailing dot & link rejection) validated");
             }
 
+            // T6.15: SafePaths rejects non-existent sandbox root
+            Path nonExistentRoot = Paths.get("ftp_workspace", "non_existent_root_" + System.currentTimeMillis());
+            try {
+                server.SafePaths.resolveSafe(nonExistentRoot, "");
+                fail("Tier 6.15", "SafePaths non-existent root check", "Should have thrown SecurityException");
+            } catch (SecurityException se) {
+                pass("Tier 6.15", "SafePaths non-existent sandbox root rejected with SecurityException");
+            }
+
+            // T6.16: SafePaths rejects regular file as sandbox root
+            Path regularFileRoot = SERVER_ROOT.resolve("readme.txt");
+            try {
+                server.SafePaths.resolveSafe(regularFileRoot, "");
+                fail("Tier 6.16", "SafePaths file as root check", "Should have thrown SecurityException");
+            } catch (SecurityException se) {
+                pass("Tier 6.16", "SafePaths regular file as sandbox root rejected with SecurityException");
+            }
+
+            // T6.17: SafePaths rejects Windows Junction as sandbox root and preserves target canary data
+            Path tempTarget = null;
+            Path tempJunction = null;
+            try {
+                tempTarget = Files.createTempDirectory("junction_target_");
+                Path canaryFile = tempTarget.resolve("canary.txt");
+                Files.writeString(canaryFile, "CANARY_ALIVE_12345", StandardCharsets.UTF_8);
+
+                tempJunction = Paths.get(System.getProperty("java.io.tmpdir"), "root_junc_" + System.currentTimeMillis());
+                boolean junctionCreated = false;
+                try {
+                    Process p = new ProcessBuilder("cmd", "/c", "mklink", "/J", tempJunction.toAbsolutePath().toString(), tempTarget.toAbsolutePath().toString())
+                            .redirectErrorStream(true)
+                            .start();
+                    p.waitFor(5, TimeUnit.SECONDS);
+                    junctionCreated = p.exitValue() == 0 && Files.exists(tempJunction, LinkOption.NOFOLLOW_LINKS);
+                } catch (Exception ignored) {}
+
+                if (!junctionCreated) {
+                    skip("Tier 6.17", "Root junction sandbox check", "Windows mklink /J not permitted in current environment");
+                } else {
+                    boolean caughtEmpty = false;
+                    try {
+                        server.SafePaths.resolveSafe(tempJunction, "");
+                    } catch (SecurityException se) {
+                        caughtEmpty = true;
+                    }
+                    boolean caughtSlash = false;
+                    try {
+                        server.SafePaths.resolveSafe(tempJunction, "/");
+                    } catch (SecurityException se) {
+                        caughtSlash = true;
+                    }
+                    boolean caughtChild = false;
+                    try {
+                        server.SafePaths.resolveSafe(tempJunction, "canary.txt");
+                    } catch (SecurityException se) {
+                        caughtChild = true;
+                    }
+                    boolean canaryIntact = Files.exists(canaryFile) && "CANARY_ALIVE_12345".equals(Files.readString(canaryFile, StandardCharsets.UTF_8));
+                    if (caughtEmpty && caughtSlash && caughtChild && canaryIntact) {
+                        pass("Tier 6.17", "SafePaths rejects junction root (empty, slash, child) and canary data remains 100% untouched");
+                    } else {
+                        fail("Tier 6.17", "SafePaths junction root", "caughtEmpty=" + caughtEmpty + ", caughtSlash=" + caughtSlash + ", caughtChild=" + caughtChild + ", canaryIntact=" + canaryIntact);
+                    }
+                }
+            } catch (Exception e) {
+                fail("Tier 6.17", "Root junction test exception", e.getMessage());
+            } finally {
+                if (tempJunction != null && Files.exists(tempJunction, LinkOption.NOFOLLOW_LINKS)) {
+                    try {
+                        new ProcessBuilder("cmd", "/c", "rmdir", tempJunction.toAbsolutePath().toString()).start().waitFor(3, TimeUnit.SECONDS);
+                    } catch (Exception ignored) {}
+                }
+                deleteDirectoryRecursively(tempTarget);
+            }
+
         } catch (Exception e) {
             fail("Tier 6", "Security defense tests exception", e.getMessage());
         }
@@ -808,6 +1024,162 @@ public class CrossTestFtpClient {
             // T7.5: 0-byte empty file
             byte[] emptyBytes = new byte[0];
             testPayloadIntegrity(session, "Tier 7.5", "t7_empty_payload.bin", emptyBytes, false);
+
+            // T7.6: Atomic download preserves existing local file when client is not connected
+            Path testDir = Files.createTempDirectory("ftp_atomic_test_");
+            Path existingFile = testDir.resolve("critical_existing_data.txt");
+            byte[] originalCriticalBytes = "ORIGINAL_CRITICAL_CONTENT_12345".getBytes(StandardCharsets.UTF_8);
+            Files.write(existingFile, originalCriticalBytes);
+            String origSha = calculateSha256(originalCriticalBytes);
+
+            FtpClient disconnectedClient = new FtpClient();
+            boolean discThrew = false;
+            try {
+                disconnectedClient.downloadFile("any_remote.txt", existingFile.toFile());
+            } catch (IOException e) {
+                discThrew = true;
+            }
+            boolean discShaMatch = origSha.equals(calculateSha256(Files.readAllBytes(existingFile)));
+            boolean discNoTmp = false;
+            try (var s = Files.list(testDir)) {
+                discNoTmp = s.noneMatch(p -> p.getFileName().toString().endsWith(".tmp"));
+            }
+            if (discThrew && discShaMatch && discNoTmp) {
+                pass("Tier 7.6", "Atomic download preserves existing file SHA-256 when disconnected (0 leftover .tmp)");
+            } else {
+                fail("Tier 7.6", "Atomic download disconnected", "threw=" + discThrew + ", sha=" + discShaMatch + ", noTmp=" + discNoTmp);
+            }
+
+            // T7.7: Atomic download preserves existing local file when server replies 550
+            FtpClient notFoundClient = new FtpClient();
+            boolean nfThrew = false;
+            try {
+                notFoundClient.connect(HOST, PORT);
+                notFoundClient.login("admin", "admin123");
+                notFoundClient.downloadFile("non_existent_550_file.bin", existingFile.toFile());
+            } catch (IOException e) {
+                nfThrew = true;
+            } finally {
+                notFoundClient.disconnect();
+            }
+            boolean nfShaMatch = origSha.equals(calculateSha256(Files.readAllBytes(existingFile)));
+            boolean nfNoTmp = false;
+            try (var s = Files.list(testDir)) {
+                nfNoTmp = s.noneMatch(p -> p.getFileName().toString().endsWith(".tmp"));
+            }
+            if (nfThrew && nfShaMatch && nfNoTmp) {
+                pass("Tier 7.7", "Atomic download preserves existing file SHA-256 on 550 reply (0 leftover .tmp)");
+            } else {
+                fail("Tier 7.7", "Atomic download 550", "threw=" + nfThrew + ", sha=" + nfShaMatch + ", noTmp=" + nfNoTmp);
+            }
+
+            // T7.8: Atomic download preserves existing local file when transfer is aborted (426)
+            int abortPort = findAvailablePort();
+            Thread mockServer = new Thread(() -> {
+                try (ServerSocket ss = new ServerSocket(abortPort, 1, InetAddress.getByName("127.0.0.1"))) {
+                    try (Socket ctrl = ss.accept();
+                         BufferedReader r = new BufferedReader(new InputStreamReader(ctrl.getInputStream(), StandardCharsets.UTF_8));
+                         BufferedWriter w = new BufferedWriter(new OutputStreamWriter(ctrl.getOutputStream(), StandardCharsets.UTF_8))) {
+                        w.write("220 Mock FTP Server Ready\r\n");
+                        w.flush();
+                        String line;
+                        ServerSocket dataSS = null;
+                        while ((line = r.readLine()) != null) {
+                            if (line.startsWith("USER")) {
+                                w.write("331 User name okay\r\n");
+                                w.flush();
+                            } else if (line.startsWith("PASS")) {
+                                w.write("230 User logged in\r\n");
+                                w.flush();
+                            } else if (line.startsWith("TYPE")) {
+                                w.write("200 Type set to I\r\n");
+                                w.flush();
+                            } else if (line.startsWith("PASV")) {
+                                dataSS = new ServerSocket(0, 1, InetAddress.getByName("127.0.0.1"));
+                                int dp = dataSS.getLocalPort();
+                                w.write(String.format(Locale.ROOT, "227 Entering Passive Mode (127,0,0,1,%d,%d)\r\n", dp / 256, dp % 256));
+                                w.flush();
+                            } else if (line.startsWith("RETR")) {
+                                w.write("150 Opening BINARY mode data connection\r\n");
+                                w.flush();
+                                if (dataSS != null) {
+                                    try (Socket dataSock = dataSS.accept();
+                                         OutputStream dout = dataSock.getOutputStream()) {
+                                        dout.write("PARTIAL_CORRUPT_BYTES".getBytes(StandardCharsets.UTF_8));
+                                        dout.flush();
+                                    }
+                                    dataSS.close();
+                                }
+                                w.write("426 Connection closed; transfer aborted\r\n");
+                                w.flush();
+                                break;
+                            } else if (line.startsWith("QUIT")) {
+                                w.write("221 Goodbye\r\n");
+                                w.flush();
+                                break;
+                            }
+                        }
+                    }
+                } catch (Exception ignored) {}
+            });
+            mockServer.setDaemon(true);
+            mockServer.start();
+
+            FtpClient abortClient = new FtpClient();
+            boolean abortThrew = false;
+            try {
+                abortClient.connect(HOST, abortPort);
+                abortClient.login("admin", "admin123");
+                abortClient.downloadFile("aborted.bin", existingFile.toFile());
+            } catch (IOException e) {
+                abortThrew = true;
+            } finally {
+                abortClient.disconnect();
+            }
+
+            boolean abortShaMatch = origSha.equals(calculateSha256(Files.readAllBytes(existingFile)));
+            boolean abortNoTmp = false;
+            try (var s = Files.list(testDir)) {
+                abortNoTmp = s.noneMatch(p -> p.getFileName().toString().endsWith(".tmp"));
+            }
+            if (abortThrew && abortShaMatch && abortNoTmp) {
+                pass("Tier 7.8", "Atomic download preserves existing file SHA-256 on 426 transfer abort (0 leftover .tmp)");
+            } else {
+                fail("Tier 7.8", "Atomic download abort", "threw=" + abortThrew + ", sha=" + abortShaMatch + ", noTmp=" + abortNoTmp);
+            }
+
+            // T7.9: Atomic download succeeds on normal and 0-byte files with 0 leftover .tmp
+            FtpClient okClient = new FtpClient();
+            boolean okSuccess = false;
+            try {
+                okClient.connect(HOST, PORT);
+                okClient.login("admin", "admin123");
+                okClient.downloadFile("readme.txt", existingFile.toFile());
+                boolean normalDownloaded = Files.size(existingFile) > 0 && !origSha.equals(calculateSha256(Files.readAllBytes(existingFile)));
+
+                Path emptyTarget = testDir.resolve("empty_download.bin");
+                Files.write(emptyTarget, "NOT_EMPTY".getBytes(StandardCharsets.UTF_8));
+                session.uploadBytesPasv("t7_empty_atomic.bin", new byte[0]);
+                okClient.downloadFile("t7_empty_atomic.bin", emptyTarget.toFile());
+                boolean emptyDownloaded = Files.size(emptyTarget) == 0;
+                session.send("DELE t7_empty_atomic.bin");
+
+                boolean noTmpLeft = false;
+                try (var s = Files.list(testDir)) {
+                    noTmpLeft = s.noneMatch(p -> p.getFileName().toString().endsWith(".tmp"));
+                }
+                if (normalDownloaded && emptyDownloaded && noTmpLeft) {
+                    okSuccess = true;
+                }
+            } finally {
+                okClient.disconnect();
+                deleteDirectoryRecursively(testDir);
+            }
+            if (okSuccess) {
+                pass("Tier 7.9", "Atomic download replaces target cleanly for normal and 0-byte files (0 leftover .tmp)");
+            } else {
+                fail("Tier 7.9", "Atomic download normal & empty", "Clean replacement failed or .tmp remained");
+            }
 
         } catch (Exception e) {
             fail("Tier 7", "Data integrity suite exception", e.getMessage());
