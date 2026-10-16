@@ -20,3 +20,6 @@ Desktop.ini
 sites/
 sites.json
 sites.json.tmp
+
+# Temporary download test output
+downloaded_source/

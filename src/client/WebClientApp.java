@@ -80,6 +80,19 @@ public class WebClientApp {
         serverRow.add(new JLabel("Server WebFetch:"), BorderLayout.WEST);
         serverRow.add(serverField, BorderLayout.CENTER);
 
+        JButton ftpButton = new JButton("FTP Client...");
+        ftpButton.setToolTipText("Open Pure Java Socket FTP Client (Dual-Pane RFC 959 Explorer)");
+        ftpButton.addActionListener(e -> {
+            SwingUtilities.invokeLater(() -> {
+                try {
+                    new FtpClientApp().setVisible(true);
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(frame, "Cannot launch FTP Client: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            });
+        });
+        serverRow.add(ftpButton, BorderLayout.EAST);
+
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
         buttons.add(jsonCheck);
         buttons.add(fetchButton);
