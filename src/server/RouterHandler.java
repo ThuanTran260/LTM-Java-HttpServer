@@ -38,8 +38,17 @@ public class RouterHandler implements HttpHandler {
         try {
             // Trang quan tri chi cho may local (spec muc 2), giong /api/sites
             // StaticFileHandler decode duong dan lan nua va Windows khong phan biet hoa thuong: so sanh ca hai
-            String page = urlDecodeOr(path, path);
-            if (method.equals("GET") && (page.equalsIgnoreCase("/admin.html") || page.equalsIgnoreCase("/files.html")) && !SitesApiHandler.isLoopback(ex.getRemoteAddress())) {
+            String page = urlDecodeOr(path, path).replace('\\', '/');
+            while (page.startsWith("//")) {
+                page = page.substring(1);
+            }
+            String checkPath = page.startsWith("/") ? page : ("/" + page);
+            try {
+                String relNorm = java.nio.file.Paths.get(page.startsWith("/") ? page.substring(1) : page).normalize().toString().replace('\\', '/');
+                checkPath = "/" + relNorm;
+            } catch (Exception ignored) {
+            }
+            if ((checkPath.equalsIgnoreCase("/admin.html") || checkPath.equalsIgnoreCase("/files.html") || page.equalsIgnoreCase("/admin.html") || page.equalsIgnoreCase("/files.html")) && !SitesApiHandler.isLoopback(ex.getRemoteAddress())) {
                 send(ex, 403, "text/plain; charset=utf-8", "403 Forbidden: chi cho phep goi tu may local");
                 return;
             }

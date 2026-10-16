@@ -96,7 +96,8 @@ public class FtpPathSandbox {
                     continue;
                 }
             }
-            baos.write((byte) (c & 0xFF));
+            byte[] charBytes = Character.toString(c).getBytes(StandardCharsets.UTF_8);
+            baos.write(charBytes, 0, charBytes.length);
         }
         return baos.toString(StandardCharsets.UTF_8);
     }

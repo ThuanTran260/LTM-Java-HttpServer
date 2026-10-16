@@ -102,16 +102,16 @@ public class FilesApiHandler implements HttpHandler {
                 sendNotFound(ex);
             }
         } catch (FileSessionAuth.AuthException ae) {
-            sendJson(ex, ae.statusCode(), ae.code(), ae.getMessage());
+            try { sendJson(ex, ae.statusCode(), ae.code(), ae.getMessage()); } catch (Exception ignored) {}
         } catch (SharedFileStore.StoreException se) {
             int status = mapStoreStatusCode(se.code());
-            sendJson(ex, status, se.code(), se.getMessage());
+            try { sendJson(ex, status, se.code(), se.getMessage()); } catch (Exception ignored) {}
         } catch (SecurityException se) {
-            sendJson(ex, 403, "FORBIDDEN", se.getMessage());
+            try { sendJson(ex, 403, "FORBIDDEN", se.getMessage()); } catch (Exception ignored) {}
         } catch (IllegalArgumentException iae) {
-            sendJson(ex, 400, "BAD_REQUEST", iae.getMessage());
+            try { sendJson(ex, 400, "BAD_REQUEST", iae.getMessage()); } catch (Exception ignored) {}
         } catch (Exception e) {
-            sendJson(ex, 500, "INTERNAL_ERROR", "Unexpected server error: " + e.getMessage());
+            try { sendJson(ex, 500, "INTERNAL_ERROR", "Unexpected server error: " + e.getMessage()); } catch (Exception ignored) {}
         }
     }
 
@@ -223,7 +223,8 @@ public class FilesApiHandler implements HttpHandler {
                     "attachment; filename=\"" + asciiFallback + "\"; filename*=UTF-8''" + utf8Encoded);
 
             long size = dl.size();
-            ex.sendResponseHeaders(200, size);
+            long len = (size == 0) ? -1 : size;
+            ex.sendResponseHeaders(200, len);
             if (size > 0) {
                 try (InputStream in = dl.stream(); OutputStream out = ex.getResponseBody()) {
                     in.transferTo(out);

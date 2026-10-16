@@ -443,6 +443,55 @@ public class CrossTestFilesClient {
                 fail("Storage 2.14: Canary corrupted", "Canary modified");
             }
 
+            // Test 2.15: Parent directory recreation during upload triggers CONFLICT
+            store.mkdir("/parent_recycle");
+            InputStream recreatingInput = new InputStream() {
+                private int count = 0;
+                @Override
+                public int read() throws IOException {
+                    if (count == 0) {
+                        count++;
+                        try {
+                            Path parentDir = root.resolve("parent_recycle");
+                            Files.delete(parentDir);
+                            Thread.sleep(50);
+                            Files.createDirectory(parentDir);
+                        } catch (Exception ex) {
+                            throw new IOException(ex);
+                        }
+                        return 99;
+                    }
+                    return -1;
+                }
+            };
+            try {
+                store.upload("/parent_recycle/test.bin", recreatingInput, 1, false);
+                fail("Storage 2.15: Parent directory recreation during upload", "Expected CONFLICT");
+            } catch (SharedFileStore.StoreException se) {
+                if ("CONFLICT".equals(se.code())) {
+                    pass("Storage 2.15: Parent directory recreation during upload triggers CONFLICT");
+                } else {
+                    fail("Storage 2.15: Parent directory recreation code", "Got: " + se.code());
+                }
+            }
+
+            // Test 2.16: Delete on file currently locked / open for read triggers CONFLICT
+            store.upload("/locked_file.bin", new ByteArrayInputStream(new byte[]{1, 2, 3}), 3, false);
+            Path lockedPath = root.resolve("locked_file.bin");
+            try (java.nio.channels.FileChannel fc = java.nio.channels.FileChannel.open(lockedPath, StandardOpenOption.READ);
+                 java.nio.channels.FileLock lock = fc.tryLock(0, Long.MAX_VALUE, true)) {
+                try {
+                    store.delete("/locked_file.bin");
+                    pass("Storage 2.16: Delete on open file handled safely");
+                } catch (SharedFileStore.StoreException se) {
+                    if ("CONFLICT".equals(se.code())) {
+                        pass("Storage 2.16: Delete on file with lock triggers CONFLICT");
+                    } else {
+                        fail("Storage 2.16: Wrong error code on locked file delete", "Got: " + se.code());
+                    }
+                }
+            }
+
         } catch (Exception e) {
             fail("Storage Group Fixture Execution", e.getMessage());
             e.printStackTrace();
@@ -534,6 +583,21 @@ public class CrossTestFilesClient {
                     pass("FTP 3.3: STOR 100%.txt with literal '%' preserved filename on disk");
                 } else {
                     fail("FTP 3.3: STOR 100%.txt", "Reply: " + storDone2);
+                }
+
+                // Test 3.3b: STOR and RETR file containing both '%' and Unicode (e.g. 100%_dữ_liệu.txt)
+                String pasv3b = client.sendCommand("PASV");
+                int dataPort3b = client.parsePasvPort(pasv3b);
+                try (Socket dataSocket = new Socket("127.0.0.1", dataPort3b)) {
+                    client.sendCommand("STOR 100%_d\u1eef_li\u1ec7u.txt");
+                    dataSocket.getOutputStream().write("percent-unicode-content".getBytes(StandardCharsets.UTF_8));
+                    dataSocket.getOutputStream().flush();
+                }
+                String storDone3b = client.readReply();
+                if (storDone3b.startsWith("226") && Files.exists(root.resolve("100%_d\u1eef_li\u1ec7u.txt"))) {
+                    pass("FTP 3.3b: STOR file with both '%' and Unicode succeeded without character corruption");
+                } else {
+                    fail("FTP 3.3b: Percent and Unicode STOR", "Reply: " + storDone3b);
                 }
 
                 // Test 3.4: Unicode Vietnamese filename and spaces
@@ -691,6 +755,26 @@ public class CrossTestFilesClient {
                 fail("Session 4.4b: Cross-origin rejected", "Expected AuthException 403");
             } catch (server.FileSessionAuth.AuthException e) {
                 pass("Session 4.4b: Cross-origin Origin header strictly rejected with 403");
+            }
+
+            // Test 4.3b: Host header port mismatch rejected
+            loopEx.getRequestHeaders().set("Host", "localhost:9999");
+            loopEx.getRequestHeaders().remove("Origin");
+            try {
+                auth.checkLocalRequest(loopEx);
+                fail("Session 4.3b: Host port mismatch rejected", "Expected AuthException 403");
+            } catch (server.FileSessionAuth.AuthException e) {
+                pass("Session 4.3b: Host header port mismatch strictly rejected with 403");
+            }
+
+            // Test 4.4c: Origin header port mismatch rejected
+            loopEx.getRequestHeaders().set("Host", "localhost:8080");
+            loopEx.getRequestHeaders().set("Origin", "http://localhost:3000");
+            try {
+                auth.checkLocalRequest(loopEx);
+                fail("Session 4.4c: Origin port mismatch rejected", "Expected AuthException 403");
+            } catch (server.FileSessionAuth.AuthException e) {
+                pass("Session 4.4c: Origin header port mismatch strictly rejected with 403");
             }
 
             // Test 4.5: Unconfigured admin password returns 503 SETUP_REQUIRED
@@ -1149,6 +1233,29 @@ public class CrossTestFilesClient {
                     return;
                 }
 
+                // Port mismatch on Host header
+                String badPortHostReq = "GET /api/files/session HTTP/1.1\r\n" +
+                        "Host: localhost:9999\r\n" +
+                        "Cookie: " + adminCookie + "\r\n" +
+                        "Connection: close\r\n\r\n";
+                RawResponse badPortHostResp = sendRawHttp(port, badPortHostReq);
+                if (badPortHostResp.statusCode() != 403) {
+                    fail("api_host_and_origin_guards", "Host port mismatch expected 403, got " + badPortHostResp.statusCode());
+                    return;
+                }
+
+                // Port mismatch on Origin header
+                HttpRequest badPortOriginReq = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + "/api/files/session"))
+                        .header("Cookie", adminCookie)
+                        .header("Origin", "http://localhost:3000")
+                        .GET().build();
+                HttpResponse<String> badPortOriginResp = client.send(badPortOriginReq, HttpResponse.BodyHandlers.ofString());
+                if (badPortOriginResp.statusCode() != 403) {
+                    fail("api_host_and_origin_guards", "Origin port mismatch expected 403, got " + badPortOriginResp.statusCode());
+                    return;
+                }
+
                 pass("api_host_and_origin_guards");
             } catch (Exception e) {
                 fail("api_host_and_origin_guards", e.getMessage());
@@ -1532,13 +1639,149 @@ public class CrossTestFilesClient {
                 exLoop.setRequestURI(URI.create("/files.html"));
                 new server.RouterHandler().handle(exLoop);
 
-                if (exNonLoop.getResponseCode() == 403 && exLoop.getResponseCode() != 403) {
+                // Normalization bypass attempts from remote IP: //files.html, /./files.html, //admin.html
+                MockHttpExchange exSlashBypass = new MockHttpExchange(nonLoopback, 12345);
+                exSlashBypass.setRequestURI(URI.create("http://localhost//files.html"));
+                new server.RouterHandler().handle(exSlashBypass);
+
+                MockHttpExchange exDotBypass = new MockHttpExchange(nonLoopback, 12345);
+                exDotBypass.setRequestURI(URI.create("http://localhost/./files.html"));
+                new server.RouterHandler().handle(exDotBypass);
+
+                MockHttpExchange exAdminBypass = new MockHttpExchange(nonLoopback, 12345);
+                exAdminBypass.setRequestURI(URI.create("http://localhost//admin.html"));
+                new server.RouterHandler().handle(exAdminBypass);
+
+                if (exNonLoop.getResponseCode() == 403 && exLoop.getResponseCode() != 403
+                        && exSlashBypass.getResponseCode() == 403
+                        && exDotBypass.getResponseCode() == 403
+                        && exAdminBypass.getResponseCode() == 403) {
                     pass("api_files_html_loopback_guard");
                 } else {
-                    fail("api_files_html_loopback_guard", "nonLoop=" + exNonLoop.getResponseCode() + " loop=" + exLoop.getResponseCode());
+                    fail("api_files_html_loopback_guard", "nonLoop=" + exNonLoop.getResponseCode()
+                            + " loop=" + exLoop.getResponseCode()
+                            + " slash=" + exSlashBypass.getResponseCode()
+                            + " dot=" + exDotBypass.getResponseCode()
+                            + " adminSlash=" + exAdminBypass.getResponseCode());
                 }
             } catch (Exception e) {
                 fail("api_files_html_loopback_guard", e.getMessage());
+            }
+
+            // 15b. Concurrent upload limit: 3rd concurrent PUT upload returns 429 BUSY
+            try {
+                HttpRequest reLogin = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + "/api/files/login"))
+                        .header("X-File-Explorer", "1")
+                        .header("Content-Type", "application/json")
+                        .POST(HttpRequest.BodyPublishers.ofString("{\"username\":\"admin\",\"password\":\"AdminPass_2026!\"}"))
+                        .build();
+                HttpResponse<String> reLoginResp = client.send(reLogin, HttpResponse.BodyHandlers.ofString());
+                String activeCookie = extractCookie(reLoginResp.headers().firstValue("set-cookie").orElse(""), "FileExplorerSession");
+                String activeCsrf = extractJson(reLoginResp.body(), "csrfToken");
+
+                CountDownLatch u1Started = new CountDownLatch(1);
+                CountDownLatch u2Started = new CountDownLatch(1);
+                CountDownLatch releaseUploads = new CountDownLatch(1);
+
+                ExecutorService uploadPool = Executors.newFixedThreadPool(3);
+
+                Future<HttpResponse<String>> f1 = uploadPool.submit(() -> {
+                    try {
+                        InputStream in1 = new InputStream() {
+                            int sent = 0;
+                            @Override
+                            public int read() throws IOException {
+                                if (sent == 0) {
+                                    sent++;
+                                    u1Started.countDown();
+                                    try {
+                                        releaseUploads.await(10, TimeUnit.SECONDS);
+                                    } catch (InterruptedException ignored) {}
+                                    return 42;
+                                }
+                                return -1;
+                            }
+                        };
+                        HttpRequest up1 = HttpRequest.newBuilder()
+                                .uri(URI.create("http://localhost:" + port + "/api/files/content?path=/slow1.bin"))
+                                .header("Cookie", activeCookie)
+                                .header("X-File-Explorer", "1")
+                                .header("X-CSRF-Token", activeCsrf)
+                                .header("X-File-Size", "1")
+                                .PUT(HttpRequest.BodyPublishers.ofInputStream(() -> in1))
+                                .build();
+                        return client.send(up1, HttpResponse.BodyHandlers.ofString());
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+
+                Future<HttpResponse<String>> f2 = uploadPool.submit(() -> {
+                    try {
+                        InputStream in2 = new InputStream() {
+                            int sent = 0;
+                            @Override
+                            public int read() throws IOException {
+                                if (sent == 0) {
+                                    sent++;
+                                    u2Started.countDown();
+                                    try {
+                                        releaseUploads.await(10, TimeUnit.SECONDS);
+                                    } catch (InterruptedException ignored) {}
+                                    return 43;
+                                }
+                                return -1;
+                            }
+                        };
+                        HttpRequest up2 = HttpRequest.newBuilder()
+                                .uri(URI.create("http://localhost:" + port + "/api/files/content?path=/slow2.bin"))
+                                .header("Cookie", activeCookie)
+                                .header("X-File-Explorer", "1")
+                                .header("X-CSRF-Token", activeCsrf)
+                                .header("X-File-Size", "1")
+                                .PUT(HttpRequest.BodyPublishers.ofInputStream(() -> in2))
+                                .build();
+                        return client.send(up2, HttpResponse.BodyHandlers.ofString());
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+
+                // Wait until both uploads 1 and 2 are active
+                boolean bothActive = u1Started.await(5, TimeUnit.SECONDS) && u2Started.await(5, TimeUnit.SECONDS);
+                if (!bothActive) {
+                    releaseUploads.countDown();
+                    fail("api_concurrent_upload_limit_429", "timed out waiting for 2 concurrent uploads to begin");
+                    return;
+                }
+
+                // Send 3rd upload which must be rejected with 429
+                HttpRequest up3 = HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:" + port + "/api/files/content?path=/slow3.bin"))
+                        .header("Cookie", activeCookie)
+                        .header("X-File-Explorer", "1")
+                        .header("X-CSRF-Token", activeCsrf)
+                        .header("X-File-Size", "1")
+                        .PUT(HttpRequest.BodyPublishers.ofByteArray(new byte[]{44}))
+                        .build();
+                HttpResponse<String> resp3 = client.send(up3, HttpResponse.BodyHandlers.ofString());
+
+                // Release uploads 1 and 2
+                releaseUploads.countDown();
+                HttpResponse<String> resp1 = f1.get(5, TimeUnit.SECONDS);
+                HttpResponse<String> resp2 = f2.get(5, TimeUnit.SECONDS);
+                uploadPool.shutdown();
+
+                if (resp3.statusCode() == 429 && resp3.body().contains("BUSY")
+                        && resp1.statusCode() == 201 && resp2.statusCode() == 201) {
+                    pass("api_concurrent_upload_limit_429");
+                } else {
+                    fail("api_concurrent_upload_limit_429", "resp3=" + resp3.statusCode() + " body=" + resp3.body()
+                            + " resp1=" + resp1.statusCode() + " resp2=" + resp2.statusCode());
+                }
+            } catch (Exception e) {
+                fail("api_concurrent_upload_limit_429", e.getMessage());
             }
 
             // 16. Web functions when FTP server is not running

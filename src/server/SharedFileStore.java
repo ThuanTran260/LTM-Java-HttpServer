@@ -213,7 +213,10 @@ public class SharedFileStore {
         }
 
         BasicFileAttributes parentAttrsBefore = Files.readAttributes(parent, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
-        Object parentKeyBefore = parentAttrsBefore.fileKey();
+        Object parentIdentityBefore = captureDirectoryIdentity(parentAttrsBefore);
+        if (parentIdentityBefore == null) {
+            throw new StoreException("CONFLICT", "Cannot determine parent directory identity");
+        }
 
         boolean targetExistedBefore = Files.exists(targetPath, LinkOption.NOFOLLOW_LINKS);
         if (targetExistedBefore && !replace) {
@@ -260,7 +263,8 @@ public class SharedFileStore {
                     throw new StoreException("CONFLICT", "Parent directory no longer exists");
                 }
                 BasicFileAttributes currParentAttrs = Files.readAttributes(parent, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
-                if (parentKeyBefore != null && !Objects.equals(parentKeyBefore, currParentAttrs.fileKey())) {
+                Object currParentIdentity = captureDirectoryIdentity(currParentAttrs);
+                if (!Objects.equals(parentIdentityBefore, currParentIdentity)) {
                     throw new StoreException("CONFLICT", "Parent directory identity changed");
                 }
 
@@ -349,6 +353,8 @@ public class SharedFileStore {
                 Files.delete(target);
             } catch (DirectoryNotEmptyException dne) {
                 throw new StoreException("NOT_EMPTY", "Directory is not empty: " + virtualPath);
+            } catch (java.nio.file.FileSystemException fse) {
+                throw new StoreException("CONFLICT", "Target file is currently in use or locked: " + fse.getMessage(), fse);
             }
             return null;
         });
@@ -366,7 +372,7 @@ public class SharedFileStore {
         BasicFileAttributes attrs = Files.readAttributes(source, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
         String version;
         if (attrs.isDirectory()) {
-            Object fileKey = attrs.fileKey();
+            Object fileKey = captureDirectoryIdentity(attrs);
             version = "DIR:" + (fileKey != null ? fileKey.toString() : "") + ":" + attrs.lastModifiedTime().toMillis() + ":" + source.getFileName();
         } else {
             version = "FILE:" + computeSha256(source) + ":" + attrs.size() + ":" + attrs.lastModifiedTime().toMillis();
@@ -397,7 +403,7 @@ public class SharedFileStore {
             BasicFileAttributes currAttrs = Files.readAttributes(source, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
             String currVersion;
             if (currAttrs.isDirectory()) {
-                Object fileKey = currAttrs.fileKey();
+                Object fileKey = captureDirectoryIdentity(currAttrs);
                 currVersion = "DIR:" + (fileKey != null ? fileKey.toString() : "") + ":" + currAttrs.lastModifiedTime().toMillis() + ":" + source.getFileName();
             } else {
                 currVersion = "FILE:" + computeSha256(source) + ":" + currAttrs.size() + ":" + currAttrs.lastModifiedTime().toMillis();
@@ -418,6 +424,8 @@ public class SharedFileStore {
                 Files.move(source, target, StandardCopyOption.ATOMIC_MOVE);
             } catch (AtomicMoveNotSupportedException e) {
                 throw new StoreException("ATOMIC_UNSUPPORTED", "Atomic move not supported on this volume", e);
+            } catch (java.nio.file.FileSystemException fse) {
+                throw new StoreException("CONFLICT", "File is currently in use or locked: " + fse.getMessage(), fse);
             }
 
             BasicFileAttributes newAttrs = Files.readAttributes(target, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
@@ -545,5 +553,14 @@ public class SharedFileStore {
             return "/";
         }
         return clean.substring(0, lastSlash);
+    }
+
+    private static Object captureDirectoryIdentity(BasicFileAttributes attrs) {
+        if (attrs == null) return null;
+        Object fileKey = attrs.fileKey();
+        if (fileKey != null) {
+            return fileKey;
+        }
+        return attrs.creationTime();
     }
 }

@@ -112,21 +112,36 @@ public class FileSessionAuth implements AutoCloseable {
             throw new AuthException(403, "FORBIDDEN", "Access restricted to localhost loopback only");
         }
 
-        // 2. Strict Host header check
+        int serverPort = (ex.getLocalAddress() != null) ? ex.getLocalAddress().getPort() : -1;
+
+        // 2. Strict Host header check (host and port must match server)
         String host = ex.getRequestHeaders().getFirst("Host");
         if (host == null || host.isBlank()) {
             throw new AuthException(403, "FORBIDDEN", "Missing Host header");
         }
-        String hostOnly = host.trim();
-        int colonIdx = hostOnly.lastIndexOf(':');
-        if (colonIdx > 0 && !hostOnly.endsWith("]")) {
-            hostOnly = hostOnly.substring(0, colonIdx);
+        String hostStr = host.trim();
+        String hostOnly = hostStr;
+        int hostPort = -1;
+        int colonIdx = hostStr.lastIndexOf(':');
+        if (colonIdx > 0 && !hostStr.endsWith("]")) {
+            hostOnly = hostStr.substring(0, colonIdx);
+            try {
+                hostPort = Integer.parseInt(hostStr.substring(colonIdx + 1));
+            } catch (NumberFormatException e) {
+                throw new AuthException(403, "FORBIDDEN", "Invalid port in Host header: " + host);
+            }
         }
         if (!hostOnly.equalsIgnoreCase("localhost") && !hostOnly.equals("127.0.0.1") && !hostOnly.equals("[::1]")) {
             throw new AuthException(403, "FORBIDDEN", "Invalid Host header: " + host);
         }
+        if (serverPort != -1) {
+            int effectiveHostPort = (hostPort != -1) ? hostPort : 80;
+            if (effectiveHostPort != serverPort) {
+                throw new AuthException(403, "FORBIDDEN", "Host port mismatch: expected " + serverPort + ", got " + hostPort);
+            }
+        }
 
-        // 3. Strict Origin header check if present
+        // 3. Strict Origin header check if present (scheme, host, and port must match)
         String origin = ex.getRequestHeaders().getFirst("Origin");
         if (origin != null && !origin.isBlank()) {
             String cleanOrigin = origin.trim();
@@ -144,6 +159,15 @@ public class FileSessionAuth implements AutoCloseable {
                         && !originHost.equals("127.0.0.1") && !originHost.equals("[::1]"))) {
                     throw new AuthException(403, "FORBIDDEN", "Forbidden Origin host: " + originHost);
                 }
+                if (serverPort != -1) {
+                    int originPort = originUri.getPort();
+                    int effectiveOriginPort = (originPort != -1) ? originPort : ("https".equalsIgnoreCase(scheme) ? 443 : 80);
+                    if (effectiveOriginPort != serverPort) {
+                        throw new AuthException(403, "FORBIDDEN", "Origin port mismatch: expected " + serverPort + ", got " + originPort);
+                    }
+                }
+            } catch (AuthException ae) {
+                throw ae;
             } catch (Exception e) {
                 throw new AuthException(403, "FORBIDDEN", "Malformed Origin header");
             }

@@ -36,9 +36,9 @@
     "semantic_hash": ""
   },
   "src/server/RouterHandler.java": {
-    "mtime": 1792172975.2500904,
-    "seen": 1792173795.6109247,
-    "ast_hash": "30977f236abeb1b035e5d93b510c226b",
+    "mtime": 1792174891.36562,
+    "seen": 1792174928.8476732,
+    "ast_hash": "91b0db5d0b129994a7ba081f01e6268c",
     "semantic_hash": ""
   },
   "src/server/ServerLogger.java": {
@@ -66,9 +66,9 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1792173738.9102893,
-    "seen": 1792173795.610941,
-    "ast_hash": "c51e205ec0fa879d6ef1186b3a87fa1a",
+    "mtime": 1792173822.280751,
+    "seen": 1792174928.8476899,
+    "ast_hash": "da763d597bbbc17bb7484e8845db2d0f",
     "semantic_hash": ""
   },
   "wwwroot/index.html": {
@@ -294,9 +294,9 @@
     "semantic_hash": ""
   },
   "src/server/ftp/FtpPathSandbox.java": {
-    "mtime": 1792172178.67026,
-    "seen": 1792173795.6109345,
-    "ast_hash": "b481631cbc830154cce62e9ee4d9bc71",
+    "mtime": 1792174465.8017924,
+    "seen": 1792174928.8476837,
+    "ast_hash": "ae7627ec0a5a296d0bb8d6fa46540253",
     "semantic_hash": ""
   },
   "src/server/ftp/FtpSessionHandler.java": {
@@ -330,15 +330,15 @@
     "semantic_hash": ""
   },
   "TEST_INFRA.md": {
-    "mtime": 1792173780.4387696,
-    "seen": 1792173795.6109416,
-    "ast_hash": "d3d93c477bb292cf2f3e022f384bc709",
+    "mtime": 1792173828.2012656,
+    "seen": 1792174928.8476908,
+    "ast_hash": "8b74f2a9aa544f040c6a6fff2dcc88c2",
     "semantic_hash": ""
   },
   "TEST_READY.md": {
-    "mtime": 1792173768.7064228,
-    "seen": 1792173795.6109424,
-    "ast_hash": "ad35c72b27492f8938b2fb935ac9c28b",
+    "mtime": 1792173834.0721889,
+    "seen": 1792174928.8476915,
+    "ast_hash": "2138cfffa1822d539a7976a00c54210d",
     "semantic_hash": ""
   },
   "docs/security/2026-10-16-security-assessment.md": {
@@ -408,15 +408,15 @@
     "semantic_hash": ""
   },
   "src/client/CrossTestFilesClient.java": {
-    "mtime": 1792173639.893322,
-    "seen": 1792173795.6109002,
-    "ast_hash": "5abdcc1cbb06ec695455a1d359805c2b",
+    "mtime": 1792174778.503229,
+    "seen": 1792174928.8476548,
+    "ast_hash": "bd5495bf8f65981f4d98985907dc98fb",
     "semantic_hash": ""
   },
   "src/server/FileSessionAuth.java": {
-    "mtime": 1792172523.1795447,
-    "seen": 1792173795.6109211,
-    "ast_hash": "3e320aefe335bcf28bcb9cd0715f5049",
+    "mtime": 1792174515.3093777,
+    "seen": 1792174928.8476696,
+    "ast_hash": "c5556e2b0b0295a993cd51fcf7dcb93a",
     "semantic_hash": ""
   },
   "src/server/FileStoreConfig.java": {
@@ -426,15 +426,15 @@
     "semantic_hash": ""
   },
   "src/server/FilesApiHandler.java": {
-    "mtime": 1792173618.9480977,
-    "seen": 1792173795.610923,
-    "ast_hash": "477f993cb118b312e4a4298b42b5d636",
+    "mtime": 1792174595.6287012,
+    "seen": 1792174928.8476713,
+    "ast_hash": "1dccec364447d805c8c8b669ecc3c54a",
     "semantic_hash": ""
   },
   "src/server/SharedFileStore.java": {
-    "mtime": 1792171966.6143107,
-    "seen": 1792173795.610927,
-    "ast_hash": "62a5f9116acbbb539ca116f9a714b68f",
+    "mtime": 1792174751.866053,
+    "seen": 1792174928.8476758,
+    "ast_hash": "8e69acf9e1bdbdf5c11b2400e5c8ce28",
     "semantic_hash": ""
   },
   "src/server/UpstreamContentPolicy.java": {
