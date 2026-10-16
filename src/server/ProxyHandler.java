@@ -39,6 +39,7 @@ public class ProxyHandler implements HttpHandler {
             byte[] body = r.body() == null ? new byte[0] : r.body();
             ex.getResponseHeaders().set("Content-Type", resCt);
             r.headers().firstValue("Server").ifPresent(srv -> ex.getResponseHeaders().set("Server", srv));
+            UpstreamContentPolicy.apply(ex);
             long len = body.length == 0 ? -1 : body.length;
             ex.sendResponseHeaders(r.statusCode(), len);
             if (body.length > 0) {

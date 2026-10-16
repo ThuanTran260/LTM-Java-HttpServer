@@ -6,9 +6,11 @@ import java.net.http.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import server.FileSessionAuth;
 import server.FileStoreConfig;
 import server.SafePaths;
 import server.SharedFileStore;
@@ -628,14 +630,272 @@ public class CrossTestFilesClient {
         }
     }
 
+    // =========================================================================
+    // 4. SESSION & ISOLATION TESTS (Task 4)
+    // =========================================================================
+
     public static void runSessionTests() {
         System.out.println("\n--- [GROUP: SESSION] FileSessionAuth, Local Guards & CSRF ---");
-        // To be populated in Task 4
+
+        try {
+            Instant start = Instant.parse("2026-10-17T00:00:00Z");
+            MutableClock clock = new MutableClock(start);
+            FileSessionAuth auth = new FileSessionAuth("SecretAdminPass123!", true, clock);
+
+            // Test 4.1: Remote non-loopback rejected with 403
+            MockHttpExchange nonLoopEx = new MockHttpExchange(InetAddress.getByName("192.168.1.105"), 54321);
+            nonLoopEx.getRequestHeaders().set("Host", "localhost:8080");
+            try {
+                auth.checkLocalRequest(nonLoopEx);
+                fail("Session 4.1: Remote non-loopback IP rejected", "Expected AuthException 403");
+            } catch (server.FileSessionAuth.AuthException e) {
+                if (e.statusCode() == 403 && "FORBIDDEN".equals(e.code())) {
+                    pass("Session 4.1: Remote non-loopback IP strictly rejected with 403 FORBIDDEN");
+                } else {
+                    fail("Session 4.1: Status code", "Status: " + e.statusCode());
+                }
+            }
+
+            // Test 4.2: X-Forwarded-For ignored on non-loopback
+            nonLoopEx.getRequestHeaders().set("X-Forwarded-For", "127.0.0.1");
+            try {
+                auth.checkLocalRequest(nonLoopEx);
+                fail("Session 4.2: X-Forwarded-For spoof rejected", "Expected AuthException 403");
+            } catch (server.FileSessionAuth.AuthException e) {
+                pass("Session 4.2: X-Forwarded-For header strictly ignored; loopback verification relies on socket");
+            }
+
+            // Test 4.3: Host header validation (reject substring / foreign suffix)
+            MockHttpExchange loopEx = new MockHttpExchange(InetAddress.getByName("127.0.0.1"), 54321);
+            loopEx.getRequestHeaders().set("Host", "evil-localhost.com:8080");
+            try {
+                auth.checkLocalRequest(loopEx);
+                fail("Session 4.3: Host suffix spoof rejected", "Expected AuthException 403");
+            } catch (server.FileSessionAuth.AuthException e) {
+                pass("Session 4.3: Host header suffix spoof (evil-localhost.com) strictly rejected with 403");
+            }
+
+            // Test 4.4: Origin validation (reject null origin and foreign origin)
+            loopEx.getRequestHeaders().set("Host", "localhost:8080");
+            loopEx.getRequestHeaders().set("Origin", "null");
+            try {
+                auth.checkLocalRequest(loopEx);
+                fail("Session 4.4a: Null Origin rejected", "Expected AuthException 403");
+            } catch (server.FileSessionAuth.AuthException e) {
+                pass("Session 4.4a: Origin: null strictly rejected with 403");
+            }
+
+            loopEx.getRequestHeaders().set("Origin", "http://attacker.site:8080");
+            try {
+                auth.checkLocalRequest(loopEx);
+                fail("Session 4.4b: Cross-origin rejected", "Expected AuthException 403");
+            } catch (server.FileSessionAuth.AuthException e) {
+                pass("Session 4.4b: Cross-origin Origin header strictly rejected with 403");
+            }
+
+            // Test 4.5: Unconfigured admin password returns 503 SETUP_REQUIRED
+            FileSessionAuth unconfiguredAuth = new FileSessionAuth("", false, clock);
+            try {
+                unconfiguredAuth.login("admin", "admin123");
+                fail("Session 4.5: Unconfigured password rejected", "Expected 503 SETUP_REQUIRED");
+            } catch (server.FileSessionAuth.AuthException e) {
+                if (e.statusCode() == 503 && "SETUP_REQUIRED".equals(e.code())) {
+                    pass("Session 4.5: Unconfigured password yields 503 SETUP_REQUIRED (no default admin123)");
+                } else {
+                    fail("Session 4.5: Code", "Code: " + e.code());
+                }
+            }
+
+            // Test 4.6: Rate limiting: 5 failed attempts within 60s trigger 429
+            for (int i = 0; i < 5; i++) {
+                try {
+                    auth.login("admin", "wrongPass");
+                } catch (server.FileSessionAuth.AuthException ignored) {}
+            }
+            try {
+                auth.login("admin", "wrongPass");
+                fail("Session 4.6: Rate limiting throttled", "Expected 429 TOO_MANY_REQUESTS");
+            } catch (server.FileSessionAuth.AuthException e) {
+                if (e.statusCode() == 429 && "TOO_MANY_REQUESTS".equals(e.code())) {
+                    pass("Session 4.6: 5 failed logins within 60s trigger 429 TOO_MANY_REQUESTS");
+                } else {
+                    fail("Session 4.6: Rate limit code", "Code: " + e.code());
+                }
+            }
+
+            // Advance clock by 61 seconds to clear throttle
+            clock.advance(Duration.ofSeconds(61));
+
+            // Test 4.7: Successful login and SessionView token redaction
+            server.FileSessionAuth.SessionView adminView = auth.login("admin", "SecretAdminPass123!");
+            if (adminView != null && adminView.role() == server.ftp.FtpUserAuth.Role.ADMIN) {
+                String str = adminView.toString();
+                if (!str.contains(adminView.sessionToken()) && !str.contains(adminView.csrfToken()) && str.contains("***")) {
+                    pass("Session 4.7: Admin login succeeded and SessionView.toString() redacts tokens");
+                } else {
+                    fail("Session 4.7: Secret leakage in toString", "toString: " + str);
+                }
+            } else {
+                fail("Session 4.7: Admin login", "Login failed");
+            }
+
+            // Test 4.8: CSRF and X-File-Explorer enforcement on mutation
+            loopEx.getRequestHeaders().set("Origin", "http://localhost:8080");
+            loopEx.getRequestHeaders().set("Cookie", server.FileSessionAuth.COOKIE_NAME + "=" + adminView.sessionToken());
+
+            // Missing X-File-Explorer
+            try {
+                auth.requireSession(loopEx, true);
+                fail("Session 4.8a: Missing X-File-Explorer rejected", "Expected 403");
+            } catch (server.FileSessionAuth.AuthException e) {
+                pass("Session 4.8a: Mutation without X-File-Explorer header rejected with 403");
+            }
+
+            // Valid X-File-Explorer, but missing CSRF token
+            loopEx.getRequestHeaders().set(server.FileSessionAuth.EXPLORER_HEADER, "1");
+            try {
+                auth.requireSession(loopEx, true);
+                fail("Session 4.8b: Missing CSRF token rejected", "Expected 403");
+            } catch (server.FileSessionAuth.AuthException e) {
+                pass("Session 4.8b: Mutation without X-CSRF-Token rejected with 403");
+            }
+
+            // Valid X-File-Explorer and valid CSRF token
+            loopEx.getRequestHeaders().set(server.FileSessionAuth.CSRF_HEADER, adminView.csrfToken());
+            server.FileSessionAuth.SessionView validated = auth.requireSession(loopEx, true);
+            if (validated != null && validated.user().equals("admin")) {
+                pass("Session 4.8c: Mutation with valid session, X-File-Explorer, and CSRF token succeeded");
+            } else {
+                fail("Session 4.8c: Session validation", "Failed");
+            }
+
+            // Test 4.9: Guest login allowed read, denied mutation
+            server.FileSessionAuth.SessionView guestView = auth.login("guest", "");
+            MockHttpExchange guestEx = new MockHttpExchange(InetAddress.getByName("127.0.0.1"), 54322);
+            guestEx.getRequestHeaders().set("Host", "localhost:8080");
+            guestEx.getRequestHeaders().set("Cookie", server.FileSessionAuth.COOKIE_NAME + "=" + guestView.sessionToken());
+
+            // Guest read -> OK
+            server.FileSessionAuth.SessionView guestRead = auth.requireSession(guestEx, false);
+            if (guestRead != null && guestRead.role() == server.ftp.FtpUserAuth.Role.GUEST) {
+                pass("Session 4.9a: Guest account allowed read operations");
+            } else {
+                fail("Session 4.9a: Guest read", "Failed");
+            }
+
+            // Guest write -> 403
+            guestEx.getRequestHeaders().set(server.FileSessionAuth.EXPLORER_HEADER, "1");
+            guestEx.getRequestHeaders().set(server.FileSessionAuth.CSRF_HEADER, guestView.csrfToken());
+            try {
+                auth.requireSession(guestEx, true);
+                fail("Session 4.9b: Guest mutation rejected", "Expected 403 FORBIDDEN");
+            } catch (server.FileSessionAuth.AuthException e) {
+                pass("Session 4.9b: Guest mutation attempt strictly rejected with 403 FORBIDDEN");
+            }
+
+            // Test 4.10: Session expiry: idle timeout 30 minutes
+            clock.advance(Duration.ofMinutes(31));
+            try {
+                auth.requireSession(loopEx, false);
+                fail("Session 4.10: Idle session expired", "Expected 401 UNAUTHORIZED");
+            } catch (server.FileSessionAuth.AuthException e) {
+                pass("Session 4.10: Session expired after 30 minutes idle timeout (401)");
+            }
+
+            // Test 4.11: Logout removes session
+            server.FileSessionAuth.SessionView logoutTestView = auth.login("admin", "SecretAdminPass123!");
+            MockHttpExchange logoutEx = new MockHttpExchange(InetAddress.getByName("127.0.0.1"), 54323);
+            logoutEx.getRequestHeaders().set("Host", "localhost:8080");
+            logoutEx.getRequestHeaders().set("Cookie", server.FileSessionAuth.COOKIE_NAME + "=" + logoutTestView.sessionToken());
+
+            auth.logout(logoutEx);
+            try {
+                auth.requireSession(logoutEx, false);
+                fail("Session 4.11: Logged out session rejected", "Expected 401 UNAUTHORIZED");
+            } catch (server.FileSessionAuth.AuthException e) {
+                pass("Session 4.11: Logout successfully invalidated session token in memory");
+            }
+
+        } catch (Exception e) {
+            fail("Session Group Execution", e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     public static void runIsolationTests() {
         System.out.println("\n--- [GROUP: ISOLATION] Untrusted Upstream Content Policy ---");
-        // To be populated in Task 4
+
+        try {
+            // Test 4.12: UpstreamContentPolicy header structure
+            MockHttpExchange ex = new MockHttpExchange(InetAddress.getByName("127.0.0.1"), 54321);
+            server.UpstreamContentPolicy.apply(ex);
+            String csp = ex.getResponseHeaders().getFirst("Content-Security-Policy");
+            String nosniff = ex.getResponseHeaders().getFirst("X-Content-Type-Options");
+
+            if (csp != null && csp.contains("sandbox") && !csp.contains("allow-scripts") && !csp.contains("allow-same-origin")) {
+                if ("nosniff".equalsIgnoreCase(nosniff)) {
+                    pass("Session 4.12: UpstreamContentPolicy applies CSP sandbox without script/same-origin rights and nosniff");
+                } else {
+                    fail("Session 4.12: nosniff header", "Got: " + nosniff);
+                }
+            } else {
+                fail("Session 4.12: CSP header", "Got: " + csp);
+            }
+
+            // Process test: Launch HTTP server and test /fetch with an upstream HTML page
+            try (ProcessFixture fixture = new ProcessFixture()) {
+                Path ws = fixture.createWorkspace();
+                Map<String, String> env = new HashMap<>();
+                env.put("FTP_ADMIN_PASSWORD", "AdminPass123!");
+
+                ProcessFixture.ServerInstance http = fixture.startHttp(ws, env);
+
+                // Start an ephemeral upstream server returning HTML with a script tag
+                int upstreamPort = fixture.findFreePort();
+                com.sun.net.httpserver.HttpServer upstreamServer = com.sun.net.httpserver.HttpServer.create(new InetSocketAddress("127.0.0.1", upstreamPort), 0);
+                upstreamServer.createContext("/evil.html", exchange -> {
+                    byte[] body = "<!DOCTYPE html><html><head><title>Untrusted</title></head><body><script>fetch('/api/files')</script></body></html>".getBytes(StandardCharsets.UTF_8);
+                    exchange.getResponseHeaders().set("Content-Type", "text/html; charset=utf-8");
+                    exchange.sendResponseHeaders(200, body.length);
+                    try (OutputStream os = exchange.getResponseBody()) { os.write(body); }
+                });
+                upstreamServer.start();
+
+                try {
+                    // Call /fetch on the HTTP server to fetch /evil.html in raw mode
+                    java.net.http.HttpClient httpClient = java.net.http.HttpClient.newHttpClient();
+                    String fetchUrl = "http://localhost:" + http.port() + "/fetch?url=http://127.0.0.1:" + upstreamPort + "/evil.html";
+                    java.net.http.HttpRequest req = java.net.http.HttpRequest.newBuilder(URI.create(fetchUrl)).GET().build();
+                    java.net.http.HttpResponse<String> resp = httpClient.send(req, java.net.http.HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+                    String respCsp = resp.headers().firstValue("Content-Security-Policy").orElse(null);
+                    String respNosniff = resp.headers().firstValue("X-Content-Type-Options").orElse(null);
+
+                    if (respCsp != null && respCsp.contains("sandbox") && !respCsp.contains("allow-scripts") && !respCsp.contains("allow-same-origin")) {
+                        pass("Session 4.13: /fetch raw response strictly carries CSP sandbox without script or same-origin capabilities");
+                    } else {
+                        fail("Session 4.13: Fetch CSP header", "CSP: " + respCsp);
+                    }
+
+                    // Check that /index.html (application UI) does NOT have the sandbox header
+                    java.net.http.HttpRequest uiReq = java.net.http.HttpRequest.newBuilder(URI.create("http://localhost:" + http.port() + "/index.html")).GET().build();
+                    java.net.http.HttpResponse<String> uiResp = httpClient.send(uiReq, java.net.http.HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+                    String uiCsp = uiResp.headers().firstValue("Content-Security-Policy").orElse(null);
+                    if (uiCsp == null || !uiCsp.contains("sandbox")) {
+                        pass("Session 4.14: Application UI (/index.html) is NOT crippled by the upstream sandbox policy");
+                    } else {
+                        fail("Session 4.14: Application UI has sandbox", "CSP: " + uiCsp);
+                    }
+
+                } finally {
+                    upstreamServer.stop(0);
+                }
+            }
+
+        } catch (Exception e) {
+            fail("Isolation Group Execution", e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     public static void runApiTests() {
@@ -961,5 +1221,55 @@ public class CrossTestFilesClient {
             } catch (Exception ignored) {}
             socket.close();
         }
+    }
+
+    public static class MutableClock extends java.time.Clock {
+        private java.time.Instant currentInstant;
+
+        public MutableClock(java.time.Instant start) {
+            this.currentInstant = start;
+        }
+
+        public void advance(java.time.Duration duration) {
+            this.currentInstant = currentInstant.plus(duration);
+        }
+
+        @Override public java.time.ZoneId getZone() { return java.time.ZoneOffset.UTC; }
+        @Override public java.time.Clock withZone(java.time.ZoneId zone) { return this; }
+        @Override public java.time.Instant instant() { return currentInstant; }
+    }
+
+    public static class MockHttpExchange extends com.sun.net.httpserver.HttpExchange {
+        private final com.sun.net.httpserver.Headers reqHeaders = new com.sun.net.httpserver.Headers();
+        private final com.sun.net.httpserver.Headers resHeaders = new com.sun.net.httpserver.Headers();
+        private InetSocketAddress remote;
+        private String method = "GET";
+
+        public MockHttpExchange(InetAddress addr, int port) {
+            this.remote = new InetSocketAddress(addr, port);
+        }
+
+        public void setRemote(InetAddress addr, int port) {
+            this.remote = new InetSocketAddress(addr, port);
+        }
+
+        @Override public com.sun.net.httpserver.Headers getRequestHeaders() { return reqHeaders; }
+        @Override public com.sun.net.httpserver.Headers getResponseHeaders() { return resHeaders; }
+        @Override public URI getRequestURI() { return URI.create("/api/files"); }
+        @Override public String getRequestMethod() { return method; }
+        public void setRequestMethod(String m) { this.method = m; }
+        @Override public com.sun.net.httpserver.HttpContext getHttpContext() { return null; }
+        @Override public void close() {}
+        @Override public InputStream getRequestBody() { return InputStream.nullInputStream(); }
+        @Override public OutputStream getResponseBody() { return OutputStream.nullOutputStream(); }
+        @Override public void sendResponseHeaders(int rCode, long responseLength) {}
+        @Override public InetSocketAddress getRemoteAddress() { return remote; }
+        @Override public int getResponseCode() { return 200; }
+        @Override public InetSocketAddress getLocalAddress() { return new InetSocketAddress("127.0.0.1", 8080); }
+        @Override public String getProtocol() { return "HTTP/1.1"; }
+        @Override public Object getAttribute(String name) { return null; }
+        @Override public void setAttribute(String name, Object value) {}
+        @Override public void setStreams(InputStream i, OutputStream o) {}
+        @Override public com.sun.net.httpserver.HttpPrincipal getPrincipal() { return null; }
     }
 }

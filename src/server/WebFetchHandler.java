@@ -298,6 +298,7 @@ public class WebFetchHandler implements HttpHandler {
             // Forward Server header neu co
             response.headers().firstValue("Server").ifPresent(srv -> ex.getResponseHeaders().set("Server", srv));
             ex.getResponseHeaders().set("Content-Type", rawCt);
+            UpstreamContentPolicy.apply(ex);
             long len;
             if (statusCode == 204 || statusCode == 304 || finalBytes.length == 0) {
                 len = -1;
