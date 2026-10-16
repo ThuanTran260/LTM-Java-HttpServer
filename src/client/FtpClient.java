@@ -45,6 +45,9 @@ public class FtpClient implements AutoCloseable {
     private static final int SOCKET_TIMEOUT_MS = 15000;
     private static final int BUFFER_SIZE = 16384;
 
+    // Package-private test hook to simulate filesystem lacking ATOMIC_MOVE support
+    static volatile boolean simulateAtomicMoveNotSupportedForTest = false;
+
     private final List<FtpCommandListener> listeners = new CopyOnWriteArrayList<>();
 
     private Socket controlSocket;
@@ -266,9 +269,12 @@ public class FtpClient implements AutoCloseable {
             }
             // Stream is closed before move to prevent Windows file locking issues
             try {
+                if (simulateAtomicMoveNotSupportedForTest) {
+                    throw new AtomicMoveNotSupportedException(tempFile.toString(), localTarget.toString(), "Simulated unsupported atomic move");
+                }
                 Files.move(tempFile, localTarget.toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
             } catch (AtomicMoveNotSupportedException e) {
-                Files.move(tempFile, localTarget.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                throw new IOException("Atomic move is not supported on this filesystem; original target file preserved: " + localTarget, e);
             }
             tempFile = null; // Successfully transferred and moved
         } finally {

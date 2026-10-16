@@ -8,6 +8,7 @@ import java.nio.file.*;
 import java.security.MessageDigest;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.*;
@@ -159,6 +160,8 @@ public class CrossTestFtpClient {
         System.out.println("[BOOTSTRAP] Port " + PORT + " not active. Starting server.ftp.SimpleFtpServer via ProcessBuilder...");
         ProcessBuilder pb = new ProcessBuilder("java", "-cp", "out", "server.ftp.SimpleFtpServer");
         pb.environment().put("FTP_ENABLE_DEMO_ACCOUNT", "true");
+        pb.environment().put("FTP_ADMIN_PASSWORD", "admin123");
+        pb.environment().remove("FTP_STUDENT_PASSWORD");
         pb.redirectErrorStream(true);
         serverProcess = pb.start();
 
@@ -438,6 +441,7 @@ public class CrossTestFtpClient {
                     tempRootA.toAbsolutePath().toString()
             );
             pbA.environment().put("FTP_ENABLE_DEMO_ACCOUNT", "false");
+            pbA.environment().put("FTP_ADMIN_PASSWORD", "admin123");
             pbA.environment().remove("FTP_STUDENT_PASSWORD");
             pbA.redirectErrorStream(true);
             procA = pbA.start();
@@ -492,6 +496,8 @@ public class CrossTestFtpClient {
                     tempRootB.toAbsolutePath().toString()
             );
             pbB.environment().put("FTP_ENABLE_DEMO_ACCOUNT", "true");
+            pbB.environment().put("FTP_ADMIN_PASSWORD", "admin123");
+            pbB.environment().remove("FTP_STUDENT_PASSWORD");
             pbB.redirectErrorStream(true);
             procB = pbB.start();
             Process finalProcB = procB;
@@ -1074,78 +1080,111 @@ public class CrossTestFtpClient {
             }
 
             // T7.8: Atomic download preserves existing local file when transfer is aborted (426)
-            int abortPort = findAvailablePort();
+            AtomicBoolean mockDataSent = new AtomicBoolean(false);
+            AtomicBoolean mock426Sent = new AtomicBoolean(false);
+            AtomicReference<Throwable> mockException = new AtomicReference<>();
+            ServerSocket mockControlSS = new ServerSocket(0, 1, InetAddress.getByName("127.0.0.1"));
+            mockControlSS.setSoTimeout(5000);
+            int abortPort = mockControlSS.getLocalPort();
+
             Thread mockServer = new Thread(() -> {
-                try (ServerSocket ss = new ServerSocket(abortPort, 1, InetAddress.getByName("127.0.0.1"))) {
-                    try (Socket ctrl = ss.accept();
-                         BufferedReader r = new BufferedReader(new InputStreamReader(ctrl.getInputStream(), StandardCharsets.UTF_8));
-                         BufferedWriter w = new BufferedWriter(new OutputStreamWriter(ctrl.getOutputStream(), StandardCharsets.UTF_8))) {
-                        w.write("220 Mock FTP Server Ready\r\n");
-                        w.flush();
-                        String line;
-                        ServerSocket dataSS = null;
-                        while ((line = r.readLine()) != null) {
-                            if (line.startsWith("USER")) {
-                                w.write("331 User name okay\r\n");
-                                w.flush();
-                            } else if (line.startsWith("PASS")) {
-                                w.write("230 User logged in\r\n");
-                                w.flush();
-                            } else if (line.startsWith("TYPE")) {
-                                w.write("200 Type set to I\r\n");
-                                w.flush();
-                            } else if (line.startsWith("PASV")) {
-                                dataSS = new ServerSocket(0, 1, InetAddress.getByName("127.0.0.1"));
-                                int dp = dataSS.getLocalPort();
-                                w.write(String.format(Locale.ROOT, "227 Entering Passive Mode (127,0,0,1,%d,%d)\r\n", dp / 256, dp % 256));
-                                w.flush();
-                            } else if (line.startsWith("RETR")) {
-                                w.write("150 Opening BINARY mode data connection\r\n");
-                                w.flush();
-                                if (dataSS != null) {
-                                    try (Socket dataSock = dataSS.accept();
-                                         OutputStream dout = dataSock.getOutputStream()) {
-                                        dout.write("PARTIAL_CORRUPT_BYTES".getBytes(StandardCharsets.UTF_8));
-                                        dout.flush();
-                                    }
-                                    dataSS.close();
-                                }
-                                w.write("426 Connection closed; transfer aborted\r\n");
-                                w.flush();
-                                break;
-                            } else if (line.startsWith("QUIT")) {
-                                w.write("221 Goodbye\r\n");
-                                w.flush();
-                                break;
+                ServerSocket dataSS = null;
+                Socket ctrl = null;
+                Socket dataSock = null;
+                try {
+                    ctrl = mockControlSS.accept();
+                    ctrl.setSoTimeout(5000);
+                    BufferedReader r = new BufferedReader(new InputStreamReader(ctrl.getInputStream(), StandardCharsets.UTF_8));
+                    BufferedWriter w = new BufferedWriter(new OutputStreamWriter(ctrl.getOutputStream(), StandardCharsets.UTF_8));
+                    w.write("220 Mock FTP Server Ready\r\n");
+                    w.flush();
+                    String line;
+                    while ((line = r.readLine()) != null) {
+                        if (line.startsWith("USER")) {
+                            w.write("331 User name okay\r\n");
+                            w.flush();
+                        } else if (line.startsWith("PASS")) {
+                            w.write("230 User logged in\r\n");
+                            w.flush();
+                        } else if (line.startsWith("TYPE")) {
+                            w.write("200 Type set to I\r\n");
+                            w.flush();
+                        } else if (line.startsWith("PWD")) {
+                            w.write("257 \"/\" is current directory\r\n");
+                            w.flush();
+                        } else if (line.startsWith("PASV")) {
+                            dataSS = new ServerSocket(0, 1, InetAddress.getByName("127.0.0.1"));
+                            dataSS.setSoTimeout(5000);
+                            int dp = dataSS.getLocalPort();
+                            w.write(String.format(Locale.ROOT, "227 Entering Passive Mode (127,0,0,1,%d,%d)\r\n", dp / 256, dp % 256));
+                            w.flush();
+                        } else if (line.startsWith("RETR")) {
+                            w.write("150 Opening BINARY mode data connection\r\n");
+                            w.flush();
+                            if (dataSS != null) {
+                                dataSock = dataSS.accept();
+                                dataSock.setSoTimeout(5000);
+                                OutputStream dout = dataSock.getOutputStream();
+                                dout.write("PARTIAL_CORRUPT_BYTES".getBytes(StandardCharsets.UTF_8));
+                                dout.flush();
+                                mockDataSent.set(true);
+                                dataSock.close();
+                                dataSock = null;
+                                dataSS.close();
+                                dataSS = null;
                             }
+                            w.write("426 Connection closed; transfer aborted\r\n");
+                            w.flush();
+                            mock426Sent.set(true);
+                            break;
+                        } else if (line.startsWith("QUIT")) {
+                            w.write("221 Goodbye\r\n");
+                            w.flush();
+                            break;
                         }
                     }
-                } catch (Exception ignored) {}
+                } catch (Throwable t) {
+                    mockException.set(t);
+                } finally {
+                    try { if (dataSock != null) dataSock.close(); } catch (Exception ignored) {}
+                    try { if (dataSS != null) dataSS.close(); } catch (Exception ignored) {}
+                    try { if (ctrl != null) ctrl.close(); } catch (Exception ignored) {}
+                    try { mockControlSS.close(); } catch (Exception ignored) {}
+                }
             });
-            mockServer.setDaemon(true);
             mockServer.start();
 
             FtpClient abortClient = new FtpClient();
             boolean abortThrew = false;
+            String abortErrorMsg = "";
             try {
                 abortClient.connect(HOST, abortPort);
                 abortClient.login("admin", "admin123");
                 abortClient.downloadFile("aborted.bin", existingFile.toFile());
             } catch (IOException e) {
                 abortThrew = true;
+                abortErrorMsg = e.getMessage();
             } finally {
                 abortClient.disconnect();
             }
 
+            try {
+                mockServer.join(3000);
+            } catch (InterruptedException ignored) {}
+            if (mockServer.isAlive()) {
+                mockServer.interrupt();
+            }
+
+            boolean mockOk = mockDataSent.get() && mock426Sent.get() && (mockException.get() == null);
             boolean abortShaMatch = origSha.equals(calculateSha256(Files.readAllBytes(existingFile)));
             boolean abortNoTmp = false;
             try (var s = Files.list(testDir)) {
                 abortNoTmp = s.noneMatch(p -> p.getFileName().toString().endsWith(".tmp"));
             }
-            if (abortThrew && abortShaMatch && abortNoTmp) {
-                pass("Tier 7.8", "Atomic download preserves existing file SHA-256 on 426 transfer abort (0 leftover .tmp)");
+            if (abortThrew && mockOk && abortShaMatch && abortNoTmp) {
+                pass("Tier 7.8", "Atomic download preserves existing file SHA-256 on verified 426 transfer abort (0 leftover .tmp)");
             } else {
-                fail("Tier 7.8", "Atomic download abort", "threw=" + abortThrew + ", sha=" + abortShaMatch + ", noTmp=" + abortNoTmp);
+                fail("Tier 7.8", "Atomic download abort", "threw=" + abortThrew + ", mockOk=" + mockOk + " (dataSent=" + mockDataSent.get() + ", 426Sent=" + mock426Sent.get() + ", mockEx=" + mockException.get() + "), sha=" + abortShaMatch + ", noTmp=" + abortNoTmp + ", err=" + abortErrorMsg);
             }
 
             // T7.9: Atomic download succeeds on normal and 0-byte files with 0 leftover .tmp
@@ -1173,12 +1212,43 @@ public class CrossTestFtpClient {
                 }
             } finally {
                 okClient.disconnect();
-                deleteDirectoryRecursively(testDir);
             }
             if (okSuccess) {
                 pass("Tier 7.9", "Atomic download replaces target cleanly for normal and 0-byte files (0 leftover .tmp)");
             } else {
                 fail("Tier 7.9", "Atomic download normal & empty", "Clean replacement failed or .tmp remained");
+            }
+
+            // T7.10: Atomic download fails safely when ATOMIC_MOVE is unsupported: preserves existing file & cleans up .tmp
+            Files.write(existingFile, originalCriticalBytes);
+            String preUnsuppSha = calculateSha256(originalCriticalBytes);
+            FtpClient unsuppClient = new FtpClient();
+            boolean unsuppThrew = false;
+            String unsuppMsg = "";
+            try {
+                unsuppClient.connect(HOST, PORT);
+                unsuppClient.login("admin", "admin123");
+                FtpClient.simulateAtomicMoveNotSupportedForTest = true;
+                unsuppClient.downloadFile("readme.txt", existingFile.toFile());
+            } catch (IOException e) {
+                unsuppThrew = true;
+                unsuppMsg = e.getMessage();
+            } finally {
+                FtpClient.simulateAtomicMoveNotSupportedForTest = false;
+                unsuppClient.disconnect();
+            }
+
+            boolean unsuppShaMatch = Files.exists(existingFile) && preUnsuppSha.equals(calculateSha256(Files.readAllBytes(existingFile)));
+            boolean unsuppNoTmp = false;
+            try (var s = Files.list(testDir)) {
+                unsuppNoTmp = s.noneMatch(p -> p.getFileName().toString().endsWith(".tmp"));
+            }
+            deleteDirectoryRecursively(testDir);
+
+            if (unsuppThrew && unsuppMsg != null && unsuppMsg.contains("Atomic move is not supported") && unsuppShaMatch && unsuppNoTmp) {
+                pass("Tier 7.10", "Atomic download fails safely when ATOMIC_MOVE is unsupported: throws IOException, preserves existing file, cleans .tmp");
+            } else {
+                fail("Tier 7.10", "Atomic download unsupported move", "threw=" + unsuppThrew + ", msg=" + unsuppMsg + ", sha=" + unsuppShaMatch + ", noTmp=" + unsuppNoTmp);
             }
 
         } catch (Exception e) {
