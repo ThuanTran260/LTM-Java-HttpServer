@@ -304,13 +304,17 @@ public class FtpClient implements AutoCloseable {
         return reply.isPositiveCompletion();
     }
 
-    public synchronized FtpReply sendCommand(String command) throws IOException {
-        if (!isConnected()) {
-            throw new IOException("Not connected to FTP server.");
-        }
+    public void validateCommand(String command) {
         if (command == null || command.contains("\r") || command.contains("\n") || command.indexOf('\0') >= 0) {
             throw new IllegalArgumentException("FTP command cannot contain CR, LF, or null characters");
         }
+    }
+
+    private void writeWireCommand(String command) throws IOException {
+        if (!isConnected()) {
+            throw new IOException("Not connected to FTP server.");
+        }
+        validateCommand(command);
         String sanitized = command;
         if (command.toUpperCase(Locale.ROOT).startsWith("PASS ")) {
             sanitized = "PASS ********";
@@ -322,6 +326,10 @@ public class FtpClient implements AutoCloseable {
         }
         writer.write(command + "\r\n");
         writer.flush();
+    }
+
+    public synchronized FtpReply sendCommand(String command) throws IOException {
+        writeWireCommand(command);
         return readReply();
     }
 
@@ -422,6 +430,7 @@ public class FtpClient implements AutoCloseable {
     // -------------------------------------------------------------------------
 
     private DataConnection openDataConnection(String command) throws IOException {
+        validateCommand(command);
         if (passiveMode) {
             return openPassiveDataConnection(command);
         } else {
@@ -499,14 +508,8 @@ public class FtpClient implements AutoCloseable {
             throw new IOException("Active PORT command failed: " + portReply.message());
         }
 
-        // Send transfer command line
-        for (FtpCommandListener listener : listeners) {
-            try {
-                listener.onCommandSent(command);
-            } catch (Throwable ignored) {}
-        }
-        writer.write(command + "\r\n");
-        writer.flush();
+        // Send transfer command line via unified wire writer with CRLF/null validation
+        writeWireCommand(command);
 
         Socket dataSocket = serverSocket.accept();
         serverSocket.close(); // Immediate ephemeral port release

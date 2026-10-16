@@ -41,9 +41,15 @@ public final class SafePaths {
             throw new SecurityException("UNC network paths forbidden");
         }
 
-        // Reject Windows reserved device names
+        // Reject Windows reserved device names and trailing dot/space
         String clean = relativePath.replace('\\', '/');
         for (String segment : clean.split("/")) {
+            if (segment.isEmpty()) continue;
+            if (!segment.equals(".") && !segment.equals("..")) {
+                if (segment.endsWith(".") || segment.endsWith(" ")) {
+                    throw new SecurityException("Windows filenames cannot end with dot or space: " + segment);
+                }
+            }
             if (isReservedDeviceName(segment)) {
                 throw new SecurityException("Windows reserved device name forbidden: " + segment);
             }
@@ -57,24 +63,42 @@ public final class SafePaths {
             throw new SecurityException("Path traversal detected: outside root boundary");
         }
 
-        // Real path confinement check (prevents NTFS Junction / Symlink escape)
-        if (Files.exists(resolved)) {
-            try {
-                Path realResolved = resolved.toRealPath();
-                if (!realResolved.startsWith(realRoot)) {
-                    throw new SecurityException("Filesystem link / junction points outside root boundary");
+        // Step 1: Check every existing path component from normRoot down to resolved using NOFOLLOW_LINKS
+        Path curr = normRoot;
+        Path rel = normRoot.relativize(resolved);
+        for (Path element : rel) {
+            curr = curr.resolve(element);
+            if (Files.exists(curr, java.nio.file.LinkOption.NOFOLLOW_LINKS)) {
+                if (isDanglingLink(curr)) {
+                    throw new SecurityException("Dangling filesystem link detected: " + curr);
                 }
-                return realResolved;
-            } catch (IOException e) {
-                throw new SecurityException("Cannot resolve real path: " + e.getMessage());
+                if (isLinkOrReparsePoint(curr)) {
+                    throw new SecurityException("Filesystem links and junctions are forbidden in sandbox: " + curr);
+                }
+                try {
+                    Path realCurr = curr.toRealPath();
+                    if (!realCurr.startsWith(realRoot)) {
+                        throw new SecurityException("Filesystem link points outside root boundary: " + curr);
+                    }
+                } catch (IOException e) {
+                    throw new SecurityException("Cannot resolve real path: " + e.getMessage());
+                }
+            } else {
+                // If this component does not exist, subsequent components cannot exist either
+                break;
             }
-        } else {
-            // Target does not exist yet (e.g. STOR, MKD): verify lowest existing ancestor
+        }
+
+        // Step 2: Confinement check for non-existent target (e.g. STOR, MKD)
+        if (!Files.exists(resolved, java.nio.file.LinkOption.NOFOLLOW_LINKS)) {
             Path ancestor = resolved.getParent();
-            while (ancestor != null && !Files.exists(ancestor)) {
+            while (ancestor != null && !Files.exists(ancestor, java.nio.file.LinkOption.NOFOLLOW_LINKS)) {
                 ancestor = ancestor.getParent();
             }
             if (ancestor != null) {
+                if (isDanglingLink(ancestor) || isLinkOrReparsePoint(ancestor)) {
+                    throw new SecurityException("Ancestor is a forbidden link or junction: " + ancestor);
+                }
                 try {
                     Path realAncestor = ancestor.toRealPath();
                     if (!realAncestor.startsWith(realRoot)) {
@@ -87,6 +111,26 @@ public final class SafePaths {
         }
 
         return resolved;
+    }
+
+    public static boolean isLinkOrReparsePoint(Path p) {
+        if (!Files.exists(p, java.nio.file.LinkOption.NOFOLLOW_LINKS)) {
+            return false;
+        }
+        if (Files.isSymbolicLink(p)) {
+            return true;
+        }
+        try {
+            java.nio.file.attribute.BasicFileAttributes attrs =
+                    Files.readAttributes(p, java.nio.file.attribute.BasicFileAttributes.class, java.nio.file.LinkOption.NOFOLLOW_LINKS);
+            return attrs.isSymbolicLink() || attrs.isOther();
+        } catch (IOException e) {
+            return true; // If attributes cannot be read safely, treat as potentially unsafe
+        }
+    }
+
+    public static boolean isDanglingLink(Path p) {
+        return Files.exists(p, java.nio.file.LinkOption.NOFOLLOW_LINKS) && !Files.exists(p);
     }
 
     private static Path getRealOrNormalized(Path p) {

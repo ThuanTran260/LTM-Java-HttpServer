@@ -18,10 +18,31 @@ public class FtpUserAuth {
         return (env != null && !env.isBlank()) ? env.trim() : "admin123";
     }
 
+    public static boolean isDemoAccountEnabled() {
+        String env = System.getenv("FTP_ENABLE_DEMO_ACCOUNT");
+        if (env != null && ("true".equalsIgnoreCase(env.trim()) || "1".equals(env.trim()))) {
+            return true;
+        }
+        return Boolean.getBoolean("ftp.enable.demo");
+    }
+
+    public static String getStudentPassword() {
+        String env = System.getenv("FTP_STUDENT_PASSWORD");
+        if (env != null && !env.isBlank()) {
+            return env.trim();
+        }
+        if (isDemoAccountEnabled()) {
+            return "123456";
+        }
+        return null;
+    }
+
     /**
      * Authenticates a user with the provided credentials.
      * - Anonymous access accepts any password (GUEST role: read-only).
-     * - Student access (Slide 30) requires password "123456" (USER role: full permissions).
+     * - Student access requires explicit demo configuration (FTP_ENABLE_DEMO_ACCOUNT=true
+     *   or FTP_STUDENT_PASSWORD) and password "123456" by default (USER role: full permissions).
+     *   If demo is not enabled, student login is rejected (530).
      * - Admin access requires password from FTP_ADMIN_PASSWORD or default "admin123".
      */
     public static boolean authenticate(String username, String password) {
@@ -33,7 +54,8 @@ public class FtpUserAuth {
             return true;
         }
         if ("student".equals(cleanUser)) {
-            return password != null && "123456".equals(password.trim());
+            String studentPass = getStudentPassword();
+            return studentPass != null && password != null && studentPass.equals(password.trim());
         }
         if ("admin".equals(cleanUser)) {
             return password != null && getAdminPassword().equals(password.trim());
@@ -50,7 +72,7 @@ public class FtpUserAuth {
             if ("admin".equals(u)) {
                 return Role.ADMIN;
             }
-            if ("student".equals(u)) {
+            if ("student".equals(u) && getStudentPassword() != null) {
                 return Role.USER;
             }
         }

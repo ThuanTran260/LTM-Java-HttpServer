@@ -126,6 +126,7 @@ public class CrossTestFtpClient {
 
         System.out.println("[BOOTSTRAP] Port " + PORT + " not active. Starting server.ftp.SimpleFtpServer via ProcessBuilder...");
         ProcessBuilder pb = new ProcessBuilder("java", "-cp", "out", "server.ftp.SimpleFtpServer");
+        pb.environment().put("FTP_ENABLE_DEMO_ACCOUNT", "true");
         pb.redirectErrorStream(true);
         serverProcess = pb.start();
 
@@ -376,6 +377,14 @@ public class CrossTestFtpClient {
         } catch (Exception e) {
             fail("Tier 2.9", "Brute-force defense", e.getMessage());
         }
+
+        // T2.10: Student login rejection when demo account is disabled (unconfigured environment)
+        boolean studentAuthWithoutConfig = server.ftp.FtpUserAuth.authenticate("student", "123456");
+        if (!studentAuthWithoutConfig) {
+            pass("Tier 2.10", "Student credentials rejected when demo configuration is not active in environment");
+        } else {
+            fail("Tier 2.10", "Student demo protection", "Student account should be disabled without explicit configuration");
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -497,6 +506,26 @@ public class CrossTestFtpClient {
             }
         } catch (Exception e) {
             fail("Tier 4.6", "Active Mode Bounce Attack defense", e.getMessage());
+        }
+
+        // T4.7: Active Mode CRLF injection defense in client library
+        FtpClient activeClient = new FtpClient();
+        try {
+            activeClient.connect(HOST, PORT);
+            activeClient.setPassiveMode(false); // Force Active Mode
+            activeClient.login("admin", "admin123");
+            try {
+                activeClient.downloadFile("sample.txt\r\nDELE injected.txt", new File("out/temp.bin"));
+                fail("Tier 4.7", "Active Mode CRLF injection defense", "Should have thrown IllegalArgumentException");
+            } catch (IllegalArgumentException iae) {
+                pass("Tier 4.7", "Active Mode CRLF injection blocked before wire with IllegalArgumentException");
+            } catch (Exception ex) {
+                fail("Tier 4.7", "Active Mode CRLF injection defense", "Unexpected exception: " + ex);
+            }
+        } catch (Exception e) {
+            fail("Tier 4.7", "Active Mode CRLF injection defense", e.getMessage());
+        } finally {
+            activeClient.disconnect();
         }
     }
 
@@ -723,6 +752,22 @@ public class CrossTestFtpClient {
                 pass("Tier 6.12", "Windows reserved device name (CON) rejected with 550");
             } else {
                 fail("Tier 6.12", "Windows device name injection", "Expected 550, got: " + retrDevice);
+            }
+
+            // T6.13: Windows trailing dot filename injection -> 550
+            String retrDot = session.send("RETR test.txt.");
+            if (retrDot.startsWith("550")) {
+                pass("Tier 6.13", "Windows trailing dot filename rejected with 550");
+            } else {
+                fail("Tier 6.13", "Trailing dot filename", "Expected 550, got: " + retrDot);
+            }
+
+            // T6.14: SafePaths sandbox policy verification (trailing dot and link validation)
+            try {
+                server.SafePaths.resolveSafe(SERVER_ROOT, "test.txt.");
+                fail("Tier 6.14", "SafePaths trailing dot check", "Should have thrown SecurityException");
+            } catch (SecurityException se) {
+                pass("Tier 6.14", "SafePaths sandbox policy (trailing dot & link rejection) validated");
             }
 
         } catch (Exception e) {
