@@ -30,6 +30,7 @@ public class FtpSessionHandler implements Runnable, AutoCloseable {
 
     private final Socket controlSocket;
     private final Path serverRoot;
+    private final server.SharedFileStore store;
     private final FtpPathSandbox sandbox;
     private final FtpDataChannel dataChannel;
 
@@ -41,15 +42,29 @@ public class FtpSessionHandler implements Runnable, AutoCloseable {
     private FtpUserAuth.Role role = FtpUserAuth.Role.GUEST;
     private String currentVirtualDir = "/";
     private boolean binaryMode = true;
-    private Path pendingRenameFrom = null;
+    private server.SharedFileStore.RenameTicket pendingRenameTicket = null;
     private int loginFailures = 0;
     private volatile boolean running = true;
 
-    public FtpSessionHandler(Socket controlSocket, Path serverRoot) {
+    public FtpSessionHandler(Socket controlSocket, server.SharedFileStore store) {
         this.controlSocket = controlSocket;
-        this.serverRoot = serverRoot.toAbsolutePath().normalize();
+        this.store = store;
+        this.serverRoot = store.root();
         this.sandbox = new FtpPathSandbox(this.serverRoot);
         this.dataChannel = new FtpDataChannel(controlSocket.getInetAddress());
+    }
+
+    public FtpSessionHandler(Socket controlSocket, Path serverRoot) {
+        this(controlSocket, createStoreForPath(serverRoot));
+    }
+
+    private static server.SharedFileStore createStoreForPath(Path serverRoot) {
+        try {
+            server.FileStoreConfig config = server.FileStoreConfig.fromEnvironment();
+            return new server.SharedFileStore(serverRoot, config.maxFileBytes());
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to initialize SharedFileStore: " + e.getMessage(), e);
+        }
     }
 
     @Override
@@ -214,6 +229,8 @@ public class FtpSessionHandler implements Runnable, AutoCloseable {
             sendReply("501 Syntax error in parameters or arguments.\r\n");
             return;
         }
+        pendingRenameTicket = null;
+        dataChannel.close();
         sessionUser = username;
         authenticated = false;
         sendReply("331 Password required for " + sessionUser + ".\r\n");
@@ -224,6 +241,8 @@ public class FtpSessionHandler implements Runnable, AutoCloseable {
             sendReply("503 Bad sequence of commands.\r\n");
             return;
         }
+        pendingRenameTicket = null;
+        dataChannel.close();
         if (FtpUserAuth.authenticate(sessionUser, password)) {
             authenticated = true;
             loginFailures = 0;
@@ -387,15 +406,12 @@ public class FtpSessionHandler implements Runnable, AutoCloseable {
         }
         try {
             String targetVirtual = sandbox.resolveVirtual(currentVirtualDir, dirName, false);
-            Path physical = sandbox.resolvePhysical(targetVirtual);
-            if (Files.exists(physical)) {
-                sendReply("550 Directory already exists.\r\n");
-                return;
-            }
-            Files.createDirectories(physical);
+            store.mkdir(targetVirtual);
             sendReply("257 \"" + targetVirtual + "\" directory created.\r\n");
         } catch (SecurityException se) {
             sendReply("550 Access denied: " + se.getMessage() + "\r\n");
+        } catch (server.SharedFileStore.StoreException se) {
+            sendReply(mapStoreException(se) + "\r\n");
         } catch (Exception e) {
             sendReply("550 Failed to create directory.\r\n");
         }
@@ -408,21 +424,12 @@ public class FtpSessionHandler implements Runnable, AutoCloseable {
         }
         try {
             String targetVirtual = sandbox.resolveVirtual(currentVirtualDir, dirName, false);
-            Path physical = sandbox.resolvePhysical(targetVirtual);
-            if (!Files.exists(physical) || !Files.isDirectory(physical)) {
-                sendReply("550 Directory not found: " + dirName + "\r\n");
-                return;
-            }
-            try (DirectoryStream<Path> ds = Files.newDirectoryStream(physical)) {
-                if (ds.iterator().hasNext()) {
-                    sendReply("550 Directory not empty.\r\n");
-                    return;
-                }
-            }
-            Files.delete(physical);
+            store.delete(targetVirtual);
             sendReply("250 Directory removed.\r\n");
         } catch (SecurityException se) {
             sendReply("550 Access denied: " + se.getMessage() + "\r\n");
+        } catch (server.SharedFileStore.StoreException se) {
+            sendReply(mapStoreException(se) + "\r\n");
         } catch (Exception e) {
             sendReply("550 Failed to remove directory.\r\n");
         }
@@ -435,15 +442,12 @@ public class FtpSessionHandler implements Runnable, AutoCloseable {
         }
         try {
             String targetVirtual = sandbox.resolveVirtual(currentVirtualDir, fileName, false);
-            Path physical = sandbox.resolvePhysical(targetVirtual);
-            if (!Files.exists(physical) || Files.isDirectory(physical)) {
-                sendReply("550 File not found: " + fileName + "\r\n");
-                return;
-            }
-            Files.delete(physical);
+            store.delete(targetVirtual);
             sendReply("250 File deleted successfully.\r\n");
         } catch (SecurityException se) {
             sendReply("550 Access denied: " + se.getMessage() + "\r\n");
+        } catch (server.SharedFileStore.StoreException se) {
+            sendReply(mapStoreException(se) + "\r\n");
         } catch (Exception e) {
             sendReply("550 Failed to delete file.\r\n");
         }
@@ -493,37 +497,40 @@ public class FtpSessionHandler implements Runnable, AutoCloseable {
         }
         try {
             String targetVirtual = sandbox.resolveVirtual(currentVirtualDir, fileName, false);
-            Path physical = sandbox.resolvePhysical(targetVirtual);
-            if (!Files.exists(physical)) {
-                sendReply("550 File not found: " + fileName + "\r\n");
-                return;
-            }
-            pendingRenameFrom = physical;
+            pendingRenameTicket = store.prepareRename(targetVirtual);
             sendReply("350 File exists, ready for destination name.\r\n");
         } catch (SecurityException se) {
+            pendingRenameTicket = null;
             sendReply("550 Access denied: " + se.getMessage() + "\r\n");
+        } catch (server.SharedFileStore.StoreException se) {
+            pendingRenameTicket = null;
+            sendReply(mapStoreException(se) + "\r\n");
         } catch (Exception e) {
+            pendingRenameTicket = null;
             sendReply("550 Could not prepare rename.\r\n");
         }
     }
 
     private void handleRnto(String fileName) {
         if (!FtpUserAuth.canRename(role)) {
+            pendingRenameTicket = null;
             sendReply("550 Permission denied: Anonymous user is read-only.\r\n");
             return;
         }
-        if (pendingRenameFrom == null) {
+        if (pendingRenameTicket == null) {
             sendReply("503 Bad sequence of commands: RNFR required first.\r\n");
             return;
         }
+        server.SharedFileStore.RenameTicket ticket = pendingRenameTicket;
+        pendingRenameTicket = null;
         try {
             String targetVirtual = sandbox.resolveVirtual(currentVirtualDir, fileName, false);
-            Path physicalTarget = sandbox.resolvePhysical(targetVirtual);
-            Files.move(pendingRenameFrom, physicalTarget, StandardCopyOption.REPLACE_EXISTING);
-            pendingRenameFrom = null;
+            store.rename(ticket, targetVirtual);
             sendReply("250 Rename successful.\r\n");
         } catch (SecurityException se) {
             sendReply("550 Access denied: " + se.getMessage() + "\r\n");
+        } catch (server.SharedFileStore.StoreException se) {
+            sendReply(mapStoreException(se) + "\r\n");
         } catch (Exception e) {
             sendReply("550 Rename failed.\r\n");
         }
@@ -604,32 +611,34 @@ public class FtpSessionHandler implements Runnable, AutoCloseable {
     }
 
     private void handleRetr(String fileName) {
-        Path physicalTarget;
+        String targetVirtual;
         try {
-            String targetVirtual = sandbox.resolveVirtual(currentVirtualDir, fileName, false);
-            physicalTarget = sandbox.resolvePhysical(targetVirtual);
-            if (!Files.exists(physicalTarget) || Files.isDirectory(physicalTarget)) {
-                sendReply("550 File not found: " + fileName + "\r\n");
-                return;
-            }
+            targetVirtual = sandbox.resolveVirtual(currentVirtualDir, fileName, false);
         } catch (SecurityException se) {
             sendReply("550 Access denied: " + se.getMessage() + "\r\n");
             return;
         }
 
-        try (Socket dataSocket = dataChannel.establishConnection()) {
-            long size = Files.size(physicalTarget);
-            sendReply("150 Opening BINARY mode data connection for " + fileName + " (" + size + " bytes).\r\n");
-            try (InputStream in = Files.newInputStream(physicalTarget);
-                 OutputStream out = dataSocket.getOutputStream()) {
-                in.transferTo(out);
-                out.flush();
+        try (server.SharedFileStore.Download download = store.openDownload(targetVirtual)) {
+            try (Socket dataSocket = dataChannel.establishConnection()) {
+                sendReply("150 Opening BINARY mode data connection for " + fileName + " (" + download.size() + " bytes).\r\n");
+                try (InputStream in = download.stream();
+                     OutputStream out = dataSocket.getOutputStream()) {
+                    in.transferTo(out);
+                    out.flush();
+                }
+                sendReply("226 Transfer complete.\r\n");
+            } catch (Exception e) {
+                sendReply("426 Connection closed; transfer aborted.\r\n");
+            } finally {
+                dataChannel.close();
             }
-            sendReply("226 Transfer complete.\r\n");
+        } catch (SecurityException se) {
+            sendReply("550 Access denied: " + se.getMessage() + "\r\n");
+        } catch (server.SharedFileStore.StoreException se) {
+            sendReply(mapStoreException(se) + "\r\n");
         } catch (Exception e) {
-            sendReply("426 Connection closed; transfer aborted.\r\n");
-        } finally {
-            dataChannel.close();
+            sendReply("550 Could not open file: " + e.getMessage() + "\r\n");
         }
     }
 
@@ -638,10 +647,9 @@ public class FtpSessionHandler implements Runnable, AutoCloseable {
             sendReply("550 Permission denied: Anonymous user is read-only.\r\n");
             return;
         }
-        Path physicalTarget;
+        String targetVirtual;
         try {
-            String targetVirtual = sandbox.resolveVirtual(currentVirtualDir, fileName, false);
-            physicalTarget = sandbox.resolvePhysical(targetVirtual);
+            targetVirtual = sandbox.resolveVirtual(currentVirtualDir, fileName, false);
         } catch (SecurityException se) {
             sendReply("550 Access denied: " + se.getMessage() + "\r\n");
             return;
@@ -649,20 +657,40 @@ public class FtpSessionHandler implements Runnable, AutoCloseable {
 
         try (Socket dataSocket = dataChannel.establishConnection()) {
             sendReply("150 Opening BINARY mode data connection for " + fileName + ".\r\n");
-            if (physicalTarget.getParent() != null) {
-                Files.createDirectories(physicalTarget.getParent());
+            try (InputStream in = dataSocket.getInputStream()) {
+                store.upload(targetVirtual, in, -1, true);
+                sendReply("226 Transfer complete.\r\n");
+            } catch (server.SharedFileStore.StoreException se) {
+                sendReply(mapStoreException(se) + "\r\n");
+            } catch (Exception e) {
+                sendReply("426 Connection closed; transfer aborted.\r\n");
             }
-            try (InputStream in = dataSocket.getInputStream();
-                 OutputStream out = Files.newOutputStream(physicalTarget, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
-                in.transferTo(out);
-                out.flush();
-            }
-            sendReply("226 Transfer complete.\r\n");
         } catch (Exception e) {
             sendReply("426 Connection closed; transfer aborted.\r\n");
         } finally {
             dataChannel.close();
         }
+    }
+
+    private String mapStoreException(server.SharedFileStore.StoreException e) {
+        String code = e.code();
+        return switch (code) {
+            case "NOT_FOUND" -> "550 File or directory not found.";
+            case "FORBIDDEN" -> "550 Permission denied.";
+            case "NOT_EMPTY" -> "550 Directory not empty.";
+            case "CONFLICT" -> {
+                if (e.getMessage() != null && e.getMessage().contains("concurrently")) {
+                    yield "450 Requested file action not taken: file busy or changed concurrently.";
+                }
+                yield "550 Requested action not taken: file exists or conflict.";
+            }
+            case "BUSY" -> "450 Requested file action not taken: file busy.";
+            case "TOO_LARGE" -> "552 Requested file action aborted: file size exceeds storage limit.";
+            case "NO_SPACE" -> "452 Requested action not taken: insufficient storage space.";
+            case "ATOMIC_UNSUPPORTED" -> "451 Requested action aborted: atomic move not supported.";
+            case "TOO_MANY_ENTRIES" -> "550 Directory too large.";
+            default -> "550 Action failed: " + e.getMessage();
+        };
     }
 
     private void sendReply(String reply) {

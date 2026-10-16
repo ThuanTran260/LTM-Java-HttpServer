@@ -20,6 +20,7 @@ public class SimpleFtpServer implements AutoCloseable {
 
     private final int port;
     private final Path serverRoot;
+    private final server.SharedFileStore store;
     private ServerSocket serverSocket;
     private final AtomicBoolean running = new AtomicBoolean(false);
 
@@ -28,8 +29,27 @@ public class SimpleFtpServer implements AutoCloseable {
     }
 
     public SimpleFtpServer(int port, Path serverRoot) {
+        this(port, createStore(serverRoot));
+    }
+
+    public SimpleFtpServer(int port, server.SharedFileStore store) {
         this.port = port;
-        this.serverRoot = serverRoot.toAbsolutePath().normalize();
+        this.store = store;
+        this.serverRoot = store.root();
+    }
+
+    private static server.SharedFileStore createStore(Path serverRoot) {
+        try {
+            server.FileStoreConfig config = server.FileStoreConfig.fromEnvironment();
+            long maxBytes = config.maxFileBytes();
+            return new server.SharedFileStore(serverRoot, maxBytes);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to initialize SharedFileStore: " + e.getMessage(), e);
+        }
+    }
+
+    public server.SharedFileStore getStore() {
+        return store;
     }
 
     public void start() throws IOException {
@@ -47,7 +67,7 @@ public class SimpleFtpServer implements AutoCloseable {
                     Socket clientSocket = serverSocket.accept();
                     Thread.ofVirtual()
                           .name("ftp-session-" + clientSocket.getRemoteSocketAddress())
-                          .start(new FtpSessionHandler(clientSocket, serverRoot));
+                          .start(new FtpSessionHandler(clientSocket, store));
                 } catch (IOException e) {
                     if (!running.get() || serverSocket.isClosed()) {
                         break;

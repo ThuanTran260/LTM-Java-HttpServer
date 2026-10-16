@@ -447,9 +447,185 @@ public class CrossTestFilesClient {
         }
     }
 
+    // =========================================================================
+    // 3. FTP TESTS (Task 3)
+    // =========================================================================
+
     public static void runFtpTests() {
         System.out.println("\n--- [GROUP: FTP] FTP Shared Store Integration & Wire Protocol ---");
-        // To be populated in Task 3
+
+        try (ProcessFixture fixture = new ProcessFixture()) {
+            Path ws = fixture.createWorkspace();
+            Path root = ws.resolve("ftp_workspace/server_root");
+            Files.createDirectories(root);
+
+            Map<String, String> env = new HashMap<>();
+            env.put("FTP_ROOT", root.toString());
+            env.put("FTP_ADMIN_PASSWORD", "AdminPass123!");
+
+            ProcessFixture.ServerInstance ftp = fixture.startFtp(ws, env, null);
+            if (ftp == null || !ftp.isAlive()) {
+                fail("FTP 3.0: FTP server startup", "Failed to start FTP server");
+                return;
+            }
+
+            int port = ftp.port();
+
+            // Test 3.1: Connect and login as admin
+            try (FtpWireClient client = new FtpWireClient("127.0.0.1", port)) {
+                String uReply = client.sendCommand("USER admin");
+                String pReply = client.sendCommand("PASS AdminPass123!");
+                if (uReply.startsWith("331") && pReply.startsWith("230")) {
+                    pass("FTP 3.1: Admin authentication succeeded on wire protocol");
+                } else {
+                    fail("FTP 3.1: Admin auth", "Replies: " + uReply + " / " + pReply);
+                }
+
+                // Test 3.2: Literal '+' filename (a+b.txt) STOR and RETR
+                client.sendCommand("TYPE I");
+                String pasv1 = client.sendCommand("PASV");
+                int dataPort1 = client.parsePasvPort(pasv1);
+                try (Socket dataSocket = new Socket("127.0.0.1", dataPort1)) {
+                    String storReply = client.sendCommand("STOR a+b.txt");
+                    if (!storReply.startsWith("150")) {
+                        fail("FTP 3.2: STOR a+b.txt 150 reply", "Got: " + storReply);
+                    } else {
+                        dataSocket.getOutputStream().write("plus-content".getBytes(StandardCharsets.UTF_8));
+                        dataSocket.getOutputStream().flush();
+                    }
+                }
+                String storDone1 = client.readReply();
+                if (storDone1.startsWith("226") && Files.exists(root.resolve("a+b.txt"))) {
+                    pass("FTP 3.2: STOR a+b.txt with literal '+' preserved filename on disk");
+                } else {
+                    fail("FTP 3.2: STOR a+b.txt", "Reply: " + storDone1 + ", exists: " + Files.exists(root.resolve("a+b.txt")));
+                }
+
+                // Verify RETR a+b.txt
+                String pasv2 = client.sendCommand("PASV");
+                int dataPort2 = client.parsePasvPort(pasv2);
+                byte[] retrBytes;
+                try (Socket dataSocket = new Socket("127.0.0.1", dataPort2)) {
+                    String retrReply = client.sendCommand("RETR a+b.txt");
+                    if (!retrReply.startsWith("150")) {
+                        fail("FTP 3.2b: RETR a+b.txt 150 reply", "Got: " + retrReply);
+                    }
+                    retrBytes = dataSocket.getInputStream().readAllBytes();
+                }
+                String retrDone1 = client.readReply();
+                if (retrDone1.startsWith("226") && "plus-content".equals(new String(retrBytes, StandardCharsets.UTF_8))) {
+                    pass("FTP 3.2b: RETR a+b.txt returned exact binary content for literal '+'");
+                } else {
+                    fail("FTP 3.2b: RETR a+b.txt", "Content: " + new String(retrBytes, StandardCharsets.UTF_8));
+                }
+
+                // Test 3.3: Literal '%' filename (100%.txt) STOR and RETR
+                String pasv3 = client.sendCommand("PASV");
+                int dataPort3 = client.parsePasvPort(pasv3);
+                try (Socket dataSocket = new Socket("127.0.0.1", dataPort3)) {
+                    client.sendCommand("STOR 100%.txt");
+                    dataSocket.getOutputStream().write("percent-content".getBytes(StandardCharsets.UTF_8));
+                    dataSocket.getOutputStream().flush();
+                }
+                String storDone2 = client.readReply();
+                if (storDone2.startsWith("226") && Files.exists(root.resolve("100%.txt"))) {
+                    pass("FTP 3.3: STOR 100%.txt with literal '%' preserved filename on disk");
+                } else {
+                    fail("FTP 3.3: STOR 100%.txt", "Reply: " + storDone2);
+                }
+
+                // Test 3.4: Unicode Vietnamese filename and spaces
+                String pasv4 = client.sendCommand("PASV");
+                int dataPort4 = client.parsePasvPort(pasv4);
+                try (Socket dataSocket = new Socket("127.0.0.1", dataPort4)) {
+                    client.sendCommand("STOR d\u1eef_li\u1ec7u 2026.txt");
+                    dataSocket.getOutputStream().write("unicode-space-content".getBytes(StandardCharsets.UTF_8));
+                    dataSocket.getOutputStream().flush();
+                }
+                String storDone3 = client.readReply();
+                if (storDone3.startsWith("226")) {
+                    pass("FTP 3.4: STOR filename with Unicode and spaces succeeded (226)");
+                } else {
+                    fail("FTP 3.4: Unicode/space STOR", "Reply: " + storDone3);
+                }
+
+                // Test 3.5: Overwrite existing file via STOR (replace=true)
+                String pasv5 = client.sendCommand("PASV");
+                int dataPort5 = client.parsePasvPort(pasv5);
+                try (Socket dataSocket = new Socket("127.0.0.1", dataPort5)) {
+                    client.sendCommand("STOR a+b.txt");
+                    dataSocket.getOutputStream().write("updated-plus-content".getBytes(StandardCharsets.UTF_8));
+                    dataSocket.getOutputStream().flush();
+                }
+                String storDone4 = client.readReply();
+                if (storDone4.startsWith("226") && "updated-plus-content".equals(Files.readString(root.resolve("a+b.txt"), StandardCharsets.UTF_8))) {
+                    pass("FTP 3.5: STOR atomically replaced existing file without leaving corrupted state");
+                } else {
+                    fail("FTP 3.5: Overwrite", "Reply: " + storDone4);
+                }
+
+                // Test 3.6: LIST verifies files and ensures staging/.state is NOT visible
+                String pasv6 = client.sendCommand("PASV");
+                int dataPort6 = client.parsePasvPort(pasv6);
+                String listOutput;
+                try (Socket dataSocket = new Socket("127.0.0.1", dataPort6)) {
+                    client.sendCommand("LIST");
+                    listOutput = new String(dataSocket.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+                }
+                client.readReply(); // 226
+                if (listOutput.contains("a+b.txt") && listOutput.contains("100%.txt") && !listOutput.contains(".state") && !listOutput.contains(".tmp")) {
+                    pass("FTP 3.6: LIST lists filenames correctly and completely conceals staging / .state");
+                } else {
+                    fail("FTP 3.6: LIST output", "Output: " + listOutput);
+                }
+
+                // Test 3.7: Rename ticket sequence and overwrite rejection
+                client.sendCommand("RNFR a+b.txt");
+                client.sendCommand("RNTO a_plus_b.txt");
+                if (Files.exists(root.resolve("a_plus_b.txt")) && !Files.exists(root.resolve("a+b.txt"))) {
+                    pass("FTP 3.7a: RNFR/RNTO renamed file successfully");
+                } else {
+                    fail("FTP 3.7a: RNFR/RNTO", "State invalid");
+                }
+
+                // RNTO to existing target must be rejected (no overwrite rename)
+                client.sendCommand("RNFR a_plus_b.txt");
+                String rntoDupReply = client.sendCommand("RNTO 100%.txt");
+                if (rntoDupReply.startsWith("550")) {
+                    pass("FTP 3.7b: RNTO to existing destination strictly rejected with 550");
+                } else {
+                    fail("FTP 3.7b: RNTO existing target", "Reply: " + rntoDupReply);
+                }
+
+                // Test 3.8: Re-authentication clears pending rename ticket
+                client.sendCommand("RNFR a_plus_b.txt");
+                client.sendCommand("USER admin");
+                client.sendCommand("PASS AdminPass123!");
+                String staleRnto = client.sendCommand("RNTO orphan.txt");
+                if (staleRnto.startsWith("503")) {
+                    pass("FTP 3.8: USER/PASS clears pending rename state, stale RNTO rejected with 503");
+                } else {
+                    fail("FTP 3.8: Stale RNTO", "Reply: " + staleRnto);
+                }
+
+                // Test 3.9: Directory MKD and RMD via shared store
+                String mkdReply = client.sendCommand("MKD my_ftp_dir");
+                if (mkdReply.startsWith("257") && Files.isDirectory(root.resolve("my_ftp_dir"))) {
+                    String rmdReply = client.sendCommand("RMD my_ftp_dir");
+                    if (rmdReply.startsWith("250") && !Files.exists(root.resolve("my_ftp_dir"))) {
+                        pass("FTP 3.9: MKD and RMD coordinated cleanly via SharedFileStore");
+                    } else {
+                        fail("FTP 3.9: RMD", "Reply: " + rmdReply);
+                    }
+                } else {
+                    fail("FTP 3.9: MKD", "Reply: " + mkdReply);
+                }
+            }
+
+        } catch (Exception e) {
+            fail("FTP Group Fixture Execution", e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     public static void runSessionTests() {
@@ -730,6 +906,60 @@ public class CrossTestFilesClient {
             return p.exitValue() == 0 && Files.exists(link);
         } catch (Exception e) {
             return false;
+        }
+    }
+
+    public static class FtpWireClient implements AutoCloseable {
+        private final Socket socket;
+        private final BufferedReader reader;
+        private final BufferedWriter writer;
+
+        public FtpWireClient(String host, int port) throws IOException {
+            this.socket = new Socket(host, port);
+            this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+            this.writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
+            readReply(); // Read 220 banner
+        }
+
+        public String sendCommand(String cmd) throws IOException {
+            writer.write(cmd + "\r\n");
+            writer.flush();
+            return readReply();
+        }
+
+        public String readReply() throws IOException {
+            String line = reader.readLine();
+            if (line == null) return null;
+            if (line.length() >= 4 && line.charAt(3) == '-') {
+                String prefix = line.substring(0, 3) + " ";
+                StringBuilder sb = new StringBuilder(line).append("\n");
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line).append("\n");
+                    if (line.startsWith(prefix)) break;
+                }
+                return sb.toString().trim();
+            }
+            return line.trim();
+        }
+
+        public int parsePasvPort(String reply) {
+            int start = reply.indexOf('(');
+            int end = reply.indexOf(')');
+            if (start == -1 || end == -1) {
+                throw new IllegalArgumentException("No PASV port pattern found in: " + reply);
+            }
+            String[] parts = reply.substring(start + 1, end).split(",");
+            int p1 = Integer.parseInt(parts[4].trim());
+            int p2 = Integer.parseInt(parts[5].trim());
+            return p1 * 256 + p2;
+        }
+
+        @Override
+        public void close() throws IOException {
+            try {
+                sendCommand("QUIT");
+            } catch (Exception ignored) {}
+            socket.close();
         }
     }
 }

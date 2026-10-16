@@ -46,27 +46,22 @@ public class FtpPathSandbox {
             throw new SecurityException("Null byte injection detected");
         }
 
-        // Layer 1.2: Detect URL-encoded traversal patterns (%2e, %2f, %252e)
+        // Layer 1.2: Detect URL-encoded traversal patterns (%2e, %2f, %252e, %5c)
         String lower = input.toLowerCase(Locale.ROOT);
-        if (lower.contains("%2e") || lower.contains("%252e")) {
+        if (lower.contains("%2e") || lower.contains("%252e") || lower.contains("%2f") || lower.contains("%5c")) {
             throw new SecurityException("URL-encoded path traversal detected");
         }
 
-        // URL Decode check (detect hidden nulls or traversal)
-        String decoded = input;
-        try {
-            decoded = URLDecoder.decode(input, StandardCharsets.UTF_8);
-            if (decoded.indexOf('\0') != -1 || decoded.contains("%00")) {
-                throw new SecurityException("Null byte injection detected in decoded path");
+        // Decode hex percent without turning + into space
+        String decoded = decodePercent(input);
+        if (decoded.indexOf('\0') != -1 || decoded.contains("%00")) {
+            throw new SecurityException("Null byte injection detected in decoded path");
+        }
+        if (decoded.contains("%")) {
+            String doubleDecoded = decodePercent(decoded);
+            if (doubleDecoded.indexOf('\0') != -1 || doubleDecoded.contains("%00")) {
+                throw new SecurityException("Null byte injection detected in double-decoded path");
             }
-            if (decoded.contains("%")) {
-                String doubleDecoded = URLDecoder.decode(decoded, StandardCharsets.UTF_8);
-                if (doubleDecoded.indexOf('\0') != -1 || doubleDecoded.contains("%00")) {
-                    throw new SecurityException("Null byte injection detected in double-decoded path");
-                }
-            }
-        } catch (IllegalArgumentException e) {
-            throw new SecurityException("Invalid URL encoding in path");
         }
 
         // Layer 1.3: Reject Windows UNC paths
@@ -74,8 +69,8 @@ public class FtpPathSandbox {
             throw new SecurityException("UNC network paths forbidden");
         }
 
-        // Layer 1.4: Normalize slashes
-        String clean = decoded.replace('\\', '/');
+        // Layer 1.4: Normalize slashes while keeping literal filename intact
+        String clean = input.replace('\\', '/');
 
         // Layer 1.5: Reject Windows drive letters (e.g. C:, D:\, C:/)
         if (clean.matches("^[a-zA-Z]:.*") || clean.contains(":/")) {
@@ -83,6 +78,27 @@ public class FtpPathSandbox {
         }
 
         return clean;
+    }
+
+    private static String decodePercent(String input) {
+        if (input == null || input.isEmpty() || input.indexOf('%') == -1) {
+            return input;
+        }
+        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+        for (int i = 0; i < input.length(); i++) {
+            char c = input.charAt(i);
+            if (c == '%' && i + 2 < input.length()) {
+                int d1 = Character.digit(input.charAt(i + 1), 16);
+                int d2 = Character.digit(input.charAt(i + 2), 16);
+                if (d1 != -1 && d2 != -1) {
+                    baos.write((d1 << 4) + d2);
+                    i += 2;
+                    continue;
+                }
+            }
+            baos.write((byte) (c & 0xFF));
+        }
+        return baos.toString(StandardCharsets.UTF_8);
     }
 
     /**
