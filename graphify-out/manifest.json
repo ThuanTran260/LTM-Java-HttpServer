@@ -1,14 +1,14 @@
 {
   "src/client/CrossTestClient.java": {
-    "mtime": 1791107039.7769942,
-    "seen": 1791602115.2199602,
-    "ast_hash": "5d9b66b43b8ce4902b7a428ed44006b2",
+    "mtime": 1791638820.3825219,
+    "seen": 1792149240.2389555,
+    "ast_hash": "357d09c892a6c3bd9bb5fbd04155a142",
     "semantic_hash": ""
   },
   "src/client/HttpClientErrorDemo.java": {
-    "mtime": 1791107039.7769942,
-    "seen": 1791602115.219965,
-    "ast_hash": "ba372558d3e16614843eebee8bfb9df4",
+    "mtime": 1791638820.3835213,
+    "seen": 1792149240.238967,
+    "ast_hash": "ebafe79a4cbdc196e59e4dbdd4c99432",
     "semantic_hash": ""
   },
   "src/client/HttpClientGetDemo.java": {
@@ -24,63 +24,63 @@
     "semantic_hash": ""
   },
   "src/mock/MockIisServer.java": {
-    "mtime": 1791107097.8740711,
-    "seen": 1791602115.2199683,
-    "ast_hash": "c4aa9e81119815bf24263dcdeb010c25",
+    "mtime": 1791638820.3845222,
+    "seen": 1792149240.238974,
+    "ast_hash": "fc9abf892f16ad93ef5b338007edade4",
     "semantic_hash": ""
   },
   "src/model/Student.java": {
-    "mtime": 1791106989.894742,
-    "seen": 1791602115.2199688,
-    "ast_hash": "28c6a3d76d4bac052659149c4dae7be2",
+    "mtime": 1791638820.3845222,
+    "seen": 1792149240.238975,
+    "ast_hash": "3819ba85840226cf70e60b33467d1547",
     "semantic_hash": ""
   },
   "src/server/ProxyHandler.java": {
-    "mtime": 1791598211.7011309,
-    "seen": 1791602115.2199695,
-    "ast_hash": "e89d70edba4facc8c51621b5e3a7be62",
+    "mtime": 1791638820.3855214,
+    "seen": 1792149240.238976,
+    "ast_hash": "b4b63c78ec48b1f17f23dcd8cea39359",
     "semantic_hash": ""
   },
   "src/server/RouterHandler.java": {
-    "mtime": 1791598260.8650038,
-    "seen": 1791602115.2199702,
-    "ast_hash": "fc361acdab8a72820f073ebb76be319c",
+    "mtime": 1791638820.3855214,
+    "seen": 1792149240.2389765,
+    "ast_hash": "0ede2d8e3ecdb8966c8d155c34f9fb09",
     "semantic_hash": ""
   },
   "src/server/ServerLogger.java": {
-    "mtime": 1791106989.894742,
-    "seen": 1791602115.2199707,
-    "ast_hash": "375b690f498ff4ab6c1bd35816e9f7f6",
+    "mtime": 1791638820.386521,
+    "seen": 1792149240.2389781,
+    "ast_hash": "06fcfbbb3caefea1374195e2a0770b72",
     "semantic_hash": ""
   },
   "src/server/SimpleHttpServer.java": {
-    "mtime": 1791107019.8575315,
-    "seen": 1791602115.2199714,
-    "ast_hash": "d24cb5e56783ba079ced5a2fcb0c8f0d",
+    "mtime": 1791638820.386521,
+    "seen": 1792149240.2389789,
+    "ast_hash": "317a8b4f50c5bbbd8b1385b35d97b356",
     "semantic_hash": ""
   },
   "src/server/StaticFileHandler.java": {
-    "mtime": 1791598223.9019156,
-    "seen": 1791602115.2199721,
-    "ast_hash": "0f287770b9d3ce6e05f029fdde3aec73",
+    "mtime": 1792148822.5945153,
+    "seen": 1792149240.2389815,
+    "ast_hash": "bb329939b2f3efa31c063a2f8938fb36",
     "semantic_hash": ""
   },
   "src/service/StudentService.java": {
-    "mtime": 1791106989.894742,
-    "seen": 1791602115.2199726,
-    "ast_hash": "f36c6b0b59e8d11ab92221f122acdb50",
+    "mtime": 1791638820.3885212,
+    "seen": 1792149240.238986,
+    "ast_hash": "f733773e498eb4cd045185395a7cb910",
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1791598271.2514448,
-    "seen": 1791602115.2199733,
-    "ast_hash": "3d734e82413ec5e2da487ddf93af8c2d",
+    "mtime": 1791638820.3795195,
+    "seen": 1792149240.238988,
+    "ast_hash": "8cf55ed109ff80d87823ca67e5a6b1bd",
     "semantic_hash": ""
   },
   "wwwroot/index.html": {
-    "mtime": 1791602106.7058513,
-    "seen": 1791602115.2199738,
-    "ast_hash": "06d9f78dc2671303a8c6e2ae1aaa5498",
+    "mtime": 1791638820.389521,
+    "seen": 1792149240.2389972,
+    "ast_hash": "d157d90f2ea007e0bfdef2730dcf4144",
     "semantic_hash": ""
   },
   "wwwroot/sample.txt": {
@@ -213,6 +213,204 @@
     "mtime": 1791598211.717131,
     "seen": 1791602115.2199879,
     "ast_hash": "2cd8bde463f5d82aae0f0cec061d6b8f",
+    "semantic_hash": ""
+  },
+  "src/client/CrossTestFtpClient.java": {
+    "mtime": 1792149179.660677,
+    "seen": 1792149240.2389603,
+    "ast_hash": "7ae4e9121e7de2901f43bd69e39a2375",
+    "semantic_hash": ""
+  },
+  "src/client/FtpClient.java": {
+    "mtime": 1792148968.3026052,
+    "seen": 1792149240.238962,
+    "ast_hash": "0c475216489726659e41d9b0fea1f50f",
+    "semantic_hash": ""
+  },
+  "src/client/FtpClientApp.java": {
+    "mtime": 1792149019.899002,
+    "seen": 1792149240.2389627,
+    "ast_hash": "4d6d38912368636f94fc5c0ee2d7b521",
+    "semantic_hash": ""
+  },
+  "src/client/FtpCommandListener.java": {
+    "mtime": 1792146192.2326074,
+    "seen": 1792149240.2389636,
+    "ast_hash": "026180abfa8b462c0147c89c9202f563",
+    "semantic_hash": ""
+  },
+  "src/client/FtpFile.java": {
+    "mtime": 1792146192.233123,
+    "seen": 1792149240.2389646,
+    "ast_hash": "519268bb84b0aa9a7bcf933733dda17e",
+    "semantic_hash": ""
+  },
+  "src/client/FtpReply.java": {
+    "mtime": 1792146192.233123,
+    "seen": 1792149240.2389655,
+    "ast_hash": "094fc2e87451912ef43f0b184bbd7d03",
+    "semantic_hash": ""
+  },
+  "src/client/WebClientApp.java": {
+    "mtime": 1792146192.2336452,
+    "seen": 1792149240.2389717,
+    "ast_hash": "e1b325a3542a3140b55031120e596f21",
+    "semantic_hash": ""
+  },
+  "src/client/WebFetchService.java": {
+    "mtime": 1791638820.3835213,
+    "seen": 1792149240.2389731,
+    "ast_hash": "813e9c5a3426a43b1d70a048adb1178f",
+    "semantic_hash": ""
+  },
+  "src/server/SafePaths.java": {
+    "mtime": 1792148791.2656734,
+    "seen": 1792149240.2389772,
+    "ast_hash": "e91ea29d935a5945a1ef0a51c3c0e4fe",
+    "semantic_hash": ""
+  },
+  "src/server/SiteFileHandler.java": {
+    "mtime": 1791638820.386521,
+    "seen": 1792149240.2389793,
+    "ast_hash": "b4d9d47e192d165c20f2f827693de73d",
+    "semantic_hash": ""
+  },
+  "src/server/SiteManager.java": {
+    "mtime": 1791638820.3875208,
+    "seen": 1792149240.23898,
+    "ast_hash": "39ef172b4e841b4805bb1f568153071e",
+    "semantic_hash": ""
+  },
+  "src/server/SitesApiHandler.java": {
+    "mtime": 1791638820.3875208,
+    "seen": 1792149240.2389805,
+    "ast_hash": "7e1e0853de22e2e21e43dc80122229b5",
+    "semantic_hash": ""
+  },
+  "src/server/WebFetchHandler.java": {
+    "mtime": 1791638820.3885212,
+    "seen": 1792149240.238982,
+    "ast_hash": "5d361b8c360471e7ef09b4cd0d974652",
+    "semantic_hash": ""
+  },
+  "src/server/ftp/FtpDataChannel.java": {
+    "mtime": 1792148848.282796,
+    "seen": 1792149240.238983,
+    "ast_hash": "d5b27d90a0697a5d20b8d336f8433a52",
+    "semantic_hash": ""
+  },
+  "src/server/ftp/FtpPathSandbox.java": {
+    "mtime": 1792148813.6768641,
+    "seen": 1792149240.2389834,
+    "ast_hash": "7c1b7f22ffd6fddacabeffb105f02dcc",
+    "semantic_hash": ""
+  },
+  "src/server/ftp/FtpSessionHandler.java": {
+    "mtime": 1792149045.8936956,
+    "seen": 1792149240.238984,
+    "ast_hash": "021f90e6a452c7f9737d7351f89758e1",
+    "semantic_hash": ""
+  },
+  "src/server/ftp/FtpUserAuth.java": {
+    "mtime": 1792148743.697303,
+    "seen": 1792149240.2389846,
+    "ast_hash": "7d0ce1b0b4cc750005d7573de5c84310",
+    "semantic_hash": ""
+  },
+  "src/server/ftp/SimpleFtpServer.java": {
+    "mtime": 1792146192.236306,
+    "seen": 1792149240.2389853,
+    "ast_hash": "23c322e67bf0c919e3244d8370260a4b",
+    "semantic_hash": ""
+  },
+  "ORIGINAL_REQUEST.md": {
+    "mtime": 1792146192.2256322,
+    "seen": 1792149240.2389867,
+    "ast_hash": "fe82b79a12c6dd92d02788dbc65f4ab2",
+    "semantic_hash": ""
+  },
+  "PROJECT.md": {
+    "mtime": 1792146192.2256322,
+    "seen": 1792149240.2389874,
+    "ast_hash": "85962dac7dae7c41c87f1ad486bd447b",
+    "semantic_hash": ""
+  },
+  "TEST_INFRA.md": {
+    "mtime": 1792146192.2261803,
+    "seen": 1792149240.2389889,
+    "ast_hash": "c71fab8ee5424e61f58a00c6891ea385",
+    "semantic_hash": ""
+  },
+  "TEST_READY.md": {
+    "mtime": 1792146192.2267268,
+    "seen": 1792149240.2389894,
+    "ast_hash": "18faadf0e2e1fd2e82c15046754f7b5b",
+    "semantic_hash": ""
+  },
+  "docs/security/2026-10-16-security-assessment.md": {
+    "mtime": 1792147524.3345263,
+    "seen": 1792149240.23899,
+    "ast_hash": "02d3475a4adccb72d7b6264a69753d12",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-10-10-file-tree.md": {
+    "mtime": 1791638820.3805182,
+    "seen": 1792149240.2389908,
+    "ast_hash": "3d28049a48e85634837239142acbd490",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-10-10-multisite.md": {
+    "mtime": 1792146192.2278173,
+    "seen": 1792149240.2389913,
+    "ast_hash": "0d5512e4a4bb7a9d55900a852a7e911b",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-10-10-webclient.md": {
+    "mtime": 1791638820.3815227,
+    "seen": 1792149240.238992,
+    "ast_hash": "c8862c0a27bd5602b9658316b104e3e4",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-10-15-ftp-server-client.md": {
+    "mtime": 1792075500.5459878,
+    "seen": 1792149240.2389927,
+    "ast_hash": "6ef00bdd90cc3df02e38408ad13f9817",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-10-16-security-hardening.md": {
+    "mtime": 1792147524.333521,
+    "seen": 1792149240.2389934,
+    "ast_hash": "fb4126237564d9a9987feea49874c039",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-10-10-file-tree-design.md": {
+    "mtime": 1791638820.3815227,
+    "seen": 1792149240.2389941,
+    "ast_hash": "bcfc633f12ddca8b433fad1fe8915d91",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-10-10-multisite-design.md": {
+    "mtime": 1792146192.228367,
+    "seen": 1792149240.2389946,
+    "ast_hash": "b869451dcec6cc235deebbc8975b8c9a",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-10-10-webclient-design.md": {
+    "mtime": 1791638820.3815227,
+    "seen": 1792149240.2389953,
+    "ast_hash": "054fdcdfa941e94ecb9faa0af7d807b4",
+    "semantic_hash": ""
+  },
+  "ftp_workspace/server_root/readme.txt": {
+    "mtime": 1792149228.2689335,
+    "seen": 1792149240.238996,
+    "ast_hash": "65a14fc3b998948ac248a63aaf23e2b2",
+    "semantic_hash": ""
+  },
+  "wwwroot/admin.html": {
+    "mtime": 1791638820.3885212,
+    "seen": 1792149240.2389965,
+    "ast_hash": "5f1f19ed9f3ad3e68e1fa5cd7fde1e19",
     "semantic_hash": ""
   }
 }

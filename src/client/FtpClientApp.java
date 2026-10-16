@@ -97,6 +97,7 @@ public class FtpClientApp extends JFrame {
     // Action Toolbar Components
     private final JButton uploadBtn = new JButton("Upload ===>>>");
     private final JButton downloadBtn = new JButton("<<<=== Download");
+    private final JButton renameRemoteBtn = new JButton("✏️ Rename...");
     private final JButton deleteRemoteBtn = new JButton("Delete Remote");
     private final JButton newFolderRemoteBtn = new JButton("New Remote Folder...");
     private final JProgressBar progressBar = new JProgressBar();
@@ -136,6 +137,10 @@ public class FtpClientApp extends JFrame {
         presetJava.setToolTipText("Connect to SimpleFtpServer on 127.0.0.1:2121 (admin/admin123)");
         presetJava.addActionListener(e -> applyPreset("127.0.0.1", "2121", "admin", "admin123", true));
 
+        JButton presetStudent = new JButton("🎓 Sinh viên (:2121)");
+        presetStudent.setToolTipText("Connect as student/123456 (Slide 30 standard)");
+        presetStudent.addActionListener(e -> applyPreset("127.0.0.1", "2121", "student", "123456", true));
+
         JButton presetIis = new JButton("🪟 Windows IIS FTP (:21)");
         presetIis.setToolTipText("Connect to Windows IIS FTP Service on 127.0.0.1:21 (anonymous)");
         presetIis.addActionListener(e -> applyPreset("127.0.0.1", "21", "anonymous", "guest@test.com", true));
@@ -145,6 +150,7 @@ public class FtpClientApp extends JFrame {
         presetAnon.addActionListener(e -> applyPreset("127.0.0.1", "2121", "anonymous", "guest@test.com", true));
 
         presetRow.add(presetJava);
+        presetRow.add(presetStudent);
         presetRow.add(presetIis);
         presetRow.add(presetAnon);
 
@@ -184,6 +190,7 @@ public class FtpClientApp extends JFrame {
         actionToolbar.add(downloadBtn);
         actionToolbar.add(Box.createHorizontalStrut(10));
         actionToolbar.add(newFolderRemoteBtn);
+        actionToolbar.add(renameRemoteBtn);
         actionToolbar.add(deleteRemoteBtn);
         actionToolbar.add(Box.createHorizontalStrut(15));
         progressBar.setPreferredSize(new Dimension(150, 18));
@@ -461,6 +468,34 @@ public class FtpClientApp extends JFrame {
             }
         });
 
+        // Rename Remote File/Folder (Slide 30 RNFR / RNTO)
+        renameRemoteBtn.addActionListener(e -> {
+            if (!ftpClient.isConnected()) return;
+            int row = remoteTable.getSelectedRow();
+            if (row == -1) {
+                JOptionPane.showMessageDialog(this, "Please select an item in the Remote Table to rename.", "Notice", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+            String oldName = (String) remoteTableModel.getValueAt(row, 0);
+            String newName = JOptionPane.showInputDialog(this, "Enter new name for \"" + oldName + "\":", "Rename Remote Item (RNFR / RNTO)", JOptionPane.PLAIN_MESSAGE);
+            if (newName != null && !newName.isBlank() && !newName.trim().equals(oldName)) {
+                String targetName = newName.trim();
+                executeAsync("Renaming: " + oldName + " -> " + targetName, () -> {
+                    try {
+                        boolean ok = ftpClient.rename(oldName, targetName);
+                        if (ok) {
+                            refreshRemoteTableAsync();
+                            logInfo("Renamed remote item: " + oldName + " -> " + targetName);
+                        } else {
+                            showError("Rename failed: " + (ftpClient.getLastReply() != null ? ftpClient.getLastReply().message() : "Error"));
+                        }
+                    } catch (IOException ex) {
+                        showError("Failed to rename remote item: " + ex.getMessage());
+                    }
+                });
+            }
+        });
+
         // Window Close Listener (ensure clean disconnect)
         addWindowListener(new WindowAdapter() {
             @Override
@@ -672,6 +707,7 @@ public class FtpClientApp extends JFrame {
         uploadBtn.setEnabled(isConn);
         downloadBtn.setEnabled(isConn);
         newFolderRemoteBtn.setEnabled(isConn);
+        renameRemoteBtn.setEnabled(isConn);
         deleteRemoteBtn.setEnabled(isConn);
 
         if (!isConn) {
@@ -701,6 +737,7 @@ public class FtpClientApp extends JFrame {
         uploadBtn.setEnabled(!busy && ftpClient.isConnected());
         downloadBtn.setEnabled(!busy && ftpClient.isConnected());
         newFolderRemoteBtn.setEnabled(!busy && ftpClient.isConnected());
+        renameRemoteBtn.setEnabled(!busy && ftpClient.isConnected());
         deleteRemoteBtn.setEnabled(!busy && ftpClient.isConnected());
         remoteRefreshBtn.setEnabled(!busy && ftpClient.isConnected());
     }

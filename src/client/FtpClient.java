@@ -278,6 +278,22 @@ public class FtpClient implements AutoCloseable {
         return reply.isPositiveCompletion();
     }
 
+    /**
+     * Renames a file or directory on the remote FTP server using RFC 959 RNFR and RNTO.
+     * Complies with Slide 30 Section 2, 5, 6, 8, 9 (1.0 mark).
+     */
+    public synchronized boolean rename(String fromPath, String toPath) throws IOException {
+        if (fromPath == null || toPath == null || fromPath.isBlank() || toPath.isBlank()) {
+            throw new IllegalArgumentException("Source and target names cannot be blank");
+        }
+        FtpReply replyRnfr = sendCommand("RNFR " + fromPath.trim());
+        if (!replyRnfr.isPositiveIntermediate()) {
+            return false;
+        }
+        FtpReply replyRnto = sendCommand("RNTO " + toPath.trim());
+        return replyRnto.isPositiveCompletion();
+    }
+
     public synchronized boolean makeDirectory(String dirName) throws IOException {
         FtpReply reply = sendCommand("MKD " + dirName);
         return reply.isSuccess();
@@ -291,6 +307,9 @@ public class FtpClient implements AutoCloseable {
     public synchronized FtpReply sendCommand(String command) throws IOException {
         if (!isConnected()) {
             throw new IOException("Not connected to FTP server.");
+        }
+        if (command == null || command.contains("\r") || command.contains("\n") || command.indexOf('\0') >= 0) {
+            throw new IllegalArgumentException("FTP command cannot contain CR, LF, or null characters");
         }
         String sanitized = command;
         if (command.toUpperCase(Locale.ROOT).startsWith("PASS ")) {
@@ -429,8 +448,9 @@ public class FtpClient implements AutoCloseable {
         String dataHost = hostPort[0] + "." + hostPort[1] + "." + hostPort[2] + "." + hostPort[3];
         int dataPort = hostPort[4];
 
-        // IP fallback heuristic: if 0.0.0.0 or unreachable local IP on remote server connection
-        if ("0.0.0.0".equals(dataHost)) {
+        // SEC-11: Bind data host to control connection's peer IP to prevent PASV bounce/redirect attacks.
+        // Standard FTP clients (FileZilla, curl) ignore PASV host IP and reuse control connection's peer IP.
+        if (controlSocket != null && controlSocket.getInetAddress() != null) {
             dataHost = controlSocket.getInetAddress().getHostAddress();
         }
 

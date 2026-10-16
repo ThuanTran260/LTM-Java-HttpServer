@@ -9,13 +9,20 @@ public class FtpUserAuth {
 
     public enum Role {
         GUEST,
+        USER,
         ADMIN
+    }
+
+    private static String getAdminPassword() {
+        String env = System.getenv("FTP_ADMIN_PASSWORD");
+        return (env != null && !env.isBlank()) ? env.trim() : "admin123";
     }
 
     /**
      * Authenticates a user with the provided credentials.
-     * Anonymous access accepts any password.
-     * Admin access requires password "admin123".
+     * - Anonymous access accepts any password (GUEST role: read-only).
+     * - Student access (Slide 30) requires password "123456" (USER role: full permissions).
+     * - Admin access requires password from FTP_ADMIN_PASSWORD or default "admin123".
      */
     public static boolean authenticate(String username, String password) {
         if (username == null) {
@@ -25,8 +32,11 @@ public class FtpUserAuth {
         if ("anonymous".equals(cleanUser)) {
             return true;
         }
+        if ("student".equals(cleanUser)) {
+            return password != null && "123456".equals(password.trim());
+        }
         if ("admin".equals(cleanUser)) {
-            return password != null && "admin123".equals(password.trim());
+            return password != null && getAdminPassword().equals(password.trim());
         }
         return false;
     }
@@ -35,8 +45,14 @@ public class FtpUserAuth {
      * Resolves the role associated with the username.
      */
     public static Role getRole(String username) {
-        if (username != null && "admin".equalsIgnoreCase(username.trim())) {
-            return Role.ADMIN;
+        if (username != null) {
+            String u = username.trim().toLowerCase(Locale.ROOT);
+            if ("admin".equals(u)) {
+                return Role.ADMIN;
+            }
+            if ("student".equals(u)) {
+                return Role.USER;
+            }
         }
         return Role.GUEST;
     }
@@ -46,10 +62,14 @@ public class FtpUserAuth {
     }
 
     public static boolean canWrite(Role role) {
-        return role == Role.ADMIN;
+        return role == Role.ADMIN || role == Role.USER;
     }
 
     public static boolean canDelete(Role role) {
-        return role == Role.ADMIN;
+        return role == Role.ADMIN || role == Role.USER;
+    }
+
+    public static boolean canRename(Role role) {
+        return role == Role.ADMIN || role == Role.USER;
     }
 }

@@ -41,14 +41,15 @@ public class FtpSessionHandler implements Runnable, AutoCloseable {
     private FtpUserAuth.Role role = FtpUserAuth.Role.GUEST;
     private String currentVirtualDir = "/";
     private boolean binaryMode = true;
-    private volatile boolean running = true;
     private Path pendingRenameFrom = null;
+    private int loginFailures = 0;
+    private volatile boolean running = true;
 
     public FtpSessionHandler(Socket controlSocket, Path serverRoot) {
         this.controlSocket = controlSocket;
         this.serverRoot = serverRoot.toAbsolutePath().normalize();
         this.sandbox = new FtpPathSandbox(this.serverRoot);
-        this.dataChannel = new FtpDataChannel();
+        this.dataChannel = new FtpDataChannel(controlSocket.getInetAddress());
     }
 
     @Override
@@ -225,11 +226,18 @@ public class FtpSessionHandler implements Runnable, AutoCloseable {
         }
         if (FtpUserAuth.authenticate(sessionUser, password)) {
             authenticated = true;
+            loginFailures = 0;
             role = FtpUserAuth.getRole(sessionUser);
             currentVirtualDir = "/";
             sendReply("230 User logged in, proceed.\r\n");
         } else {
             authenticated = false;
+            loginFailures++;
+            if (loginFailures >= 5) {
+                sendReply("421 Too many login failures, closing connection.\r\n");
+                running = false;
+                return;
+            }
             sendReply("530 Login incorrect.\r\n");
         }
     }
@@ -479,7 +487,7 @@ public class FtpSessionHandler implements Runnable, AutoCloseable {
     }
 
     private void handleRnfr(String fileName) {
-        if (!FtpUserAuth.canWrite(role)) {
+        if (!FtpUserAuth.canRename(role)) {
             sendReply("550 Permission denied: Anonymous user is read-only.\r\n");
             return;
         }
@@ -500,7 +508,7 @@ public class FtpSessionHandler implements Runnable, AutoCloseable {
     }
 
     private void handleRnto(String fileName) {
-        if (!FtpUserAuth.canWrite(role)) {
+        if (!FtpUserAuth.canRename(role)) {
             sendReply("550 Permission denied: Anonymous user is read-only.\r\n");
             return;
         }

@@ -329,6 +329,53 @@ public class CrossTestFtpClient {
         } catch (Exception e) {
             fail("Tier 2.6", "Anonymous mkdir rejection", e.getMessage());
         }
+
+        // T2.7: Student login (Slide 30 standard: student / 123456)
+        try (FtpRawSession session = new FtpRawSession(HOST, PORT)) {
+            String uRep = session.send("USER student");
+            String pRep = session.send("PASS 123456");
+            if (uRep.startsWith("331") && pRep.startsWith("230")) {
+                pass("Tier 2.7", "Student login with USER student and PASS 123456 -> 230");
+            } else {
+                fail("Tier 2.7", "Student login", "Expected 331/230, got: u=" + uRep + ", p=" + pRep);
+            }
+        } catch (Exception e) {
+            fail("Tier 2.7", "Student login", e.getMessage());
+        }
+
+        // T2.8: Anonymous rename rejection on RNFR
+        try (FtpRawSession session = new FtpRawSession(HOST, PORT)) {
+            session.loginAnonymous();
+            String rnfrRep = session.send("RNFR somefile.txt");
+            if (rnfrRep.startsWith("550")) {
+                pass("Tier 2.8", "Anonymous rename rejection (RNFR somefile.txt -> 550 Permission denied)");
+            } else {
+                fail("Tier 2.8", "Anonymous rename rejection", "Expected 550, got: " + rnfrRep);
+            }
+        } catch (Exception e) {
+            fail("Tier 2.8", "Anonymous rename rejection", e.getMessage());
+        }
+
+        // T2.9: 5-strike brute-force lockout (SEC-05)
+        try (FtpRawSession session = new FtpRawSession(HOST, PORT)) {
+            session.send("USER admin");
+            session.send("PASS bad1");
+            session.send("USER admin");
+            session.send("PASS bad2");
+            session.send("USER admin");
+            session.send("PASS bad3");
+            session.send("USER admin");
+            session.send("PASS bad4");
+            session.send("USER admin");
+            String strike5 = session.send("PASS bad5");
+            if (strike5.startsWith("421")) {
+                pass("Tier 2.9", "Brute-force defense: 5 failed attempts trigger 421 disconnect");
+            } else {
+                fail("Tier 2.9", "Brute-force defense", "Expected 421 on 5th failure, got: " + strike5);
+            }
+        } catch (Exception e) {
+            fail("Tier 2.9", "Brute-force defense", e.getMessage());
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -530,6 +577,41 @@ public class CrossTestFtpClient {
                 fail("Tier 5.8", "RETR missing file", "Expected 550, got: " + retrMissing);
             }
 
+            // T5.9: RNTO without prior RNFR sequence error -> 503
+            String rntoAlone = session.send("RNTO orphan_target.txt");
+            if (rntoAlone.startsWith("503")) {
+                pass("Tier 5.9", "RNTO without prior RNFR rejected with 503 Bad sequence");
+            } else {
+                fail("Tier 5.9", "RNTO bad sequence", "Expected 503, got: " + rntoAlone);
+            }
+
+            // T5.10: RFC 959 RNFR and RNTO file rename -> 350 and 250
+            byte[] renamePayload = "Slide 30 RNFR/RNTO test payload".getBytes(StandardCharsets.UTF_8);
+            session.uploadBytesPasv("t5_rename_old.txt", renamePayload);
+            String rnfrRep = session.send("RNFR t5_rename_old.txt");
+            String rntoRep = session.send("RNTO t5_rename_new.txt");
+            if (rnfrRep.startsWith("350") && rntoRep.startsWith("250")) {
+                pass("Tier 5.10", "RFC 959 RNFR (350) and RNTO (250) file rename succeeded");
+            } else {
+                fail("Tier 5.10", "RFC 959 RNFR/RNTO", "rnfr=" + rnfrRep + ", rnto=" + rntoRep);
+            }
+
+            // T5.11: Client library rename API check (using student credentials)
+            FtpClient apiFtp = new FtpClient();
+            try {
+                apiFtp.connect(HOST, PORT);
+                boolean loggedIn = apiFtp.login("student", "123456");
+                boolean renamedOk = loggedIn && apiFtp.rename("t5_rename_new.txt", "t5_rename_final.txt");
+                if (renamedOk) {
+                    apiFtp.deleteFile("t5_rename_final.txt");
+                    pass("Tier 5.11", "Client API FtpClient.rename() succeeded (student role)");
+                } else {
+                    fail("Tier 5.11", "Client API rename", "rename failed or login failed: loggedIn=" + loggedIn);
+                }
+            } finally {
+                apiFtp.disconnect();
+            }
+
         } catch (Exception e) {
             fail("Tier 5", "Directory and file operations exception", e.getMessage());
         }
@@ -625,6 +707,22 @@ public class CrossTestFtpClient {
                 pass("Tier 6.10", "Outside file deletion: DELE ../../outside.txt rejected with 550");
             } else {
                 fail("Tier 6.10", "Outside file deletion", "Expected 550, got: " + deleOutside);
+            }
+
+            // T6.11: NTFS Alternate Data Stream (ADS) injection -> 550
+            String retrAds = session.send("RETR sample.txt:hidden_stream");
+            if (retrAds.startsWith("550")) {
+                pass("Tier 6.11", "NTFS Alternate Data Stream (ADS) rejected with 550");
+            } else {
+                fail("Tier 6.11", "NTFS ADS injection", "Expected 550, got: " + retrAds);
+            }
+
+            // T6.12: Windows DOS device name injection -> 550
+            String retrDevice = session.send("RETR CON");
+            if (retrDevice.startsWith("550")) {
+                pass("Tier 6.12", "Windows reserved device name (CON) rejected with 550");
+            } else {
+                fail("Tier 6.12", "Windows device name injection", "Expected 550, got: " + retrDevice);
             }
 
         } catch (Exception e) {
@@ -929,7 +1027,7 @@ public class CrossTestFtpClient {
 
         // T8.10: Full matrix test summary & exit code verification
         if (failedTests == 0) {
-            pass("Tier 8.10", "Full matrix test exit code 0 confirmation (All prior 57 assertions passed)");
+            pass("Tier 8.10", "Full matrix test exit code 0 confirmation (All prior assertions passed)");
         } else {
             fail("Tier 8.10", "Full matrix test exit code confirmation", failedTests + " failures detected");
         }

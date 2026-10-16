@@ -18,10 +18,9 @@ public class StaticFileHandler {
         Path file;
         try {
             rel = RouterHandler.urlDecodeOr(rel, rel);
-            Path root = webRoot.toAbsolutePath().normalize();
-            file = root.resolve(rel).normalize();
-            if (!file.startsWith(root) || file.equals(root) || !Files.exists(file) || Files.isDirectory(file)) return false;
-        } catch (IllegalArgumentException e) {
+            file = SafePaths.resolveSafe(webRoot, rel);
+            if (!Files.exists(file) || Files.isDirectory(file)) return false;
+        } catch (SecurityException | IllegalArgumentException e) {
             return false;
         }
 

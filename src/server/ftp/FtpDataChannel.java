@@ -9,19 +9,29 @@ import java.net.Socket;
 /**
  * Manages the FTP data channel lifecycle for both Passive (PASV, EPSV) and Active (PORT, EPRT) modes.
  * Ensures zero socket/port leaks by closing ephemeral server sockets immediately after accept,
- * enforcing accept/transfer timeouts, and providing strict resource cleanup.
+ * enforcing accept/transfer timeouts, and verifying that passive data connections originate
+ * from the exact same peer as the control connection (SEC-06 defense).
  */
 public class FtpDataChannel implements AutoCloseable {
 
+    private final InetAddress controlPeer;
     private ServerSocket passiveServerSocket;
     private InetSocketAddress activeTarget;
     private Socket dataSocket;
     private boolean isPassive;
 
+    public FtpDataChannel() {
+        this(null);
+    }
+
+    public FtpDataChannel(InetAddress controlPeer) {
+        this.controlPeer = controlPeer;
+    }
+
     public synchronized int openPassive(InetAddress bindAddr) throws IOException {
         close();
-        // Bind ephemeral port (0) with backlog 1 on the designated address
-        this.passiveServerSocket = new ServerSocket(0, 1, bindAddr);
+        // Bind ephemeral port (0) with backlog 5 on the designated address
+        this.passiveServerSocket = new ServerSocket(0, 5, bindAddr);
         this.passiveServerSocket.setReuseAddress(true);
         this.passiveServerSocket.setSoTimeout(30000); // 30s accept timeout
         this.isPassive = true;
@@ -59,9 +69,22 @@ public class FtpDataChannel implements AutoCloseable {
                 throw new IOException("Passive mode not prepared. Send PASV or EPSV first.");
             }
             try {
-                this.dataSocket = passiveServerSocket.accept();
-                this.dataSocket.setSoTimeout(60000); // 60s transfer timeout
-                return this.dataSocket;
+                long deadline = System.currentTimeMillis() + 30000;
+                while (true) {
+                    long remaining = deadline - System.currentTimeMillis();
+                    if (remaining <= 0) {
+                        throw new IOException("Data connection accept timeout");
+                    }
+                    passiveServerSocket.setSoTimeout((int) Math.max(remaining, 100));
+                    Socket s = passiveServerSocket.accept();
+                    if (controlPeer == null || s.getInetAddress().equals(controlPeer)) {
+                        this.dataSocket = s;
+                        this.dataSocket.setSoTimeout(60000); // 60s transfer timeout
+                        return this.dataSocket;
+                    }
+                    // Rogue peer attempted connection: reject and continue waiting for controlPeer
+                    try { s.close(); } catch (Exception ignored) {}
+                }
             } finally {
                 // Immediately close and unbind the passive ServerSocket upon accept
                 // to guarantee the ephemeral port is freed and cannot be re-entered.

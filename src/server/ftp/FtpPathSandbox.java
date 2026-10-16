@@ -133,20 +133,14 @@ public class FtpPathSandbox {
     }
 
     /**
-     * Maps a virtual path to the physical file system and asserts boundary confinement.
+     * Maps a virtual path to the physical file system and asserts real boundary confinement.
      */
     public Path resolvePhysical(String virtualPath) {
         if (virtualPath == null || virtualPath.isEmpty() || "/".equals(virtualPath)) {
-            return serverRoot;
+            return server.SafePaths.resolveSafe(serverRoot, "");
         }
         String rel = virtualPath.startsWith("/") ? virtualPath.substring(1) : virtualPath;
-        Path physical = serverRoot.resolve(rel).normalize().toAbsolutePath();
-
-        // Layer 4: Chroot boundary confinement assertion
-        if (!physical.startsWith(serverRoot)) {
-            throw new SecurityException("Path traversal detected: outside server root boundary");
-        }
-        return physical;
+        return server.SafePaths.resolveSafe(serverRoot, rel);
     }
 
     /**
