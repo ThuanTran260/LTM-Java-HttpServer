@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản lý file — Web File Explorer</title>
+  <link rel="stylesheet" href="/files.css">
+</head>
+<body>
+  <div class="container">
+    <nav class="main-nav" aria-label="Điều hướng chính">
+      <a href="/">Trang chủ</a>
+      <span>|</span>
+      <a href="/admin.html">Quản lý website</a>
+      <span>|</span>
+      <a href="/files.html" class="active" aria-current="page">Quản lý file</a>
+    </nav>
+
+    <!-- Setup required banner (503) -->
+    <div id="setup-banner" class="banner banner-warning" style="display:none;" role="alert">
+      <strong>Yêu cầu cấu hình hệ thống:</strong>
+      <p id="setup-message" style="margin: 6px 0 0 0;"></p>
+      <p style="margin: 6px 0 0 0; font-size: 13px; color: #78350f;">
+        Vui lòng đặt biến môi trường <code>FTP_ADMIN_PASSWORD</code> (trong file <code>ftp.local.bat</code>) rồi khởi động lại HTTP Server.
+      </p>
+    </div>
+
+    <!-- Live status announcements -->
+    <div id="status-region" class="status-region" aria-live="polite"></div>
+
+    <!-- Login View -->
+    <section id="login-view" class="auth-card" aria-labelledby="login-title" style="display:none;">
+      <h2 id="login-title">Đăng nhập Quản lý file</h2>
+      <p style="font-size: 13px; color: #64748b; margin-top: 0;">
+        Chỉ truy cập nội bộ (localhost loopback). Đăng nhập bằng tài khoản admin hoặc guest (nếu được bật).
+      </p>
+      <form id="login-form">
+        <div class="form-group">
+          <label for="username">Tên người dùng:</label>
+          <input type="text" id="username" name="username" required autocomplete="username" placeholder="admin hoặc guest">
+        </div>
+        <div class="form-group">
+          <label for="password">Mật khẩu:</label>
+          <input type="password" id="password" name="password" autocomplete="current-password" placeholder="Mật khẩu admin">
+        </div>
+        <div class="auth-actions">
+          <button type="submit" id="btn-login" style="flex: 1;">Đăng nhập</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Explorer View -->
+    <section id="explorer-view" aria-labelledby="explorer-title" style="display:none;">
+      <div class="header-row">
+        <h1 id="explorer-title">Kho tệp tin dùng chung</h1>
+        <div class="user-info">
+          <span>Người dùng: <strong id="lbl-user"></strong></span>
+          <span id="lbl-role" class="badge"></span>
+          <button id="btn-logout" class="secondary sm" type="button">Đăng xuất</button>
+        </div>
+      </div>
+
+      <!-- Navigation & Breadcrumbs -->
+      <div class="breadcrumbs" aria-label="Đường dẫn thư mục">
+        <button id="btn-parent" class="secondary sm" type="button" title="Lên thư mục cha">⬆ Lên thư mục cha</button>
+        <span id="crumb-list" style="flex: 1;"></span>
+        <button id="btn-refresh" class="secondary sm" type="button" title="Làm mới danh sách">🔄 Làm mới</button>
+      </div>
+
+      <!-- Toolbar (Admin only for mutation) -->
+      <div id="admin-toolbar" class="toolbar" style="display:none;">
+        <div class="toolbar-group">
+          <input type="text" id="new-folder-name" placeholder="Tên thư mục mới" aria-label="Tên thư mục mới">
+          <button type="button" id="btn-mkdir">Tạo thư mục</button>
+        </div>
+        <div class="toolbar-group" style="margin-left: auto;">
+          <input type="file" id="file-picker" multiple style="display:none;">
+          <button type="button" id="btn-browse">Chọn tệp tải lên...</button>
+        </div>
+      </div>
+
+      <!-- Drop Zone for Uploads (Admin only) -->
+      <div id="drop-zone" class="drop-zone" tabindex="0" role="button" aria-label="Kéo thả tệp tin vào đây để tải lên" style="display:none;">
+        📁 Kéo thả tệp tin vào đây hoặc nhấn để chọn tệp tải lên (Tối đa 64 MiB/tệp, tối đa 2 tệp đồng thời)
+      </div>
+
+      <!-- Upload Progress Region -->
+      <div id="progress-container" class="progress-list" aria-live="polite"></div>
+
+      <!-- Files Table -->
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col" style="width: 40%;">Tên</th>
+              <th scope="col" style="width: 15%;">Loại</th>
+              <th scope="col" style="width: 15%;">Kích thước</th>
+              <th scope="col" style="width: 15%;">Thời gian sửa đổi</th>
+              <th scope="col" style="width: 15%;">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody id="file-list-body">
+            <!-- Populated via files.js -->
+          </tbody>
+        </table>
+      </div>
+
+      <div id="empty-state" class="empty-state" style="display:none;">
+        Thư mục hiện tại đang trống.
+      </div>
+    </section>
+  </div>
+
+  <!-- Reusable Action Modal (Delete / Rename confirmation) -->
+  <div id="modal-overlay" class="modal-overlay" style="display:none;">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <h3 id="modal-title" class="modal-title"></h3>
+      <div id="modal-body" style="font-size: 14px; margin: 12px 0;"></div>
+      <div class="modal-actions">
+        <button id="modal-btn-cancel" class="secondary" type="button">Hủy</button>
+        <button id="modal-btn-confirm" class="danger" type="button">Xác nhận</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/files.js"></script>
+</body>
+</html>
