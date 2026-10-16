@@ -1,17 +1,17 @@
 # Graph Report - Http server  (2026-10-16)
 
 ## Corpus Check
-- 44 files · ~560,246 words
+- 44 files · ~561,182 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 16 file(s) not represented in the graph (top: .bat 13, (none) 1, .bin 1)
 
 ## Summary
-- 714 nodes · 1647 edges · 29 communities (15 shown, 14 thin omitted)
+- 722 nodes · 1655 edges · 34 communities (18 shown, 16 thin omitted)
 - Extraction: 84% EXTRACTED · 16% INFERRED · 0% AMBIGUOUS · INFERRED: 259 edges (avg confidence: 0.86)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `dee473a0`
+- Built from commit: `5cb07ff1`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -36,7 +36,12 @@
 - WebClientApp
 - SimpleFtpServer
 - Original User Request
+- .handle
 - SafePaths
+- .tryServe
+- java.net.URI
+- .isLoopback
+- .startServer
 
 ## God Nodes (most connected - your core abstractions)
 1. `FtpClient` - 46 edges
@@ -65,23 +70,23 @@
 ## Import Cycles
 - None detected.
 
-## Communities (29 total, 14 thin omitted)
+## Communities (34 total, 16 thin omitted)
 
 ### Community 1 - ".handle"
-Cohesion: 0.05
-Nodes (20): 1. Muc tieu, 2. Quyet dinh da chot voi nguoi dung, 3.2 `server.SiteFileHandler` (moi) va `StaticFileHandler` (sua nho), 3.3 `server.SitesApiHandler` (moi), gan vao `SimpleHttpServer` tai `/api/sites`, 3.4 Trang quan tri `wwwroot/admin.html` (moi) + link tu `wwwroot/index.html`, 3.5 Cau hinh va cleanup, 3. Kien truc, 4. Kiem thu (them vao `CrossTestClient`) (+12 more)
+Cohesion: 0.16
+Nodes (3): Student, RouterHandler, StudentService
 
 ### Community 3 - "FtpClient"
 Cohesion: 0.09
 Nodes (4): B. Gói Máy Khách FTP (`src/client/ftp/`), DataConnection, FtpClient, FtpReply
 
 ### Community 5 - "BÀI 12: HTTP SERVER VÀ GIAO TIẾP MẠNG CHÉO (JAVA)"
-Cohesion: 0.18
-Nodes (10): ⚡ 1. Khởi Động Nhanh (1-Click), 🌐 2. Kiểm Tra Bằng Trình Duyệt (Firefox / Chrome), 🧪 3. Các File Kiểm Thử Riêng Lẻ (Chạy Bằng 1 Click), 🛑 4. Quản Lý IIS Thật Của Windows (w3svc) Bằng Lệnh, 🛠️ 5. Biên Dịch Lại Mã Nguồn (Khi Có Sửa Code), 📁 6. Cấu Trúc Mã Nguồn, 🖥️ 7. Web Client (Swing) — xem source code qua WebFetch, 🌐 8. Quản lý nhiều web (Sites) (+2 more)
+Cohesion: 0.11
+Nodes (18): ⚡ 1. Khởi Động Nhanh (1-Click), 🌐 2. Kiểm Tra Bằng Trình Duyệt (Firefox / Chrome), 🧪 3. Các File Kiểm Thử Riêng Lẻ (Chạy Bằng 1 Click), 🛑 4. Quản Lý IIS Thật Của Windows (w3svc) Bằng Lệnh, 🛠️ 5. Biên Dịch Lại Mã Nguồn (Khi Có Sửa Code), 📁 6. Cấu Trúc Mã Nguồn, 🖥️ 7. Web Client (Swing) — xem source code qua WebFetch, 🌐 8. Quản lý nhiều web (Sites) (+10 more)
 
 ### Community 7 - "CrossTestClient"
-Cohesion: 0.09
-Nodes (19): File tree on the admin page Implementation Plan, Global Constraints, Review Focus, Task 1: `SiteManager.filesJson` + test S40-S45, Task 2: Route `GET /api/sites/{ten}/files` + test S46-S48, Task 3: Trang quan tri hien cay file + README + test S49, Global Constraints, Multi-site hosting (quan ly nhieu web) Implementation Plan (+11 more)
+Cohesion: 0.08
+Nodes (20): File tree on the admin page Implementation Plan, Global Constraints, Review Focus, Task 1: `SiteManager.filesJson` + test S40-S45, Task 2: Route `GET /api/sites/{ten}/files` + test S46-S48, Task 3: Trang quan tri hien cay file + README + test S49, Global Constraints, Multi-site hosting (quan ly nhieu web) Implementation Plan (+12 more)
 
 ### Community 8 - "FtpSessionHandler"
 Cohesion: 0.10
@@ -96,8 +101,8 @@ Cohesion: 0.12
 Nodes (9): 1. Muc tieu, 2. Quyet dinh da chot voi nguoi dung, 4. Kiem thu, 5. Rui ro da biet, Ngoai pham vi (YAGNI), Tieu chi thanh cong, Web Client (Swing) - Design, FetchParams (+1 more)
 
 ### Community 11 - "WebFetchService"
-Cohesion: 0.12
-Nodes (12): Global Constraints, Review Focus, Task 1: `WebFetchService` + test logic trong `CrossTestClient`, Task 2: `WebClientApp` (Swing) + `run_webclient.bat` + smoke test, Task 3: Tab Rendered + README, Web Client (Swing) Implementation Plan, 3.1 `src/client/WebFetchService.java` (khong dung Swing), 3.2 `src/client/WebClientApp.java` (Swing) (+4 more)
+Cohesion: 0.14
+Nodes (11): Global Constraints, Review Focus, Task 1: `WebFetchService` + test logic trong `CrossTestClient`, Task 2: `WebClientApp` (Swing) + `run_webclient.bat` + smoke test, Web Client (Swing) Implementation Plan, 3.1 `src/client/WebFetchService.java` (khong dung Swing), 3.2 `src/client/WebClientApp.java` (Swing), 3. Kien truc (+3 more)
 
 ### Community 14 - "Local/LAN Security Hardening Implementation Plan"
 Cohesion: 0.11
@@ -120,32 +125,44 @@ Cohesion: 0.18
 Nodes (10): 1. Tổng Quan Kiến Trúc & Bối Cảnh, 2. Các Quyết Định Thiết Kế Quan Trọng, 3. Danh Sách Các Tập Tin Cần Tạo & Sửa Đổi, 4. Kế Hoạch Triển Khai Chi Tiết Từng Bước (Tasks), 5. Kế Hoạch Kiểm Thử & Nghiệm Thu (Verification Plan), A. Gói Máy Chủ FTP (`src/server/ftp/`), A. Kiểm thử tự động (Automated Verification), B. Kiểm thử thủ công với Giao diện (Manual GUI Verification) (+2 more)
 
 ### Community 21 - "Cay file cua tung site tren trang quan tri - Design"
-Cohesion: 0.18
-Nodes (10): 1. Muc tieu, 2. Quyet dinh da chot, 3.1 API, 3.2 Trang quan tri, 3. Thiet ke, 4. Ngoai pham vi, 5. Rang buoc chung, 6. Kiem thu (+2 more)
+Cohesion: 0.20
+Nodes (9): 1. Muc tieu, 2. Quyet dinh da chot, 3.1 API, 3.2 Trang quan tri, 3. Thiet ke, 4. Ngoai pham vi, 6. Kiem thu, 7. Rui ro da biet (+1 more)
 
 ### Community 25 - "Original User Request"
-Cohesion: 0.12
-Nodes (12): Acceptance Criteria, Initial Request — 2026-10-10T02:30:55Z, Kiểm thử độc lập (Programmatic Verification), Original User Request, R1. Đối chiếu và Chuẩn hóa 100% Java, R2. Bảo đảm đầy đủ các Route và Bài tập mở rộng của Slide, R3. Bộ kịch bản kiểm thử tự động độc lập, Requirements (+4 more)
+Cohesion: 0.22
+Nodes (8): Acceptance Criteria, Initial Request — 2026-10-10T02:30:55Z, Kiểm thử độc lập (Programmatic Verification), Original User Request, R1. Đối chiếu và Chuẩn hóa 100% Java, R3. Bộ kịch bản kiểm thử tự động độc lập, Requirements, Tính chính xác về HTTP Protocol & Slide Specs
+
+### Community 29 - ".tryServe"
+Cohesion: 0.22
+Nodes (7): 3.2 `server.SiteFileHandler` (moi) va `StaticFileHandler` (sua nho), 3.3 `server.SitesApiHandler` (moi), gan vao `SimpleHttpServer` tai `/api/sites`, 3.4 Trang quan tri `wwwroot/admin.html` (moi) + link tu `wwwroot/index.html`, 3.5 Cau hinh va cleanup, 3. Kien truc, ServerLogger, StaticFileHandler
+
+### Community 31 - "java.net.URI"
+Cohesion: 0.22
+Nodes (4): R2. Bảo đảm đầy đủ các Route và Bài tập mở rộng của Slide, HttpClientErrorDemo, HttpClientGetDemo, HttpClientPostDemo
+
+### Community 32 - ".isLoopback"
+Cohesion: 0.20
+Nodes (8): 5. Rang buoc chung, 1. Muc tieu, 2. Quyet dinh da chot voi nguoi dung, 4. Kiem thu (them vao `CrossTestClient`), 5. Rui ro da biet, Multi-site hosting (quan ly nhieu web) - Design, Ngoai pham vi (YAGNI), Tieu chi thanh cong
 
 ## Knowledge Gaps
-- **89 isolated node(s):** `GUEST`, `USER`, `ADMIN`, `Initial Request — 2026-10-10T02:30:55Z`, `R1. Đối chiếu và Chuẩn hóa 100% Java` (+84 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 206 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **14 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **95 isolated node(s):** `GUEST`, `USER`, `ADMIN`, `Initial Request — 2026-10-10T02:30:55Z`, `R1. Đối chiếu và Chuẩn hóa 100% Java` (+90 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 212 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **16 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `FtpClient` connect `FtpClient` to `FtpCommandListener`, `CrossTestFtpClient`, `FtpClientApp`, `FtpClient.java`?**
-  _High betweenness centrality (0.145) - this node is a cross-community bridge._
-- **Why does `CrossTestClient` connect `CrossTestClient` to `.handle`, `CrossTestClient.java`, `WebFetchHandler`, `WebFetchService`, `Original User Request`?**
+- **Why does `FtpClient` connect `FtpClient` to `FtpClient.java`, `CrossTestFtpClient`, `FtpClientApp`, `FtpCommandListener`, `.initListeners`?**
+  _High betweenness centrality (0.143) - this node is a cross-community bridge._
+- **Why does `CrossTestClient` connect `CrossTestClient` to `.isLoopback`, `CrossTestClient.java`, `WebFetchHandler`, `WebFetchService`, `Original User Request`?**
   _High betweenness centrality (0.117) - this node is a cross-community bridge._
 - **Why does `CrossTestFtpClient` connect `CrossTestFtpClient` to `FtpCommandListener`, `CrossTestFtpClient.java`?**
-  _High betweenness centrality (0.117) - this node is a cross-community bridge._
+  _High betweenness centrality (0.116) - this node is a cross-community bridge._
 - **Are the 13 inferred relationships involving `CrossTestClient` (e.g. with `Task 1: `SiteManager.filesJson` + test S40-S45` and `Task 2: Route `GET /api/sites/{ten}/files` + test S46-S48`) actually correct?**
   _`CrossTestClient` has 13 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 3 inferred relationships involving `CrossTestFtpClient` (e.g. with `4. Cross-Test Runner Contract (`client.CrossTestFtpClient`)` and `1. Autonomous Server Lifecycle Management`) actually correct?**
   _`CrossTestFtpClient` has 3 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `GUEST`, `USER`, `ADMIN` to the rest of the system?**
-  _89 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `.handle` be split into smaller, more focused modules?**
-  _Cohesion score 0.05220288781932617 - nodes in this community are weakly interconnected._
+  _95 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `FtpClient` be split into smaller, more focused modules?**
+  _Cohesion score 0.08701298701298701 - nodes in this community are weakly interconnected._

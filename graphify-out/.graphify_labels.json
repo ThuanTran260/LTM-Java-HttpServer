@@ -25,7 +25,12 @@
   "23": "SimpleFtpServer",
   "24": "CrossTestFtpClient.java",
   "25": "Original User Request",
-  "26": "SimpleFtpServer.java",
+  "26": ".handle",
   "27": "SafePaths",
-  "28": "uri"
+  "28": "uri",
+  "29": ".tryServe",
+  "30": ".initListeners",
+  "31": "java.net.URI",
+  "32": ".isLoopback",
+  "33": ".startServer"
 }

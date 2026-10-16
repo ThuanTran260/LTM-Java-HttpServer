@@ -17,19 +17,6 @@
       "source_location": "L2"
     },
     {
-      "id": "src_server_proxyhandler_proxyhandler",
-      "label": "ProxyHandler",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "code",
-      "norm_label": "proxyhandler",
-      "source_file": "src/server/ProxyHandler.java",
-      "source_location": "L8"
-    },
-    {
       "id": "src_server_routerhandler_routerhandler",
       "label": "RouterHandler",
       "_callable": true,
@@ -41,58 +28,6 @@
       "norm_label": "routerhandler",
       "source_file": "src/server/RouterHandler.java",
       "source_location": "L14"
-    },
-    {
-      "id": "src_server_serverlogger_serverlogger",
-      "label": "ServerLogger",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "code",
-      "norm_label": "serverlogger",
-      "source_file": "src/server/ServerLogger.java",
-      "source_location": "L2"
-    },
-    {
-      "id": "src_server_sitefilehandler_sitefilehandler",
-      "label": "SiteFileHandler",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "code",
-      "norm_label": "sitefilehandler",
-      "source_file": "src/server/SiteFileHandler.java",
-      "source_location": "L12"
-    },
-    {
-      "id": "src_server_sitesapihandler_sitesapihandler",
-      "label": "SitesApiHandler",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "code",
-      "norm_label": "sitesapihandler",
-      "source_file": "src/server/SitesApiHandler.java",
-      "source_location": "L20"
-    },
-    {
-      "id": "src_server_staticfilehandler_staticfilehandler",
-      "label": "StaticFileHandler",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "code",
-      "norm_label": "staticfilehandler",
-      "source_file": "src/server/StaticFileHandler.java",
-      "source_location": "L7"
     },
     {
       "id": "src_service_studentservice_studentservice",
@@ -251,43 +186,30 @@
       "source_location": "L16"
     },
     {
-      "id": "src_client_httpclienterrordemo_httpclienterrordemo",
-      "label": "HttpClientErrorDemo",
+      "id": "src_server_sitefilehandler_sitefilehandler",
+      "label": "SiteFileHandler",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
-      "community": 25,
-      "community_name": "Original User Request",
+      "community": 26,
+      "community_name": ".handle",
       "file_type": "code",
-      "norm_label": "httpclienterrordemo",
-      "source_file": "src/client/HttpClientErrorDemo.java",
-      "source_location": "L7"
+      "norm_label": "sitefilehandler",
+      "source_file": "src/server/SiteFileHandler.java",
+      "source_location": "L12"
     },
     {
-      "id": "src_client_httpclientgetdemo_httpclientgetdemo",
-      "label": "HttpClientGetDemo",
+      "id": "src_server_sitesapihandler_sitesapihandler",
+      "label": "SitesApiHandler",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
-      "community": 25,
-      "community_name": "Original User Request",
+      "community": 26,
+      "community_name": ".handle",
       "file_type": "code",
-      "norm_label": "httpclientgetdemo",
-      "source_file": "src/client/HttpClientGetDemo.java",
-      "source_location": "L4"
-    },
-    {
-      "id": "src_client_httpclientpostdemo_httpclientpostdemo",
-      "label": "HttpClientPostDemo",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 25,
-      "community_name": "Original User Request",
-      "file_type": "code",
-      "norm_label": "httpclientpostdemo",
-      "source_file": "src/client/HttpClientPostDemo.java",
-      "source_location": "L4"
+      "norm_label": "sitesapihandler",
+      "source_file": "src/server/SitesApiHandler.java",
+      "source_location": "L20"
     },
     {
       "id": "src_server_safepaths_safepaths",
@@ -301,6 +223,32 @@
       "norm_label": "safepaths",
       "source_file": "src/server/SafePaths.java",
       "source_location": "L17"
+    },
+    {
+      "id": "src_server_serverlogger_serverlogger",
+      "label": "ServerLogger",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 29,
+      "community_name": ".tryServe",
+      "file_type": "code",
+      "norm_label": "serverlogger",
+      "source_file": "src/server/ServerLogger.java",
+      "source_location": "L2"
+    },
+    {
+      "id": "src_server_staticfilehandler_staticfilehandler",
+      "label": "StaticFileHandler",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 29,
+      "community_name": ".tryServe",
+      "file_type": "code",
+      "norm_label": "staticfilehandler",
+      "source_file": "src/server/StaticFileHandler.java",
+      "source_location": "L7"
     },
     {
       "id": "src_client_ftpclient_dataconnection",
@@ -342,6 +290,71 @@
       "source_location": "L10"
     },
     {
+      "id": "src_client_httpclienterrordemo_httpclienterrordemo",
+      "label": "HttpClientErrorDemo",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 31,
+      "community_name": "java.net.URI",
+      "file_type": "code",
+      "norm_label": "httpclienterrordemo",
+      "source_file": "src/client/HttpClientErrorDemo.java",
+      "source_location": "L7"
+    },
+    {
+      "id": "src_client_httpclientgetdemo_httpclientgetdemo",
+      "label": "HttpClientGetDemo",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 31,
+      "community_name": "java.net.URI",
+      "file_type": "code",
+      "norm_label": "httpclientgetdemo",
+      "source_file": "src/client/HttpClientGetDemo.java",
+      "source_location": "L4"
+    },
+    {
+      "id": "src_client_httpclientpostdemo_httpclientpostdemo",
+      "label": "HttpClientPostDemo",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 31,
+      "community_name": "java.net.URI",
+      "file_type": "code",
+      "norm_label": "httpclientpostdemo",
+      "source_file": "src/client/HttpClientPostDemo.java",
+      "source_location": "L4"
+    },
+    {
+      "id": "src_server_proxyhandler_proxyhandler",
+      "label": "ProxyHandler",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 33,
+      "community_name": ".startServer",
+      "file_type": "code",
+      "norm_label": "proxyhandler",
+      "source_file": "src/server/ProxyHandler.java",
+      "source_location": "L8"
+    },
+    {
+      "id": "src_server_simplehttpserver_simplehttpserver",
+      "label": "SimpleHttpServer",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 33,
+      "community_name": ".startServer",
+      "file_type": "code",
+      "norm_label": "simplehttpserver",
+      "source_file": "src/server/SimpleHttpServer.java",
+      "source_location": "L8"
+    },
+    {
       "id": "src_mock_mockiisserver_mockiisserver",
       "label": "MockIisServer",
       "_callable": true,
@@ -353,19 +366,6 @@
       "norm_label": "mockiisserver",
       "source_file": "src/mock/MockIisServer.java",
       "source_location": "L10"
-    },
-    {
-      "id": "src_server_simplehttpserver_simplehttpserver",
-      "label": "SimpleHttpServer",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 4,
-      "community_name": "CrossTestClient.java",
-      "file_type": "code",
-      "norm_label": "simplehttpserver",
-      "source_file": "src/server/SimpleHttpServer.java",
-      "source_location": "L8"
     },
     {
       "id": "src_client_crosstestclient_crosstestclient",
@@ -583,158 +583,6 @@
       "source_location": "L9"
     },
     {
-      "id": "src_server_proxyhandler_proxyhandler_forward",
-      "label": ".forward()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "code",
-      "metadata": {
-        "unresolved_calls": [
-          {
-            "callee": "newBuilder",
-            "receiver_type": "HttpRequest",
-            "lang": "java",
-            "line": "L36"
-          },
-          {
-            "callee": "create",
-            "receiver_type": "URI",
-            "lang": "java",
-            "line": "L36"
-          },
-          {
-            "callee": "ofSeconds",
-            "receiver_type": "Duration",
-            "lang": "java",
-            "line": "L36"
-          },
-          {
-            "callee": "getRequestHeaders",
-            "receiver_type": "HttpExchange",
-            "lang": "java",
-            "line": "L38"
-          },
-          {
-            "callee": "header",
-            "receiver_type": "Builder",
-            "lang": "java",
-            "line": "L39"
-          },
-          {
-            "callee": "method",
-            "receiver_type": "Builder",
-            "lang": "java",
-            "line": "L40"
-          },
-          {
-            "callee": "send",
-            "receiver_type": "HttpClient",
-            "lang": "java",
-            "line": "L42"
-          },
-          {
-            "callee": "build",
-            "receiver_type": "Builder",
-            "lang": "java",
-            "line": "L42"
-          },
-          {
-            "callee": "headers",
-            "receiver_type": "HttpResponse",
-            "lang": "java",
-            "line": "L43"
-          },
-          {
-            "callee": "body",
-            "receiver_type": "HttpResponse",
-            "lang": "java",
-            "line": "L44"
-          },
-          {
-            "callee": "getResponseHeaders",
-            "receiver_type": "HttpExchange",
-            "lang": "java",
-            "line": "L45"
-          },
-          {
-            "callee": "sendResponseHeaders",
-            "receiver_type": "HttpExchange",
-            "lang": "java",
-            "line": "L48"
-          },
-          {
-            "callee": "statusCode",
-            "receiver_type": "HttpResponse",
-            "lang": "java",
-            "line": "L48"
-          },
-          {
-            "callee": "getResponseBody",
-            "receiver_type": "HttpExchange",
-            "lang": "java",
-            "line": "L50"
-          },
-          {
-            "callee": "close",
-            "receiver_type": "HttpExchange",
-            "lang": "java",
-            "line": "L52"
-          },
-          {
-            "callee": "getRequestURI",
-            "receiver_type": "HttpExchange",
-            "lang": "java",
-            "line": "L55"
-          },
-          {
-            "callee": "getRemoteAddress",
-            "receiver_type": "HttpExchange",
-            "lang": "java",
-            "line": "L57"
-          }
-        ]
-      },
-      "norm_label": ".forward()",
-      "source_file": "src/server/ProxyHandler.java",
-      "source_location": "L34"
-    },
-    {
-      "id": "src_server_proxyhandler_proxyhandler_handle",
-      "label": ".handle()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "code",
-      "metadata": {
-        "unresolved_calls": [
-          {
-            "callee": "getRequestURI",
-            "receiver_type": "HttpExchange",
-            "lang": "java",
-            "line": "L17"
-          },
-          {
-            "callee": "getRequestMethod",
-            "receiver_type": "HttpExchange",
-            "lang": "java",
-            "line": "L24"
-          },
-          {
-            "callee": "getRequestBody",
-            "receiver_type": "HttpExchange",
-            "lang": "java",
-            "line": "L25"
-          }
-        ]
-      },
-      "norm_label": ".handle()",
-      "source_file": "src/server/ProxyHandler.java",
-      "source_location": "L15"
-    },
-    {
       "id": "src_server_routerhandler_routerhandler_filterjson",
       "label": ".filterJson()",
       "_callable": true,
@@ -913,76 +761,6 @@
       "source_location": "L267"
     },
     {
-      "id": "src_server_routerhandler_routerhandler_send",
-      "label": ".send()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "code",
-      "metadata": {
-        "unresolved_calls": [
-          {
-            "callee": "getResponseHeaders",
-            "receiver_type": "HttpExchange",
-            "lang": "java",
-            "line": "L255"
-          },
-          {
-            "callee": "sendResponseHeaders",
-            "receiver_type": "HttpExchange",
-            "lang": "java",
-            "line": "L257"
-          },
-          {
-            "callee": "getResponseBody",
-            "receiver_type": "HttpExchange",
-            "lang": "java",
-            "line": "L259"
-          },
-          {
-            "callee": "close",
-            "receiver_type": "HttpExchange",
-            "lang": "java",
-            "line": "L261"
-          },
-          {
-            "callee": "getRequestMethod",
-            "receiver_type": "HttpExchange",
-            "lang": "java",
-            "line": "L263"
-          },
-          {
-            "callee": "getRequestURI",
-            "receiver_type": "HttpExchange",
-            "lang": "java",
-            "line": "L263"
-          },
-          {
-            "callee": "getRemoteAddress",
-            "receiver_type": "HttpExchange",
-            "lang": "java",
-            "line": "L264"
-          }
-        ]
-      },
-      "norm_label": ".send()",
-      "source_file": "src/server/RouterHandler.java",
-      "source_location": "L253"
-    },
-    {
-      "id": "src_server_routerhandler_routerhandler_sendnotfound",
-      "label": ".sendNotFound()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "code",
-      "norm_label": ".sendnotfound()",
-      "source_file": "src/server/RouterHandler.java",
-      "source_location": "L284"
-    },
-    {
       "id": "src_server_routerhandler_routerhandler_unescapejson",
       "label": ".unescapeJson()",
       "_callable": true,
@@ -1025,350 +803,6 @@
       "norm_label": ".urldecodeor()",
       "source_file": "src/server/RouterHandler.java",
       "source_location": "L279"
-    },
-    {
-      "id": "src_server_serverlogger_serverlogger_log",
-      "label": ".log()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "code",
-      "metadata": {
-        "unresolved_calls": [
-          {
-            "callee": "lineSeparator",
-            "receiver_type": "System",
-            "lang": "java",
-            "line": "L10"
-          }
-        ]
-      },
-      "norm_label": ".log()",
-      "source_file": "src/server/ServerLogger.java",
-      "source_location": "L3"
-    },
-    {
-      "id": "src_server_serverlogger_serverlogger_statuslabel",
-      "label": ".statusLabel()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "code",
-      "norm_label": ".statuslabel()",
-      "source_file": "src/server/ServerLogger.java",
-      "source_location": "L16"
-    },
-    {
-      "id": "src_server_sitefilehandler_sitefilehandler_handle",
-      "label": ".handle()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "code",
-      "metadata": {
-        "unresolved_calls": [
-          {
-            "callee": "getRequestMethod",
-            "receiver_type": "HttpExchange",
-            "lang": "java",
-            "line": "L22"
-          },
-          {
-            "callee": "getResponseHeaders",
-            "receiver_type": "HttpExchange",
-            "lang": "java",
-            "line": "L23"
-          },
-          {
-            "callee": "getRequestURI",
-            "receiver_type": "HttpExchange",
-            "lang": "java",
-            "line": "L27"
-          }
-        ]
-      },
-      "norm_label": ".handle()",
-      "source_file": "src/server/SiteFileHandler.java",
-      "source_location": "L19"
-    },
-    {
-      "id": "src_server_sitefilehandler_sitefilehandler_sitefilehandler",
-      "label": ".SiteFileHandler()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "code",
-      "norm_label": ".sitefilehandler()",
-      "source_file": "src/server/SiteFileHandler.java",
-      "source_location": "L15"
-    },
-    {
-      "id": "src_server_sitesapihandler_sitesapihandler_addsite",
-      "label": ".addSite()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "code",
-      "metadata": {
-        "unresolved_calls": [
-          {
-            "callee": "getRequestBody",
-            "receiver_type": "HttpExchange",
-            "lang": "java",
-            "line": "L109"
-          }
-        ]
-      },
-      "norm_label": ".addsite()",
-      "source_file": "src/server/SitesApiHandler.java",
-      "source_location": "L105"
-    },
-    {
-      "id": "src_server_sitesapihandler_sitesapihandler_handle",
-      "label": ".handle()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "code",
-      "metadata": {
-        "unresolved_calls": [
-          {
-            "callee": "getRemoteAddress",
-            "receiver_type": "HttpExchange",
-            "lang": "java",
-            "line": "L34"
-          },
-          {
-            "callee": "getRequestURI",
-            "receiver_type": "HttpExchange",
-            "lang": "java",
-            "line": "L38"
-          },
-          {
-            "callee": "length",
-            "receiver_type": "BASE",
-            "lang": "java",
-            "line": "L39"
-          },
-          {
-            "callee": "getRequestMethod",
-            "receiver_type": "HttpExchange",
-            "lang": "java",
-            "line": "L43"
-          }
-        ]
-      },
-      "norm_label": ".handle()",
-      "source_file": "src/server/SitesApiHandler.java",
-      "source_location": "L31"
-    },
-    {
-      "id": "src_server_sitesapihandler_sitesapihandler_isloopback",
-      "label": ".isLoopback()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "code",
-      "metadata": {
-        "unresolved_calls": [
-          {
-            "callee": "getAddress",
-            "receiver_type": "InetSocketAddress",
-            "lang": "java",
-            "line": "L135"
-          }
-        ]
-      },
-      "norm_label": ".isloopback()",
-      "source_file": "src/server/SitesApiHandler.java",
-      "source_location": "L134"
-    },
-    {
-      "id": "src_server_sitesapihandler_sitesapihandler_methodnotallowed",
-      "label": ".methodNotAllowed()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "code",
-      "metadata": {
-        "unresolved_calls": [
-          {
-            "callee": "getResponseHeaders",
-            "receiver_type": "HttpExchange",
-            "lang": "java",
-            "line": "L129"
-          }
-        ]
-      },
-      "norm_label": ".methodnotallowed()",
-      "source_file": "src/server/SitesApiHandler.java",
-      "source_location": "L128"
-    },
-    {
-      "id": "src_server_sitesapihandler_sitesapihandler_reason",
-      "label": ".reason()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "code",
-      "norm_label": ".reason()",
-      "source_file": "src/server/SitesApiHandler.java",
-      "source_location": "L138"
-    },
-    {
-      "id": "src_server_sitesapihandler_sitesapihandler_requirejson",
-      "label": ".requireJson()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "code",
-      "metadata": {
-        "unresolved_calls": [
-          {
-            "callee": "getRequestHeaders",
-            "receiver_type": "HttpExchange",
-            "lang": "java",
-            "line": "L120"
-          }
-        ]
-      },
-      "norm_label": ".requirejson()",
-      "source_file": "src/server/SitesApiHandler.java",
-      "source_location": "L119"
-    },
-    {
-      "id": "src_server_sitesapihandler_sitesapihandler_sitesapihandler",
-      "label": ".SitesApiHandler()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "code",
-      "norm_label": ".sitesapihandler()",
-      "source_file": "src/server/SitesApiHandler.java",
-      "source_location": "L27"
-    },
-    {
-      "id": "src_server_staticfilehandler_staticfilehandler_contenttypefor",
-      "label": ".contentTypeFor()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "code",
-      "norm_label": ".contenttypefor()",
-      "source_file": "src/server/StaticFileHandler.java",
-      "source_location": "L49"
-    },
-    {
-      "id": "src_server_staticfilehandler_staticfilehandler_hasdotdot",
-      "label": ".hasDotDot()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "code",
-      "norm_label": ".hasdotdot()",
-      "source_file": "src/server/StaticFileHandler.java",
-      "source_location": "L44"
-    },
-    {
-      "id": "src_server_staticfilehandler_staticfilehandler_tryserve",
-      "label": ".tryServe()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "code",
-      "metadata": {
-        "unresolved_calls": [
-          {
-            "callee": "get",
-            "receiver_type": "Paths",
-            "lang": "java",
-            "line": "L9"
-          },
-          {
-            "callee": "exists",
-            "receiver_type": "Files",
-            "lang": "java",
-            "line": "L22"
-          },
-          {
-            "callee": "isDirectory",
-            "receiver_type": "Files",
-            "lang": "java",
-            "line": "L22"
-          },
-          {
-            "callee": "size",
-            "receiver_type": "Files",
-            "lang": "java",
-            "line": "L27"
-          },
-          {
-            "callee": "getResponseHeaders",
-            "receiver_type": "HttpExchange",
-            "lang": "java",
-            "line": "L29"
-          },
-          {
-            "callee": "sendResponseHeaders",
-            "receiver_type": "HttpExchange",
-            "lang": "java",
-            "line": "L31"
-          },
-          {
-            "callee": "getResponseBody",
-            "receiver_type": "HttpExchange",
-            "lang": "java",
-            "line": "L33"
-          },
-          {
-            "callee": "newInputStream",
-            "receiver_type": "Files",
-            "lang": "java",
-            "line": "L34"
-          },
-          {
-            "callee": "close",
-            "receiver_type": "HttpExchange",
-            "lang": "java",
-            "line": "L38"
-          },
-          {
-            "callee": "getRequestMethod",
-            "receiver_type": "HttpExchange",
-            "lang": "java",
-            "line": "L40"
-          },
-          {
-            "callee": "min",
-            "receiver_type": "Math",
-            "lang": "java",
-            "line": "L40"
-          },
-          {
-            "callee": "getRemoteAddress",
-            "receiver_type": "HttpExchange",
-            "lang": "java",
-            "line": "L41"
-          }
-        ]
-      },
-      "norm_label": ".tryserve()",
-      "source_file": "src/server/StaticFileHandler.java",
-      "source_location": "L8"
     },
     {
       "id": "src_service_studentservice_studentservice_add",
@@ -1885,30 +1319,6 @@
       "source_location": "L201"
     },
     {
-      "id": "src_client_crosstestclient_crosstestclient_fetchviaapp",
-      "label": ".fetchViaApp()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "WebFetchService",
-      "file_type": "code",
-      "norm_label": ".fetchviaapp()",
-      "source_file": "src/client/CrossTestClient.java",
-      "source_location": "L379"
-    },
-    {
-      "id": "src_client_crosstestclient_crosstestclient_testwebclientapp",
-      "label": ".testWebClientApp()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "WebFetchService",
-      "file_type": "code",
-      "norm_label": ".testwebclientapp()",
-      "source_file": "src/client/CrossTestClient.java",
-      "source_location": "L340"
-    },
-    {
       "id": "src_client_crosstestclient_crosstestclient_testwebfetchservice",
       "label": ".testWebFetchService()",
       "_callable": true,
@@ -1975,28 +1385,6 @@
       "norm_label": ".display()",
       "source_file": "src/client/WebClientApp.java",
       "source_location": "L236"
-    },
-    {
-      "id": "src_client_webclientapp_webclientapp_notetext",
-      "label": ".noteText()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "WebFetchService",
-      "file_type": "code",
-      "metadata": {
-        "unresolved_calls": [
-          {
-            "callee": "getText",
-            "receiver_type": "JLabel",
-            "lang": "java",
-            "line": "L156"
-          }
-        ]
-      },
-      "norm_label": ".notetext()",
-      "source_file": "src/client/WebClientApp.java",
-      "source_location": "L155"
     },
     {
       "id": "src_client_webfetchservice_flatjsonreader_expect",
@@ -2355,58 +1743,6 @@
       "source_location": "L43"
     },
     {
-      "id": "src_client_ftpclient_ftpclient_getlastreply",
-      "label": ".getLastReply()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 12,
-      "community_name": "FtpClientApp",
-      "file_type": "code",
-      "norm_label": ".getlastreply()",
-      "source_file": "src/client/FtpClient.java",
-      "source_location": "L443"
-    },
-    {
-      "id": "src_client_ftpclient_ftpclient_isconnected",
-      "label": ".isConnected()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 12,
-      "community_name": "FtpClientApp",
-      "file_type": "code",
-      "metadata": {
-        "unresolved_calls": [
-          {
-            "callee": "isClosed",
-            "receiver_type": "Socket",
-            "lang": "java",
-            "line": "L428"
-          },
-          {
-            "callee": "isConnected",
-            "receiver_type": "Socket",
-            "lang": "java",
-            "line": "L428"
-          }
-        ]
-      },
-      "norm_label": ".isconnected()",
-      "source_file": "src/client/FtpClient.java",
-      "source_location": "L427"
-    },
-    {
-      "id": "src_client_ftpclient_ftpclient_setpassivemode",
-      "label": ".setPassiveMode()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 12,
-      "community_name": "FtpClientApp",
-      "file_type": "code",
-      "norm_label": ".setpassivemode()",
-      "source_file": "src/client/FtpClient.java",
-      "source_location": "L153"
-    },
-    {
       "id": "src_client_ftpclientapp_ftpclientapp_appendconsole",
       "label": ".appendConsole()",
       "_callable": true,
@@ -2487,208 +1823,6 @@
       "source_location": "L515"
     },
     {
-      "id": "src_client_ftpclientapp_ftpclientapp_doconnect",
-      "label": ".doConnect()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 12,
-      "community_name": "FtpClientApp",
-      "file_type": "code",
-      "metadata": {
-        "unresolved_calls": [
-          {
-            "callee": "getText",
-            "receiver_type": "JTextField",
-            "lang": "java",
-            "line": "L525"
-          },
-          {
-            "callee": "parseInt",
-            "receiver_type": "Integer",
-            "lang": "java",
-            "line": "L528"
-          },
-          {
-            "callee": "showMessageDialog",
-            "receiver_type": "JOptionPane",
-            "lang": "java",
-            "line": "L530"
-          },
-          {
-            "callee": "getPassword",
-            "receiver_type": "JPasswordField",
-            "lang": "java",
-            "line": "L534"
-          },
-          {
-            "callee": "getSelectedIndex",
-            "receiver_type": "JComboBox",
-            "lang": "java",
-            "line": "L535"
-          },
-          {
-            "callee": "invokeLater",
-            "receiver_type": "SwingUtilities",
-            "lang": "java",
-            "line": "L548"
-          },
-          {
-            "callee": "setText",
-            "receiver_type": "JLabel",
-            "lang": "java",
-            "line": "L555"
-          }
-        ]
-      },
-      "norm_label": ".doconnect()",
-      "source_file": "src/client/FtpClientApp.java",
-      "source_location": "L524"
-    },
-    {
-      "id": "src_client_ftpclientapp_ftpclientapp_dodownload",
-      "label": ".doDownload()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 12,
-      "community_name": "FtpClientApp",
-      "file_type": "code",
-      "metadata": {
-        "unresolved_calls": [
-          {
-            "callee": "showMessageDialog",
-            "receiver_type": "JOptionPane",
-            "lang": "java",
-            "line": "L605"
-          },
-          {
-            "callee": "getSelectedRow",
-            "receiver_type": "JTable",
-            "lang": "java",
-            "line": "L608"
-          },
-          {
-            "callee": "getValueAt",
-            "receiver_type": "DefaultTableModel",
-            "lang": "java",
-            "line": "L613"
-          },
-          {
-            "callee": "showConfirmDialog",
-            "receiver_type": "JOptionPane",
-            "lang": "java",
-            "line": "L622"
-          },
-          {
-            "callee": "currentTimeMillis",
-            "receiver_type": "System",
-            "lang": "java",
-            "line": "L632"
-          },
-          {
-            "callee": "max",
-            "receiver_type": "Math",
-            "lang": "java",
-            "line": "L634"
-          },
-          {
-            "callee": "format",
-            "receiver_type": "String",
-            "lang": "java",
-            "line": "L635"
-          },
-          {
-            "callee": "invokeLater",
-            "receiver_type": "SwingUtilities",
-            "lang": "java",
-            "line": "L636"
-          }
-        ]
-      },
-      "norm_label": ".dodownload()",
-      "source_file": "src/client/FtpClientApp.java",
-      "source_location": "L603"
-    },
-    {
-      "id": "src_client_ftpclientapp_ftpclientapp_doupload",
-      "label": ".doUpload()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 12,
-      "community_name": "FtpClientApp",
-      "file_type": "code",
-      "metadata": {
-        "unresolved_calls": [
-          {
-            "callee": "showMessageDialog",
-            "receiver_type": "JOptionPane",
-            "lang": "java",
-            "line": "L569"
-          },
-          {
-            "callee": "getSelectedRow",
-            "receiver_type": "JTable",
-            "lang": "java",
-            "line": "L572"
-          },
-          {
-            "callee": "getValueAt",
-            "receiver_type": "DefaultTableModel",
-            "lang": "java",
-            "line": "L577"
-          },
-          {
-            "callee": "currentTimeMillis",
-            "receiver_type": "System",
-            "lang": "java",
-            "line": "L592"
-          },
-          {
-            "callee": "max",
-            "receiver_type": "Math",
-            "lang": "java",
-            "line": "L594"
-          },
-          {
-            "callee": "format",
-            "receiver_type": "String",
-            "lang": "java",
-            "line": "L595"
-          }
-        ]
-      },
-      "norm_label": ".doupload()",
-      "source_file": "src/client/FtpClientApp.java",
-      "source_location": "L567"
-    },
-    {
-      "id": "src_client_ftpclientapp_ftpclientapp_executeasync",
-      "label": ".executeAsync()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 12,
-      "community_name": "FtpClientApp",
-      "file_type": "code",
-      "metadata": {
-        "unresolved_calls": [
-          {
-            "callee": "ofVirtual",
-            "receiver_type": "Thread",
-            "lang": "java",
-            "line": "L721"
-          },
-          {
-            "callee": "invokeLater",
-            "receiver_type": "SwingUtilities",
-            "lang": "java",
-            "line": "L725"
-          }
-        ]
-      },
-      "norm_label": ".executeasync()",
-      "source_file": "src/client/FtpClientApp.java",
-      "source_location": "L719"
-    },
-    {
       "id": "src_client_ftpclientapp_ftpclientapp_formatfilesize",
       "label": ".formatFileSize()",
       "_callable": true,
@@ -2745,94 +1879,6 @@
       "norm_label": ".getfileextensiontype()",
       "source_file": "src/client/FtpClientApp.java",
       "source_location": "L770"
-    },
-    {
-      "id": "src_client_ftpclientapp_ftpclientapp_initlisteners",
-      "label": ".initListeners()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 12,
-      "community_name": "FtpClientApp",
-      "file_type": "code",
-      "metadata": {
-        "unresolved_calls": [
-          {
-            "callee": "addActionListener",
-            "receiver_type": "JButton",
-            "lang": "java",
-            "line": "L317"
-          },
-          {
-            "callee": "setText",
-            "receiver_type": "JTextArea",
-            "lang": "java",
-            "line": "L317"
-          },
-          {
-            "callee": "invokeLater",
-            "receiver_type": "SwingUtilities",
-            "lang": "java",
-            "line": "L324"
-          },
-          {
-            "callee": "setFileSelectionMode",
-            "receiver_type": "JFileChooser",
-            "lang": "java",
-            "line": "L337"
-          },
-          {
-            "callee": "showOpenDialog",
-            "receiver_type": "JFileChooser",
-            "lang": "java",
-            "line": "L338"
-          },
-          {
-            "callee": "getSelectedFile",
-            "receiver_type": "JFileChooser",
-            "lang": "java",
-            "line": "L339"
-          },
-          {
-            "callee": "addMouseListener",
-            "receiver_type": "JTable",
-            "lang": "java",
-            "line": "L354"
-          },
-          {
-            "callee": "showInputDialog",
-            "receiver_type": "JOptionPane",
-            "lang": "java",
-            "line": "L421"
-          },
-          {
-            "callee": "getSelectedRow",
-            "receiver_type": "JTable",
-            "lang": "java",
-            "line": "L442"
-          },
-          {
-            "callee": "showMessageDialog",
-            "receiver_type": "JOptionPane",
-            "lang": "java",
-            "line": "L444"
-          },
-          {
-            "callee": "getValueAt",
-            "receiver_type": "DefaultTableModel",
-            "lang": "java",
-            "line": "L447"
-          },
-          {
-            "callee": "showConfirmDialog",
-            "receiver_type": "JOptionPane",
-            "lang": "java",
-            "line": "L451"
-          }
-        ]
-      },
-      "norm_label": ".initlisteners()",
-      "source_file": "src/client/FtpClientApp.java",
-      "source_location": "L301"
     },
     {
       "id": "src_client_ftpclientapp_ftpclientapp_initui",
@@ -3019,18 +2065,6 @@
       "source_location": "L117"
     },
     {
-      "id": "src_client_ftpclientapp_ftpclientapp_loginfo",
-      "label": ".logInfo()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 12,
-      "community_name": "FtpClientApp",
-      "file_type": "code",
-      "norm_label": ".loginfo()",
-      "source_file": "src/client/FtpClientApp.java",
-      "source_location": "L752"
-    },
-    {
       "id": "src_client_ftpclientapp_ftpclientapp_main",
       "label": ".main()",
       "_callable": true,
@@ -3085,98 +2119,6 @@
       "norm_label": ".refreshlocaltable()",
       "source_file": "src/client/FtpClientApp.java",
       "source_location": "L675"
-    },
-    {
-      "id": "src_client_ftpclientapp_ftpclientapp_refreshremotetableasync",
-      "label": ".refreshRemoteTableAsync()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 12,
-      "community_name": "FtpClientApp",
-      "file_type": "code",
-      "metadata": {
-        "unresolved_calls": [
-          {
-            "callee": "invokeLater",
-            "receiver_type": "SwingUtilities",
-            "lang": "java",
-            "line": "L647"
-          },
-          {
-            "callee": "setText",
-            "receiver_type": "JTextField",
-            "lang": "java",
-            "line": "L648"
-          },
-          {
-            "callee": "setRowCount",
-            "receiver_type": "DefaultTableModel",
-            "lang": "java",
-            "line": "L650"
-          },
-          {
-            "callee": "addRow",
-            "receiver_type": "DefaultTableModel",
-            "lang": "java",
-            "line": "L652"
-          }
-        ]
-      },
-      "norm_label": ".refreshremotetableasync()",
-      "source_file": "src/client/FtpClientApp.java",
-      "source_location": "L643"
-    },
-    {
-      "id": "src_client_ftpclientapp_ftpclientapp_setbusy",
-      "label": ".setBusy()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 12,
-      "community_name": "FtpClientApp",
-      "file_type": "code",
-      "metadata": {
-        "unresolved_calls": [
-          {
-            "callee": "getPredefinedCursor",
-            "receiver_type": "Cursor",
-            "lang": "java",
-            "line": "L731"
-          },
-          {
-            "callee": "getDefaultCursor",
-            "receiver_type": "Cursor",
-            "lang": "java",
-            "line": "L731"
-          },
-          {
-            "callee": "setText",
-            "receiver_type": "JLabel",
-            "lang": "java",
-            "line": "L732"
-          },
-          {
-            "callee": "setVisible",
-            "receiver_type": "JProgressBar",
-            "lang": "java",
-            "line": "L733"
-          },
-          {
-            "callee": "setIndeterminate",
-            "receiver_type": "JProgressBar",
-            "lang": "java",
-            "line": "L734"
-          },
-          {
-            "callee": "setEnabled",
-            "receiver_type": "JButton",
-            "lang": "java",
-            "line": "L736"
-          }
-        ]
-      },
-      "norm_label": ".setbusy()",
-      "source_file": "src/client/FtpClientApp.java",
-      "source_location": "L730"
     },
     {
       "id": "src_client_ftpclientapp_ftpclientapp_setinitialstate",
@@ -3269,104 +2211,6 @@
       "norm_label": ".setuptablevisuals()",
       "source_file": "src/client/FtpClientApp.java",
       "source_location": "L266"
-    },
-    {
-      "id": "src_client_ftpclientapp_ftpclientapp_showerror",
-      "label": ".showError()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 12,
-      "community_name": "FtpClientApp",
-      "file_type": "code",
-      "metadata": {
-        "unresolved_calls": [
-          {
-            "callee": "invokeLater",
-            "receiver_type": "SwingUtilities",
-            "lang": "java",
-            "line": "L758"
-          },
-          {
-            "callee": "showMessageDialog",
-            "receiver_type": "JOptionPane",
-            "lang": "java",
-            "line": "L759"
-          }
-        ]
-      },
-      "norm_label": ".showerror()",
-      "source_file": "src/client/FtpClientApp.java",
-      "source_location": "L756"
-    },
-    {
-      "id": "src_client_ftpclientapp_ftpclientapp_updateconnectionstate",
-      "label": ".updateConnectionState()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 12,
-      "community_name": "FtpClientApp",
-      "file_type": "code",
-      "metadata": {
-        "unresolved_calls": [
-          {
-            "callee": "setText",
-            "receiver_type": "JButton",
-            "lang": "java",
-            "line": "L695"
-          },
-          {
-            "callee": "setText",
-            "receiver_type": "JLabel",
-            "lang": "java",
-            "line": "L696"
-          },
-          {
-            "callee": "setForeground",
-            "receiver_type": "JLabel",
-            "lang": "java",
-            "line": "L697"
-          },
-          {
-            "callee": "setEnabled",
-            "receiver_type": "JTextField",
-            "lang": "java",
-            "line": "L699"
-          },
-          {
-            "callee": "setEnabled",
-            "receiver_type": "JPasswordField",
-            "lang": "java",
-            "line": "L702"
-          },
-          {
-            "callee": "setEnabled",
-            "receiver_type": "JComboBox",
-            "lang": "java",
-            "line": "L703"
-          },
-          {
-            "callee": "setEnabled",
-            "receiver_type": "JButton",
-            "lang": "java",
-            "line": "L705"
-          },
-          {
-            "callee": "setRowCount",
-            "receiver_type": "DefaultTableModel",
-            "lang": "java",
-            "line": "L714"
-          },
-          {
-            "callee": "setText",
-            "receiver_type": "JTextField",
-            "lang": "java",
-            "line": "L715"
-          }
-        ]
-      },
-      "norm_label": ".updateconnectionstate()",
-      "source_file": "src/client/FtpClientApp.java",
-      "source_location": "L694"
     },
     {
       "id": "src_client_ftpclient_ftpclient_addcommandlistener",
@@ -3795,6 +2639,28 @@
       "norm_label": ".main()",
       "source_file": "src/client/WebClientApp.java",
       "source_location": "L304"
+    },
+    {
+      "id": "src_client_webclientapp_webclientapp_notetext",
+      "label": ".noteText()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 22,
+      "community_name": "WebClientApp",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "getText",
+            "receiver_type": "JLabel",
+            "lang": "java",
+            "line": "L156"
+          }
+        ]
+      },
+      "norm_label": ".notetext()",
+      "source_file": "src/client/WebClientApp.java",
+      "source_location": "L155"
     },
     {
       "id": "src_client_webclientapp_webclientapp_open",
@@ -4481,178 +3347,250 @@
       "source_location": "L61"
     },
     {
-      "id": "src_client_httpclienterrordemo_httpclienterrordemo_main",
-      "label": ".main()",
+      "id": "src_server_routerhandler_routerhandler_send",
+      "label": ".send()",
       "_callable": true,
       "_origin": "ast",
-      "community": 25,
-      "community_name": "Original User Request",
+      "community": 26,
+      "community_name": ".handle",
       "file_type": "code",
       "metadata": {
         "unresolved_calls": [
           {
-            "callee": "newBuilder",
-            "receiver_type": "HttpClient",
+            "callee": "getResponseHeaders",
+            "receiver_type": "HttpExchange",
             "lang": "java",
-            "line": "L10"
+            "line": "L255"
           },
           {
-            "callee": "ofSeconds",
-            "receiver_type": "Duration",
+            "callee": "sendResponseHeaders",
+            "receiver_type": "HttpExchange",
             "lang": "java",
-            "line": "L10"
+            "line": "L257"
           },
           {
-            "callee": "newBuilder",
-            "receiver_type": "HttpRequest",
+            "callee": "getResponseBody",
+            "receiver_type": "HttpExchange",
             "lang": "java",
-            "line": "L12"
+            "line": "L259"
           },
           {
-            "callee": "create",
-            "receiver_type": "URI",
+            "callee": "close",
+            "receiver_type": "HttpExchange",
             "lang": "java",
-            "line": "L12"
+            "line": "L261"
           },
           {
-            "callee": "send",
-            "receiver_type": "HttpClient",
+            "callee": "getRequestMethod",
+            "receiver_type": "HttpExchange",
             "lang": "java",
-            "line": "L14"
+            "line": "L263"
           },
           {
-            "callee": "statusCode",
-            "receiver_type": "HttpResponse",
+            "callee": "getRequestURI",
+            "receiver_type": "HttpExchange",
             "lang": "java",
-            "line": "L15"
+            "line": "L263"
           },
           {
-            "callee": "body",
-            "receiver_type": "HttpResponse",
+            "callee": "getRemoteAddress",
+            "receiver_type": "HttpExchange",
             "lang": "java",
-            "line": "L16"
+            "line": "L264"
+          }
+        ]
+      },
+      "norm_label": ".send()",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L253"
+    },
+    {
+      "id": "src_server_routerhandler_routerhandler_sendnotfound",
+      "label": ".sendNotFound()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 26,
+      "community_name": ".handle",
+      "file_type": "code",
+      "norm_label": ".sendnotfound()",
+      "source_file": "src/server/RouterHandler.java",
+      "source_location": "L284"
+    },
+    {
+      "id": "src_server_sitefilehandler_sitefilehandler_handle",
+      "label": ".handle()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 26,
+      "community_name": ".handle",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "getRequestMethod",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L22"
           },
           {
-            "callee": "currentThread",
-            "receiver_type": "Thread",
+            "callee": "getResponseHeaders",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L23"
+          },
+          {
+            "callee": "getRequestURI",
+            "receiver_type": "HttpExchange",
             "lang": "java",
             "line": "L27"
           }
         ]
       },
-      "norm_label": ".main()",
-      "source_file": "src/client/HttpClientErrorDemo.java",
-      "source_location": "L8"
+      "norm_label": ".handle()",
+      "source_file": "src/server/SiteFileHandler.java",
+      "source_location": "L19"
     },
     {
-      "id": "src_client_httpclientgetdemo_httpclientgetdemo_main",
-      "label": ".main()",
+      "id": "src_server_sitefilehandler_sitefilehandler_sitefilehandler",
+      "label": ".SiteFileHandler()",
       "_callable": true,
       "_origin": "ast",
-      "community": 25,
-      "community_name": "Original User Request",
+      "community": 26,
+      "community_name": ".handle",
+      "file_type": "code",
+      "norm_label": ".sitefilehandler()",
+      "source_file": "src/server/SiteFileHandler.java",
+      "source_location": "L15"
+    },
+    {
+      "id": "src_server_sitesapihandler_sitesapihandler_addsite",
+      "label": ".addSite()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 26,
+      "community_name": ".handle",
       "file_type": "code",
       "metadata": {
         "unresolved_calls": [
           {
-            "callee": "newHttpClient",
-            "receiver_type": "HttpClient",
+            "callee": "getRequestBody",
+            "receiver_type": "HttpExchange",
             "lang": "java",
-            "line": "L7"
-          },
-          {
-            "callee": "newBuilder",
-            "receiver_type": "HttpRequest",
-            "lang": "java",
-            "line": "L8"
-          },
-          {
-            "callee": "create",
-            "receiver_type": "URI",
-            "lang": "java",
-            "line": "L8"
-          },
-          {
-            "callee": "send",
-            "receiver_type": "HttpClient",
-            "lang": "java",
-            "line": "L9"
-          },
-          {
-            "callee": "statusCode",
-            "receiver_type": "HttpResponse",
-            "lang": "java",
-            "line": "L10"
-          },
-          {
-            "callee": "headers",
-            "receiver_type": "HttpResponse",
-            "lang": "java",
-            "line": "L11"
-          },
-          {
-            "callee": "body",
-            "receiver_type": "HttpResponse",
-            "lang": "java",
-            "line": "L12"
+            "line": "L109"
           }
         ]
       },
-      "norm_label": ".main()",
-      "source_file": "src/client/HttpClientGetDemo.java",
-      "source_location": "L5"
+      "norm_label": ".addsite()",
+      "source_file": "src/server/SitesApiHandler.java",
+      "source_location": "L105"
     },
     {
-      "id": "src_client_httpclientpostdemo_httpclientpostdemo_main",
-      "label": ".main()",
+      "id": "src_server_sitesapihandler_sitesapihandler_handle",
+      "label": ".handle()",
       "_callable": true,
       "_origin": "ast",
-      "community": 25,
-      "community_name": "Original User Request",
+      "community": 26,
+      "community_name": ".handle",
       "file_type": "code",
       "metadata": {
         "unresolved_calls": [
           {
-            "callee": "newHttpClient",
-            "receiver_type": "HttpClient",
+            "callee": "getRemoteAddress",
+            "receiver_type": "HttpExchange",
             "lang": "java",
-            "line": "L8"
+            "line": "L34"
           },
           {
-            "callee": "newBuilder",
-            "receiver_type": "HttpRequest",
+            "callee": "getRequestURI",
+            "receiver_type": "HttpExchange",
             "lang": "java",
-            "line": "L9"
+            "line": "L38"
           },
           {
-            "callee": "create",
-            "receiver_type": "URI",
+            "callee": "length",
+            "receiver_type": "BASE",
             "lang": "java",
-            "line": "L9"
+            "line": "L39"
           },
           {
-            "callee": "send",
-            "receiver_type": "HttpClient",
+            "callee": "getRequestMethod",
+            "receiver_type": "HttpExchange",
             "lang": "java",
-            "line": "L12"
-          },
-          {
-            "callee": "statusCode",
-            "receiver_type": "HttpResponse",
-            "lang": "java",
-            "line": "L13"
-          },
-          {
-            "callee": "body",
-            "receiver_type": "HttpResponse",
-            "lang": "java",
-            "line": "L14"
+            "line": "L43"
           }
         ]
       },
-      "norm_label": ".main()",
-      "source_file": "src/client/HttpClientPostDemo.java",
-      "source_location": "L5"
+      "norm_label": ".handle()",
+      "source_file": "src/server/SitesApiHandler.java",
+      "source_location": "L31"
+    },
+    {
+      "id": "src_server_sitesapihandler_sitesapihandler_methodnotallowed",
+      "label": ".methodNotAllowed()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 26,
+      "community_name": ".handle",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "getResponseHeaders",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L129"
+          }
+        ]
+      },
+      "norm_label": ".methodnotallowed()",
+      "source_file": "src/server/SitesApiHandler.java",
+      "source_location": "L128"
+    },
+    {
+      "id": "src_server_sitesapihandler_sitesapihandler_reason",
+      "label": ".reason()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 26,
+      "community_name": ".handle",
+      "file_type": "code",
+      "norm_label": ".reason()",
+      "source_file": "src/server/SitesApiHandler.java",
+      "source_location": "L138"
+    },
+    {
+      "id": "src_server_sitesapihandler_sitesapihandler_requirejson",
+      "label": ".requireJson()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 26,
+      "community_name": ".handle",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "getRequestHeaders",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L120"
+          }
+        ]
+      },
+      "norm_label": ".requirejson()",
+      "source_file": "src/server/SitesApiHandler.java",
+      "source_location": "L119"
+    },
+    {
+      "id": "src_server_sitesapihandler_sitesapihandler_sitesapihandler",
+      "label": ".SitesApiHandler()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 26,
+      "community_name": ".handle",
+      "file_type": "code",
+      "norm_label": ".sitesapihandler()",
+      "source_file": "src/server/SitesApiHandler.java",
+      "source_location": "L27"
     },
     {
       "id": "src_server_safepaths_safepaths_getrealornormalized",
@@ -4785,6 +3723,152 @@
       "norm_label": ".safepaths()",
       "source_file": "src/server/SafePaths.java",
       "source_location": "L19"
+    },
+    {
+      "id": "src_server_serverlogger_serverlogger_log",
+      "label": ".log()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 29,
+      "community_name": ".tryServe",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "lineSeparator",
+            "receiver_type": "System",
+            "lang": "java",
+            "line": "L10"
+          }
+        ]
+      },
+      "norm_label": ".log()",
+      "source_file": "src/server/ServerLogger.java",
+      "source_location": "L3"
+    },
+    {
+      "id": "src_server_serverlogger_serverlogger_statuslabel",
+      "label": ".statusLabel()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 29,
+      "community_name": ".tryServe",
+      "file_type": "code",
+      "norm_label": ".statuslabel()",
+      "source_file": "src/server/ServerLogger.java",
+      "source_location": "L16"
+    },
+    {
+      "id": "src_server_staticfilehandler_staticfilehandler_contenttypefor",
+      "label": ".contentTypeFor()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 29,
+      "community_name": ".tryServe",
+      "file_type": "code",
+      "norm_label": ".contenttypefor()",
+      "source_file": "src/server/StaticFileHandler.java",
+      "source_location": "L49"
+    },
+    {
+      "id": "src_server_staticfilehandler_staticfilehandler_hasdotdot",
+      "label": ".hasDotDot()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 29,
+      "community_name": ".tryServe",
+      "file_type": "code",
+      "norm_label": ".hasdotdot()",
+      "source_file": "src/server/StaticFileHandler.java",
+      "source_location": "L44"
+    },
+    {
+      "id": "src_server_staticfilehandler_staticfilehandler_tryserve",
+      "label": ".tryServe()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 29,
+      "community_name": ".tryServe",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "get",
+            "receiver_type": "Paths",
+            "lang": "java",
+            "line": "L9"
+          },
+          {
+            "callee": "exists",
+            "receiver_type": "Files",
+            "lang": "java",
+            "line": "L22"
+          },
+          {
+            "callee": "isDirectory",
+            "receiver_type": "Files",
+            "lang": "java",
+            "line": "L22"
+          },
+          {
+            "callee": "size",
+            "receiver_type": "Files",
+            "lang": "java",
+            "line": "L27"
+          },
+          {
+            "callee": "getResponseHeaders",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L29"
+          },
+          {
+            "callee": "sendResponseHeaders",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L31"
+          },
+          {
+            "callee": "getResponseBody",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L33"
+          },
+          {
+            "callee": "newInputStream",
+            "receiver_type": "Files",
+            "lang": "java",
+            "line": "L34"
+          },
+          {
+            "callee": "close",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L38"
+          },
+          {
+            "callee": "getRequestMethod",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L40"
+          },
+          {
+            "callee": "min",
+            "receiver_type": "Math",
+            "lang": "java",
+            "line": "L40"
+          },
+          {
+            "callee": "getRemoteAddress",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L41"
+          }
+        ]
+      },
+      "norm_label": ".tryserve()",
+      "source_file": "src/server/StaticFileHandler.java",
+      "source_location": "L8"
     },
     {
       "id": "src_client_ftpclient_dataconnection_close",
@@ -5521,6 +4605,1000 @@
       "source_location": "L74"
     },
     {
+      "id": "src_server_ftp_ftpsessionhandler_ftpsessionhandler_ftpsessionhandler",
+      "label": ".FtpSessionHandler()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "FtpClient",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "getInetAddress",
+            "receiver_type": "Socket",
+            "lang": "java",
+            "line": "L52"
+          }
+        ]
+      },
+      "norm_label": ".ftpsessionhandler()",
+      "source_file": "src/server/ftp/FtpSessionHandler.java",
+      "source_location": "L48"
+    },
+    {
+      "id": "src_client_ftpclient_ftpclient_getlastreply",
+      "label": ".getLastReply()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 30,
+      "community_name": ".initListeners",
+      "file_type": "code",
+      "norm_label": ".getlastreply()",
+      "source_file": "src/client/FtpClient.java",
+      "source_location": "L443"
+    },
+    {
+      "id": "src_client_ftpclient_ftpclient_isconnected",
+      "label": ".isConnected()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 30,
+      "community_name": ".initListeners",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "isClosed",
+            "receiver_type": "Socket",
+            "lang": "java",
+            "line": "L428"
+          },
+          {
+            "callee": "isConnected",
+            "receiver_type": "Socket",
+            "lang": "java",
+            "line": "L428"
+          }
+        ]
+      },
+      "norm_label": ".isconnected()",
+      "source_file": "src/client/FtpClient.java",
+      "source_location": "L427"
+    },
+    {
+      "id": "src_client_ftpclient_ftpclient_setpassivemode",
+      "label": ".setPassiveMode()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 30,
+      "community_name": ".initListeners",
+      "file_type": "code",
+      "norm_label": ".setpassivemode()",
+      "source_file": "src/client/FtpClient.java",
+      "source_location": "L153"
+    },
+    {
+      "id": "src_client_ftpclientapp_ftpclientapp_doconnect",
+      "label": ".doConnect()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 30,
+      "community_name": ".initListeners",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "getText",
+            "receiver_type": "JTextField",
+            "lang": "java",
+            "line": "L525"
+          },
+          {
+            "callee": "parseInt",
+            "receiver_type": "Integer",
+            "lang": "java",
+            "line": "L528"
+          },
+          {
+            "callee": "showMessageDialog",
+            "receiver_type": "JOptionPane",
+            "lang": "java",
+            "line": "L530"
+          },
+          {
+            "callee": "getPassword",
+            "receiver_type": "JPasswordField",
+            "lang": "java",
+            "line": "L534"
+          },
+          {
+            "callee": "getSelectedIndex",
+            "receiver_type": "JComboBox",
+            "lang": "java",
+            "line": "L535"
+          },
+          {
+            "callee": "invokeLater",
+            "receiver_type": "SwingUtilities",
+            "lang": "java",
+            "line": "L548"
+          },
+          {
+            "callee": "setText",
+            "receiver_type": "JLabel",
+            "lang": "java",
+            "line": "L555"
+          }
+        ]
+      },
+      "norm_label": ".doconnect()",
+      "source_file": "src/client/FtpClientApp.java",
+      "source_location": "L524"
+    },
+    {
+      "id": "src_client_ftpclientapp_ftpclientapp_dodownload",
+      "label": ".doDownload()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 30,
+      "community_name": ".initListeners",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "showMessageDialog",
+            "receiver_type": "JOptionPane",
+            "lang": "java",
+            "line": "L605"
+          },
+          {
+            "callee": "getSelectedRow",
+            "receiver_type": "JTable",
+            "lang": "java",
+            "line": "L608"
+          },
+          {
+            "callee": "getValueAt",
+            "receiver_type": "DefaultTableModel",
+            "lang": "java",
+            "line": "L613"
+          },
+          {
+            "callee": "showConfirmDialog",
+            "receiver_type": "JOptionPane",
+            "lang": "java",
+            "line": "L622"
+          },
+          {
+            "callee": "currentTimeMillis",
+            "receiver_type": "System",
+            "lang": "java",
+            "line": "L632"
+          },
+          {
+            "callee": "max",
+            "receiver_type": "Math",
+            "lang": "java",
+            "line": "L634"
+          },
+          {
+            "callee": "format",
+            "receiver_type": "String",
+            "lang": "java",
+            "line": "L635"
+          },
+          {
+            "callee": "invokeLater",
+            "receiver_type": "SwingUtilities",
+            "lang": "java",
+            "line": "L636"
+          }
+        ]
+      },
+      "norm_label": ".dodownload()",
+      "source_file": "src/client/FtpClientApp.java",
+      "source_location": "L603"
+    },
+    {
+      "id": "src_client_ftpclientapp_ftpclientapp_doupload",
+      "label": ".doUpload()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 30,
+      "community_name": ".initListeners",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "showMessageDialog",
+            "receiver_type": "JOptionPane",
+            "lang": "java",
+            "line": "L569"
+          },
+          {
+            "callee": "getSelectedRow",
+            "receiver_type": "JTable",
+            "lang": "java",
+            "line": "L572"
+          },
+          {
+            "callee": "getValueAt",
+            "receiver_type": "DefaultTableModel",
+            "lang": "java",
+            "line": "L577"
+          },
+          {
+            "callee": "currentTimeMillis",
+            "receiver_type": "System",
+            "lang": "java",
+            "line": "L592"
+          },
+          {
+            "callee": "max",
+            "receiver_type": "Math",
+            "lang": "java",
+            "line": "L594"
+          },
+          {
+            "callee": "format",
+            "receiver_type": "String",
+            "lang": "java",
+            "line": "L595"
+          }
+        ]
+      },
+      "norm_label": ".doupload()",
+      "source_file": "src/client/FtpClientApp.java",
+      "source_location": "L567"
+    },
+    {
+      "id": "src_client_ftpclientapp_ftpclientapp_executeasync",
+      "label": ".executeAsync()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 30,
+      "community_name": ".initListeners",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "ofVirtual",
+            "receiver_type": "Thread",
+            "lang": "java",
+            "line": "L721"
+          },
+          {
+            "callee": "invokeLater",
+            "receiver_type": "SwingUtilities",
+            "lang": "java",
+            "line": "L725"
+          }
+        ]
+      },
+      "norm_label": ".executeasync()",
+      "source_file": "src/client/FtpClientApp.java",
+      "source_location": "L719"
+    },
+    {
+      "id": "src_client_ftpclientapp_ftpclientapp_initlisteners",
+      "label": ".initListeners()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 30,
+      "community_name": ".initListeners",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "addActionListener",
+            "receiver_type": "JButton",
+            "lang": "java",
+            "line": "L317"
+          },
+          {
+            "callee": "setText",
+            "receiver_type": "JTextArea",
+            "lang": "java",
+            "line": "L317"
+          },
+          {
+            "callee": "invokeLater",
+            "receiver_type": "SwingUtilities",
+            "lang": "java",
+            "line": "L324"
+          },
+          {
+            "callee": "setFileSelectionMode",
+            "receiver_type": "JFileChooser",
+            "lang": "java",
+            "line": "L337"
+          },
+          {
+            "callee": "showOpenDialog",
+            "receiver_type": "JFileChooser",
+            "lang": "java",
+            "line": "L338"
+          },
+          {
+            "callee": "getSelectedFile",
+            "receiver_type": "JFileChooser",
+            "lang": "java",
+            "line": "L339"
+          },
+          {
+            "callee": "addMouseListener",
+            "receiver_type": "JTable",
+            "lang": "java",
+            "line": "L354"
+          },
+          {
+            "callee": "showInputDialog",
+            "receiver_type": "JOptionPane",
+            "lang": "java",
+            "line": "L421"
+          },
+          {
+            "callee": "getSelectedRow",
+            "receiver_type": "JTable",
+            "lang": "java",
+            "line": "L442"
+          },
+          {
+            "callee": "showMessageDialog",
+            "receiver_type": "JOptionPane",
+            "lang": "java",
+            "line": "L444"
+          },
+          {
+            "callee": "getValueAt",
+            "receiver_type": "DefaultTableModel",
+            "lang": "java",
+            "line": "L447"
+          },
+          {
+            "callee": "showConfirmDialog",
+            "receiver_type": "JOptionPane",
+            "lang": "java",
+            "line": "L451"
+          }
+        ]
+      },
+      "norm_label": ".initlisteners()",
+      "source_file": "src/client/FtpClientApp.java",
+      "source_location": "L301"
+    },
+    {
+      "id": "src_client_ftpclientapp_ftpclientapp_loginfo",
+      "label": ".logInfo()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 30,
+      "community_name": ".initListeners",
+      "file_type": "code",
+      "norm_label": ".loginfo()",
+      "source_file": "src/client/FtpClientApp.java",
+      "source_location": "L752"
+    },
+    {
+      "id": "src_client_ftpclientapp_ftpclientapp_refreshremotetableasync",
+      "label": ".refreshRemoteTableAsync()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 30,
+      "community_name": ".initListeners",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "invokeLater",
+            "receiver_type": "SwingUtilities",
+            "lang": "java",
+            "line": "L647"
+          },
+          {
+            "callee": "setText",
+            "receiver_type": "JTextField",
+            "lang": "java",
+            "line": "L648"
+          },
+          {
+            "callee": "setRowCount",
+            "receiver_type": "DefaultTableModel",
+            "lang": "java",
+            "line": "L650"
+          },
+          {
+            "callee": "addRow",
+            "receiver_type": "DefaultTableModel",
+            "lang": "java",
+            "line": "L652"
+          }
+        ]
+      },
+      "norm_label": ".refreshremotetableasync()",
+      "source_file": "src/client/FtpClientApp.java",
+      "source_location": "L643"
+    },
+    {
+      "id": "src_client_ftpclientapp_ftpclientapp_setbusy",
+      "label": ".setBusy()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 30,
+      "community_name": ".initListeners",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "getPredefinedCursor",
+            "receiver_type": "Cursor",
+            "lang": "java",
+            "line": "L731"
+          },
+          {
+            "callee": "getDefaultCursor",
+            "receiver_type": "Cursor",
+            "lang": "java",
+            "line": "L731"
+          },
+          {
+            "callee": "setText",
+            "receiver_type": "JLabel",
+            "lang": "java",
+            "line": "L732"
+          },
+          {
+            "callee": "setVisible",
+            "receiver_type": "JProgressBar",
+            "lang": "java",
+            "line": "L733"
+          },
+          {
+            "callee": "setIndeterminate",
+            "receiver_type": "JProgressBar",
+            "lang": "java",
+            "line": "L734"
+          },
+          {
+            "callee": "setEnabled",
+            "receiver_type": "JButton",
+            "lang": "java",
+            "line": "L736"
+          }
+        ]
+      },
+      "norm_label": ".setbusy()",
+      "source_file": "src/client/FtpClientApp.java",
+      "source_location": "L730"
+    },
+    {
+      "id": "src_client_ftpclientapp_ftpclientapp_showerror",
+      "label": ".showError()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 30,
+      "community_name": ".initListeners",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "invokeLater",
+            "receiver_type": "SwingUtilities",
+            "lang": "java",
+            "line": "L758"
+          },
+          {
+            "callee": "showMessageDialog",
+            "receiver_type": "JOptionPane",
+            "lang": "java",
+            "line": "L759"
+          }
+        ]
+      },
+      "norm_label": ".showerror()",
+      "source_file": "src/client/FtpClientApp.java",
+      "source_location": "L756"
+    },
+    {
+      "id": "src_client_ftpclientapp_ftpclientapp_updateconnectionstate",
+      "label": ".updateConnectionState()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 30,
+      "community_name": ".initListeners",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "setText",
+            "receiver_type": "JButton",
+            "lang": "java",
+            "line": "L695"
+          },
+          {
+            "callee": "setText",
+            "receiver_type": "JLabel",
+            "lang": "java",
+            "line": "L696"
+          },
+          {
+            "callee": "setForeground",
+            "receiver_type": "JLabel",
+            "lang": "java",
+            "line": "L697"
+          },
+          {
+            "callee": "setEnabled",
+            "receiver_type": "JTextField",
+            "lang": "java",
+            "line": "L699"
+          },
+          {
+            "callee": "setEnabled",
+            "receiver_type": "JPasswordField",
+            "lang": "java",
+            "line": "L702"
+          },
+          {
+            "callee": "setEnabled",
+            "receiver_type": "JComboBox",
+            "lang": "java",
+            "line": "L703"
+          },
+          {
+            "callee": "setEnabled",
+            "receiver_type": "JButton",
+            "lang": "java",
+            "line": "L705"
+          },
+          {
+            "callee": "setRowCount",
+            "receiver_type": "DefaultTableModel",
+            "lang": "java",
+            "line": "L714"
+          },
+          {
+            "callee": "setText",
+            "receiver_type": "JTextField",
+            "lang": "java",
+            "line": "L715"
+          }
+        ]
+      },
+      "norm_label": ".updateconnectionstate()",
+      "source_file": "src/client/FtpClientApp.java",
+      "source_location": "L694"
+    },
+    {
+      "id": "src_client_httpclienterrordemo_httpclienterrordemo_main",
+      "label": ".main()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 31,
+      "community_name": "java.net.URI",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "newBuilder",
+            "receiver_type": "HttpClient",
+            "lang": "java",
+            "line": "L10"
+          },
+          {
+            "callee": "ofSeconds",
+            "receiver_type": "Duration",
+            "lang": "java",
+            "line": "L10"
+          },
+          {
+            "callee": "newBuilder",
+            "receiver_type": "HttpRequest",
+            "lang": "java",
+            "line": "L12"
+          },
+          {
+            "callee": "create",
+            "receiver_type": "URI",
+            "lang": "java",
+            "line": "L12"
+          },
+          {
+            "callee": "send",
+            "receiver_type": "HttpClient",
+            "lang": "java",
+            "line": "L14"
+          },
+          {
+            "callee": "statusCode",
+            "receiver_type": "HttpResponse",
+            "lang": "java",
+            "line": "L15"
+          },
+          {
+            "callee": "body",
+            "receiver_type": "HttpResponse",
+            "lang": "java",
+            "line": "L16"
+          },
+          {
+            "callee": "currentThread",
+            "receiver_type": "Thread",
+            "lang": "java",
+            "line": "L27"
+          }
+        ]
+      },
+      "norm_label": ".main()",
+      "source_file": "src/client/HttpClientErrorDemo.java",
+      "source_location": "L8"
+    },
+    {
+      "id": "src_client_httpclientgetdemo_httpclientgetdemo_main",
+      "label": ".main()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 31,
+      "community_name": "java.net.URI",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "newHttpClient",
+            "receiver_type": "HttpClient",
+            "lang": "java",
+            "line": "L7"
+          },
+          {
+            "callee": "newBuilder",
+            "receiver_type": "HttpRequest",
+            "lang": "java",
+            "line": "L8"
+          },
+          {
+            "callee": "create",
+            "receiver_type": "URI",
+            "lang": "java",
+            "line": "L8"
+          },
+          {
+            "callee": "send",
+            "receiver_type": "HttpClient",
+            "lang": "java",
+            "line": "L9"
+          },
+          {
+            "callee": "statusCode",
+            "receiver_type": "HttpResponse",
+            "lang": "java",
+            "line": "L10"
+          },
+          {
+            "callee": "headers",
+            "receiver_type": "HttpResponse",
+            "lang": "java",
+            "line": "L11"
+          },
+          {
+            "callee": "body",
+            "receiver_type": "HttpResponse",
+            "lang": "java",
+            "line": "L12"
+          }
+        ]
+      },
+      "norm_label": ".main()",
+      "source_file": "src/client/HttpClientGetDemo.java",
+      "source_location": "L5"
+    },
+    {
+      "id": "src_client_httpclientpostdemo_httpclientpostdemo_main",
+      "label": ".main()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 31,
+      "community_name": "java.net.URI",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "newHttpClient",
+            "receiver_type": "HttpClient",
+            "lang": "java",
+            "line": "L8"
+          },
+          {
+            "callee": "newBuilder",
+            "receiver_type": "HttpRequest",
+            "lang": "java",
+            "line": "L9"
+          },
+          {
+            "callee": "create",
+            "receiver_type": "URI",
+            "lang": "java",
+            "line": "L9"
+          },
+          {
+            "callee": "send",
+            "receiver_type": "HttpClient",
+            "lang": "java",
+            "line": "L12"
+          },
+          {
+            "callee": "statusCode",
+            "receiver_type": "HttpResponse",
+            "lang": "java",
+            "line": "L13"
+          },
+          {
+            "callee": "body",
+            "receiver_type": "HttpResponse",
+            "lang": "java",
+            "line": "L14"
+          }
+        ]
+      },
+      "norm_label": ".main()",
+      "source_file": "src/client/HttpClientPostDemo.java",
+      "source_location": "L5"
+    },
+    {
+      "id": "src_server_sitesapihandler_sitesapihandler_isloopback",
+      "label": ".isLoopback()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 32,
+      "community_name": ".isLoopback",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "getAddress",
+            "receiver_type": "InetSocketAddress",
+            "lang": "java",
+            "line": "L135"
+          }
+        ]
+      },
+      "norm_label": ".isloopback()",
+      "source_file": "src/server/SitesApiHandler.java",
+      "source_location": "L134"
+    },
+    {
+      "id": "src_server_proxyhandler_proxyhandler_forward",
+      "label": ".forward()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 33,
+      "community_name": ".startServer",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "newBuilder",
+            "receiver_type": "HttpRequest",
+            "lang": "java",
+            "line": "L36"
+          },
+          {
+            "callee": "create",
+            "receiver_type": "URI",
+            "lang": "java",
+            "line": "L36"
+          },
+          {
+            "callee": "ofSeconds",
+            "receiver_type": "Duration",
+            "lang": "java",
+            "line": "L36"
+          },
+          {
+            "callee": "getRequestHeaders",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L38"
+          },
+          {
+            "callee": "header",
+            "receiver_type": "Builder",
+            "lang": "java",
+            "line": "L39"
+          },
+          {
+            "callee": "method",
+            "receiver_type": "Builder",
+            "lang": "java",
+            "line": "L40"
+          },
+          {
+            "callee": "send",
+            "receiver_type": "HttpClient",
+            "lang": "java",
+            "line": "L42"
+          },
+          {
+            "callee": "build",
+            "receiver_type": "Builder",
+            "lang": "java",
+            "line": "L42"
+          },
+          {
+            "callee": "headers",
+            "receiver_type": "HttpResponse",
+            "lang": "java",
+            "line": "L43"
+          },
+          {
+            "callee": "body",
+            "receiver_type": "HttpResponse",
+            "lang": "java",
+            "line": "L44"
+          },
+          {
+            "callee": "getResponseHeaders",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L45"
+          },
+          {
+            "callee": "sendResponseHeaders",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L48"
+          },
+          {
+            "callee": "statusCode",
+            "receiver_type": "HttpResponse",
+            "lang": "java",
+            "line": "L48"
+          },
+          {
+            "callee": "getResponseBody",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L50"
+          },
+          {
+            "callee": "close",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L52"
+          },
+          {
+            "callee": "getRequestURI",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L55"
+          },
+          {
+            "callee": "getRemoteAddress",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L57"
+          }
+        ]
+      },
+      "norm_label": ".forward()",
+      "source_file": "src/server/ProxyHandler.java",
+      "source_location": "L34"
+    },
+    {
+      "id": "src_server_proxyhandler_proxyhandler_handle",
+      "label": ".handle()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 33,
+      "community_name": ".startServer",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "getRequestURI",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L17"
+          },
+          {
+            "callee": "getRequestMethod",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L24"
+          },
+          {
+            "callee": "getRequestBody",
+            "receiver_type": "HttpExchange",
+            "lang": "java",
+            "line": "L25"
+          }
+        ]
+      },
+      "norm_label": ".handle()",
+      "source_file": "src/server/ProxyHandler.java",
+      "source_location": "L15"
+    },
+    {
+      "id": "src_server_simplehttpserver_simplehttpserver_main",
+      "label": ".main()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 33,
+      "community_name": ".startServer",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "parseInt",
+            "receiver_type": "Integer",
+            "lang": "java",
+            "line": "L37"
+          }
+        ]
+      },
+      "norm_label": ".main()",
+      "source_file": "src/server/SimpleHttpServer.java",
+      "source_location": "L34"
+    },
+    {
+      "id": "src_server_simplehttpserver_simplehttpserver_startserver",
+      "label": ".startServer()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 33,
+      "community_name": ".startServer",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "create",
+            "receiver_type": "HttpServer",
+            "lang": "java",
+            "line": "L10"
+          },
+          {
+            "callee": "get",
+            "receiver_type": "Paths",
+            "lang": "java",
+            "line": "L11"
+          },
+          {
+            "callee": "createContext",
+            "receiver_type": "HttpServer",
+            "lang": "java",
+            "line": "L13"
+          },
+          {
+            "callee": "setExecutor",
+            "receiver_type": "HttpServer",
+            "lang": "java",
+            "line": "L19"
+          },
+          {
+            "callee": "newVirtualThreadPerTaskExecutor",
+            "receiver_type": "Executors",
+            "lang": "java",
+            "line": "L19"
+          },
+          {
+            "callee": "newFixedThreadPool",
+            "receiver_type": "Executors",
+            "lang": "java",
+            "line": "L22"
+          },
+          {
+            "callee": "start",
+            "receiver_type": "HttpServer",
+            "lang": "java",
+            "line": "L25"
+          }
+        ]
+      },
+      "norm_label": ".startserver()",
+      "source_file": "src/server/SimpleHttpServer.java",
+      "source_location": "L9"
+    },
+    {
       "id": "src_mock_mockiisserver_mockiisserver_main",
       "label": ".main()",
       "_callable": true,
@@ -5593,86 +5671,6 @@
       "norm_label": ".startserver()",
       "source_file": "src/mock/MockIisServer.java",
       "source_location": "L11"
-    },
-    {
-      "id": "src_server_simplehttpserver_simplehttpserver_main",
-      "label": ".main()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 4,
-      "community_name": "CrossTestClient.java",
-      "file_type": "code",
-      "metadata": {
-        "unresolved_calls": [
-          {
-            "callee": "parseInt",
-            "receiver_type": "Integer",
-            "lang": "java",
-            "line": "L37"
-          }
-        ]
-      },
-      "norm_label": ".main()",
-      "source_file": "src/server/SimpleHttpServer.java",
-      "source_location": "L34"
-    },
-    {
-      "id": "src_server_simplehttpserver_simplehttpserver_startserver",
-      "label": ".startServer()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 4,
-      "community_name": "CrossTestClient.java",
-      "file_type": "code",
-      "metadata": {
-        "unresolved_calls": [
-          {
-            "callee": "create",
-            "receiver_type": "HttpServer",
-            "lang": "java",
-            "line": "L10"
-          },
-          {
-            "callee": "get",
-            "receiver_type": "Paths",
-            "lang": "java",
-            "line": "L11"
-          },
-          {
-            "callee": "createContext",
-            "receiver_type": "HttpServer",
-            "lang": "java",
-            "line": "L13"
-          },
-          {
-            "callee": "setExecutor",
-            "receiver_type": "HttpServer",
-            "lang": "java",
-            "line": "L19"
-          },
-          {
-            "callee": "newVirtualThreadPerTaskExecutor",
-            "receiver_type": "Executors",
-            "lang": "java",
-            "line": "L19"
-          },
-          {
-            "callee": "newFixedThreadPool",
-            "receiver_type": "Executors",
-            "lang": "java",
-            "line": "L22"
-          },
-          {
-            "callee": "start",
-            "receiver_type": "HttpServer",
-            "lang": "java",
-            "line": "L25"
-          }
-        ]
-      },
-      "norm_label": ".startserver()",
-      "source_file": "src/server/SimpleHttpServer.java",
-      "source_location": "L9"
     },
     {
       "id": "src_client_crosstestclient_crosstestclient_canconnect",
@@ -5753,6 +5751,18 @@
       "norm_label": ".ensureserversrunning()",
       "source_file": "src/client/CrossTestClient.java",
       "source_location": "L56"
+    },
+    {
+      "id": "src_client_crosstestclient_crosstestclient_fetchviaapp",
+      "label": ".fetchViaApp()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 7,
+      "community_name": "CrossTestClient",
+      "file_type": "code",
+      "norm_label": ".fetchviaapp()",
+      "source_file": "src/client/CrossTestClient.java",
+      "source_location": "L379"
     },
     {
       "id": "src_client_crosstestclient_crosstestclient_freeport",
@@ -6275,6 +6285,18 @@
       "norm_label": ".testsitesapi()",
       "source_file": "src/client/CrossTestClient.java",
       "source_location": "L553"
+    },
+    {
+      "id": "src_client_crosstestclient_crosstestclient_testwebclientapp",
+      "label": ".testWebClientApp()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 7,
+      "community_name": "CrossTestClient",
+      "file_type": "code",
+      "norm_label": ".testwebclientapp()",
+      "source_file": "src/client/CrossTestClient.java",
+      "source_location": "L340"
     },
     {
       "id": "src_client_crosstestclient_throwingrunnable_run",
@@ -7121,28 +7143,6 @@
       "norm_label": ".close()",
       "source_file": "src/server/ftp/FtpSessionHandler.java",
       "source_location": "L675"
-    },
-    {
-      "id": "src_server_ftp_ftpsessionhandler_ftpsessionhandler_ftpsessionhandler",
-      "label": ".FtpSessionHandler()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 8,
-      "community_name": "FtpSessionHandler",
-      "file_type": "code",
-      "metadata": {
-        "unresolved_calls": [
-          {
-            "callee": "getInetAddress",
-            "receiver_type": "Socket",
-            "lang": "java",
-            "line": "L52"
-          }
-        ]
-      },
-      "norm_label": ".ftpsessionhandler()",
-      "source_file": "src/server/ftp/FtpSessionHandler.java",
-      "source_location": "L48"
     },
     {
       "id": "src_server_ftp_ftpsessionhandler_ftpsessionhandler_handlecdup",
@@ -9051,17 +9051,6 @@
       "source_location": "L410"
     },
     {
-      "id": "java_net_uri",
-      "label": "java.net.URI",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "WebFetchHandler.java",
-      "file_type": "code",
-      "norm_label": "java.net.uri",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
       "id": "java_nio_charset_charset",
       "label": "java.nio.charset.Charset",
       "_origin": "ast",
@@ -9084,28 +9073,6 @@
       "source_location": "L1"
     },
     {
-      "id": "src_client_httpclientgetdemo",
-      "label": "HttpClientGetDemo.java",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "WebFetchHandler.java",
-      "file_type": "code",
-      "norm_label": "httpclientgetdemo.java",
-      "source_file": "src/client/HttpClientGetDemo.java",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_client_httpclientpostdemo",
-      "label": "HttpClientPostDemo.java",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "WebFetchHandler.java",
-      "file_type": "code",
-      "norm_label": "httpclientpostdemo.java",
-      "source_file": "src/client/HttpClientPostDemo.java",
-      "source_location": "L1"
-    },
-    {
       "id": "src_client_webfetchservice",
       "label": "WebFetchService.java",
       "_origin": "ast",
@@ -9114,17 +9081,6 @@
       "file_type": "code",
       "norm_label": "webfetchservice.java",
       "source_file": "src/client/WebFetchService.java",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_server_proxyhandler",
-      "label": "ProxyHandler.java",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "WebFetchHandler.java",
-      "file_type": "code",
-      "norm_label": "proxyhandler.java",
-      "source_file": "src/server/ProxyHandler.java",
       "source_location": "L1"
     },
     {
@@ -9139,39 +9095,6 @@
       "source_location": "L1"
     },
     {
-      "id": "com_sun_net_httpserver_httpexchange",
-      "label": "com.sun.net.httpserver.HttpExchange",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "code",
-      "norm_label": "com.sun.net.httpserver.httpexchange",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "com_sun_net_httpserver_httphandler",
-      "label": "com.sun.net.httpserver.HttpHandler",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "code",
-      "norm_label": "com.sun.net.httpserver.httphandler",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "httphandler",
-      "label": "HttpHandler",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "code",
-      "norm_label": "httphandler",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
       "id": "src_model_student",
       "label": "Student.java",
       "_origin": "ast",
@@ -9183,50 +9106,6 @@
       "source_location": "L1"
     },
     {
-      "id": "src_server_proxyhandler_java_httpclient",
-      "label": "HttpClient",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "code",
-      "norm_label": "httpclient",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "src_server_proxyhandler_java_httpexchange",
-      "label": "HttpExchange",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "code",
-      "norm_label": "httpexchange",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "src_server_proxyhandler_java_override",
-      "label": "Override",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "code",
-      "norm_label": "override",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "src_server_routerhandler_java_httpexchange",
-      "label": "HttpExchange",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "code",
-      "norm_label": "httpexchange",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
       "id": "src_server_routerhandler_java_override",
       "label": "Override",
       "_origin": "ast",
@@ -9236,217 +9115,6 @@
       "norm_label": "override",
       "source_file": "",
       "source_location": ""
-    },
-    {
-      "id": "src_server_serverlogger",
-      "label": "ServerLogger.java",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "code",
-      "norm_label": "serverlogger.java",
-      "source_file": "src/server/ServerLogger.java",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_server_sitefilehandler",
-      "label": "SiteFileHandler.java",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "code",
-      "norm_label": "sitefilehandler.java",
-      "source_file": "src/server/SiteFileHandler.java",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_server_sitefilehandler_java_override",
-      "label": "Override",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "code",
-      "norm_label": "override",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "src_server_sitesapihandler_java_override",
-      "label": "Override",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "code",
-      "norm_label": "override",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "src_service_studentservice",
-      "label": "StudentService.java",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "code",
-      "norm_label": "studentservice.java",
-      "source_file": "src/service/StudentService.java",
-      "source_location": "L1"
-    },
-    {
-      "id": "docs_superpowers_specs_2026_10_10_multisite_design",
-      "label": "2026-10-10-multisite-design.md",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "document",
-      "node_kind": "page",
-      "norm_label": "2026-10-10-multisite-design.md",
-      "source_file": "docs/superpowers/specs/2026-10-10-multisite-design.md",
-      "source_location": "L1"
-    },
-    {
-      "id": "docs_superpowers_specs_2026_10_10_multisite_design_1_muc_tieu",
-      "label": "1. Muc tieu",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "1. muc tieu",
-      "source_file": "docs/superpowers/specs/2026-10-10-multisite-design.md",
-      "source_location": "L5"
-    },
-    {
-      "id": "docs_superpowers_specs_2026_10_10_multisite_design_2_quyet_dinh_da_chot_voi_nguoi_dung",
-      "label": "2. Quyet dinh da chot voi nguoi dung",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "2. quyet dinh da chot voi nguoi dung",
-      "source_file": "docs/superpowers/specs/2026-10-10-multisite-design.md",
-      "source_location": "L26"
-    },
-    {
-      "id": "docs_superpowers_specs_2026_10_10_multisite_design_3_2_server_sitefilehandler_moi_va_staticfilehandler_sua_nho",
-      "label": "3.2 `server.SiteFileHandler` (moi) va `StaticFileHandler` (sua nho)",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "3.2 `server.sitefilehandler` (moi) va `staticfilehandler` (sua nho)",
-      "source_file": "docs/superpowers/specs/2026-10-10-multisite-design.md",
-      "source_location": "L54"
-    },
-    {
-      "id": "docs_superpowers_specs_2026_10_10_multisite_design_3_3_server_sitesapihandler_moi_gan_vao_simplehttpserver_tai_api_sites",
-      "label": "3.3 `server.SitesApiHandler` (moi), gan vao `SimpleHttpServer` tai `/api/sites`",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "3.3 `server.sitesapihandler` (moi), gan vao `simplehttpserver` tai `/api/sites`",
-      "source_file": "docs/superpowers/specs/2026-10-10-multisite-design.md",
-      "source_location": "L58"
-    },
-    {
-      "id": "docs_superpowers_specs_2026_10_10_multisite_design_3_4_trang_quan_tri_wwwroot_admin_html_moi_link_tu_wwwroot_index_html",
-      "label": "3.4 Trang quan tri `wwwroot/admin.html` (moi) + link tu `wwwroot/index.html`",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "3.4 trang quan tri `wwwroot/admin.html` (moi) + link tu `wwwroot/index.html`",
-      "source_file": "docs/superpowers/specs/2026-10-10-multisite-design.md",
-      "source_location": "L70"
-    },
-    {
-      "id": "docs_superpowers_specs_2026_10_10_multisite_design_3_5_cau_hinh_va_cleanup",
-      "label": "3.5 Cau hinh va cleanup",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "3.5 cau hinh va cleanup",
-      "source_file": "docs/superpowers/specs/2026-10-10-multisite-design.md",
-      "source_location": "L74"
-    },
-    {
-      "id": "docs_superpowers_specs_2026_10_10_multisite_design_3_kien_truc",
-      "label": "3. Kien truc",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "3. kien truc",
-      "source_file": "docs/superpowers/specs/2026-10-10-multisite-design.md",
-      "source_location": "L34"
-    },
-    {
-      "id": "docs_superpowers_specs_2026_10_10_multisite_design_4_kiem_thu_them_vao_crosstestclient",
-      "label": "4. Kiem thu (them vao `CrossTestClient`)",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "4. kiem thu (them vao `crosstestclient`)",
-      "source_file": "docs/superpowers/specs/2026-10-10-multisite-design.md",
-      "source_location": "L78"
-    },
-    {
-      "id": "docs_superpowers_specs_2026_10_10_multisite_design_5_rui_ro_da_biet",
-      "label": "5. Rui ro da biet",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "5. rui ro da biet",
-      "source_file": "docs/superpowers/specs/2026-10-10-multisite-design.md",
-      "source_location": "L85"
-    },
-    {
-      "id": "docs_superpowers_specs_2026_10_10_multisite_design_multi_site_hosting_quan_ly_nhieu_web_design",
-      "label": "Multi-site hosting (quan ly nhieu web) - Design",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "multi-site hosting (quan ly nhieu web) - design",
-      "source_file": "docs/superpowers/specs/2026-10-10-multisite-design.md",
-      "source_location": "L1"
-    },
-    {
-      "id": "docs_superpowers_specs_2026_10_10_multisite_design_ngoai_pham_vi_yagni",
-      "label": "Ngoai pham vi (YAGNI)",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "ngoai pham vi (yagni)",
-      "source_file": "docs/superpowers/specs/2026-10-10-multisite-design.md",
-      "source_location": "L22"
-    },
-    {
-      "id": "docs_superpowers_specs_2026_10_10_multisite_design_tieu_chi_thanh_cong",
-      "label": "Tieu chi thanh cong",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": ".handle",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "tieu chi thanh cong",
-      "source_file": "docs/superpowers/specs/2026-10-10-multisite-design.md",
-      "source_location": "L12"
     },
     {
       "id": "java_net_http_httpclient",
@@ -9627,18 +9295,6 @@
       "source_location": "L507"
     },
     {
-      "id": "docs_superpowers_plans_2026_10_10_webclient_task_3_tab_rendered_readme",
-      "label": "Task 3: Tab Rendered + README",
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "WebFetchService",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "task 3: tab rendered + readme",
-      "source_file": "docs/superpowers/plans/2026-10-10-webclient.md",
-      "source_location": "L902"
-    },
-    {
       "id": "docs_superpowers_plans_2026_10_10_webclient_web_client_swing_implementation_plan",
       "label": "Web Client (Swing) Implementation Plan",
       "_origin": "ast",
@@ -9698,6 +9354,72 @@
       "source_location": ""
     },
     {
+      "id": "javax_swing_jbutton",
+      "label": "javax.swing.JButton",
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "FtpClientApp",
+      "file_type": "code",
+      "norm_label": "javax.swing.jbutton",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "javax_swing_jcombobox",
+      "label": "javax.swing.JComboBox",
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "FtpClientApp",
+      "file_type": "code",
+      "norm_label": "javax.swing.jcombobox",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "javax_swing_jframe",
+      "label": "javax.swing.JFrame",
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "FtpClientApp",
+      "file_type": "code",
+      "norm_label": "javax.swing.jframe",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "javax_swing_jlabel",
+      "label": "javax.swing.JLabel",
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "FtpClientApp",
+      "file_type": "code",
+      "norm_label": "javax.swing.jlabel",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "javax_swing_jpasswordfield",
+      "label": "javax.swing.JPasswordField",
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "FtpClientApp",
+      "file_type": "code",
+      "norm_label": "javax.swing.jpasswordfield",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "javax_swing_jprogressbar",
+      "label": "javax.swing.JProgressBar",
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "FtpClientApp",
+      "file_type": "code",
+      "norm_label": "javax.swing.jprogressbar",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
       "id": "javax_swing_jtable",
       "label": "javax.swing.JTable",
       "_origin": "ast",
@@ -9709,13 +9431,13 @@
       "source_location": ""
     },
     {
-      "id": "javax_swing_jbutton",
-      "label": "javax.swing.JButton",
+      "id": "javax_swing_table_defaulttablemodel",
+      "label": "javax.swing.table.DefaultTableModel",
       "_origin": "ast",
-      "community": 13,
-      "community_name": "FtpClientApp.java",
+      "community": 12,
+      "community_name": "FtpClientApp",
       "file_type": "code",
-      "norm_label": "javax.swing.jbutton",
+      "norm_label": "javax.swing.table.defaulttablemodel",
       "source_file": "",
       "source_location": ""
     },
@@ -9731,57 +9453,24 @@
       "source_location": ""
     },
     {
-      "id": "javax_swing_jlabel",
-      "label": "javax.swing.JLabel",
+      "id": "javax_swing_jtabbedpane",
+      "label": "javax.swing.JTabbedPane",
       "_origin": "ast",
       "community": 13,
       "community_name": "FtpClientApp.java",
       "file_type": "code",
-      "norm_label": "javax.swing.jlabel",
+      "norm_label": "javax.swing.jtabbedpane",
       "source_file": "",
       "source_location": ""
     },
     {
-      "id": "javax_swing_jpasswordfield",
-      "label": "javax.swing.JPasswordField",
+      "id": "javax_swing_jtextarea",
+      "label": "javax.swing.JTextArea",
       "_origin": "ast",
       "community": 13,
       "community_name": "FtpClientApp.java",
       "file_type": "code",
-      "norm_label": "javax.swing.jpasswordfield",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "javax_swing_jprogressbar",
-      "label": "javax.swing.JProgressBar",
-      "_origin": "ast",
-      "community": 13,
-      "community_name": "FtpClientApp.java",
-      "file_type": "code",
-      "norm_label": "javax.swing.jprogressbar",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "javax_swing_jtextfield",
-      "label": "javax.swing.JTextField",
-      "_origin": "ast",
-      "community": 13,
-      "community_name": "FtpClientApp.java",
-      "file_type": "code",
-      "norm_label": "javax.swing.jtextfield",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "javax_swing_table_defaulttablemodel",
-      "label": "javax.swing.table.DefaultTableModel",
-      "_origin": "ast",
-      "community": 13,
-      "community_name": "FtpClientApp.java",
-      "file_type": "code",
-      "norm_label": "javax.swing.table.defaulttablemodel",
+      "norm_label": "javax.swing.jtextarea",
       "source_file": "",
       "source_location": ""
     },
@@ -10608,17 +10297,6 @@
       "source_location": "L1"
     },
     {
-      "id": "src_client_ftpreply",
-      "label": "FtpReply.java",
-      "_origin": "ast",
-      "community": 19,
-      "community_name": "SiteManager.java",
-      "file_type": "code",
-      "norm_label": "ftpreply.java",
-      "source_file": "src/client/FtpReply.java",
-      "source_location": "L1"
-    },
-    {
       "id": "src_server_sitemanager",
       "label": "SiteManager.java",
       "_origin": "ast",
@@ -10627,28 +10305,6 @@
       "file_type": "code",
       "norm_label": "sitemanager.java",
       "source_file": "src/server/SiteManager.java",
-      "source_location": "L1"
-    },
-    {
-      "id": "java_net_inetsocketaddress",
-      "label": "java.net.InetSocketAddress",
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "ioexception",
-      "file_type": "code",
-      "norm_label": "java.net.inetsocketaddress",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "src_server_ftp_ftpdatachannel",
-      "label": "FtpDataChannel.java",
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "ioexception",
-      "file_type": "code",
-      "norm_label": "ftpdatachannel.java",
-      "source_file": "src/server/ftp/FtpDataChannel.java",
       "source_location": "L1"
     },
     {
@@ -10663,6 +10319,28 @@
       "source_location": "L1"
     },
     {
+      "id": "src_server_ftp_simpleftpserver",
+      "label": "SimpleFtpServer.java",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "ioexception",
+      "file_type": "code",
+      "norm_label": "simpleftpserver.java",
+      "source_file": "src/server/ftp/SimpleFtpServer.java",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_server_proxyhandler",
+      "label": "ProxyHandler.java",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "ioexception",
+      "file_type": "code",
+      "norm_label": "proxyhandler.java",
+      "source_file": "src/server/ProxyHandler.java",
+      "source_location": "L1"
+    },
+    {
       "id": "src_server_routerhandler",
       "label": "RouterHandler.java",
       "_origin": "ast",
@@ -10674,14 +10352,14 @@
       "source_location": "L1"
     },
     {
-      "id": "src_server_sitesapihandler",
-      "label": "SitesApiHandler.java",
+      "id": "src_server_safepaths",
+      "label": "SafePaths.java",
       "_origin": "ast",
       "community": 2,
       "community_name": "ioexception",
       "file_type": "code",
-      "norm_label": "sitesapihandler.java",
-      "source_file": "src/server/SitesApiHandler.java",
+      "norm_label": "safepaths.java",
+      "source_file": "src/server/SafePaths.java",
       "source_location": "L1"
     },
     {
@@ -10901,18 +10579,6 @@
       "source_location": "L39"
     },
     {
-      "id": "docs_superpowers_specs_2026_10_10_file_tree_design_5_rang_buoc_chung",
-      "label": "5. Rang buoc chung",
-      "_origin": "ast",
-      "community": 21,
-      "community_name": "Cay file cua tung site tren trang quan tri - Design",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "5. rang buoc chung",
-      "source_file": "docs/superpowers/specs/2026-10-10-file-tree-design.md",
-      "source_location": "L45"
-    },
-    {
       "id": "docs_superpowers_specs_2026_10_10_file_tree_design_6_kiem_thu",
       "label": "6. Kiem thu",
       "_origin": "ast",
@@ -10949,17 +10615,6 @@
       "source_location": "L1"
     },
     {
-      "id": "javax_swing_jcombobox",
-      "label": "javax.swing.JComboBox",
-      "_origin": "ast",
-      "community": 22,
-      "community_name": "WebClientApp",
-      "file_type": "code",
-      "norm_label": "javax.swing.jcombobox",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
       "id": "javax_swing_jeditorpane",
       "label": "javax.swing.JEditorPane",
       "_origin": "ast",
@@ -10971,35 +10626,13 @@
       "source_location": ""
     },
     {
-      "id": "javax_swing_jframe",
-      "label": "javax.swing.JFrame",
+      "id": "javax_swing_jtextfield",
+      "label": "javax.swing.JTextField",
       "_origin": "ast",
       "community": 22,
       "community_name": "WebClientApp",
       "file_type": "code",
-      "norm_label": "javax.swing.jframe",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "javax_swing_jtabbedpane",
-      "label": "javax.swing.JTabbedPane",
-      "_origin": "ast",
-      "community": 22,
-      "community_name": "WebClientApp",
-      "file_type": "code",
-      "norm_label": "javax.swing.jtabbedpane",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "javax_swing_jtextarea",
-      "label": "javax.swing.JTextArea",
-      "_origin": "ast",
-      "community": 22,
-      "community_name": "WebClientApp",
-      "file_type": "code",
-      "norm_label": "javax.swing.jtextarea",
+      "norm_label": "javax.swing.jtextfield",
       "source_file": "",
       "source_location": ""
     },
@@ -11045,6 +10678,17 @@
       "file_type": "code",
       "norm_label": "crosstestftpclient.java",
       "source_file": "src/client/CrossTestFtpClient.java",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_service_studentservice",
+      "label": "StudentService.java",
+      "_origin": "ast",
+      "community": 24,
+      "community_name": "CrossTestFtpClient.java",
+      "file_type": "code",
+      "norm_label": "studentservice.java",
+      "source_file": "src/service/StudentService.java",
       "source_location": "L1"
     },
     {
@@ -11120,18 +10764,6 @@
       "source_location": "L13"
     },
     {
-      "id": "original_request_r2_b\u1ea3o_\u0111\u1ea3m_\u0111\u1ea7y_\u0111\u1ee7_c\u00e1c_route_v\u00e0_b\u00e0i_t\u1eadp_m\u1edf_r\u1ed9ng_c\u1ee7a_slide",
-      "label": "R2. B\u1ea3o \u0111\u1ea3m \u0111\u1ea7y \u0111\u1ee7 c\u00e1c Route v\u00e0 B\u00e0i t\u1eadp m\u1edf r\u1ed9ng c\u1ee7a Slide",
-      "_origin": "ast",
-      "community": 25,
-      "community_name": "Original User Request",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "r2. bao \u0111am \u0111ay \u0111u cac route va bai tap mo rong cua slide",
-      "source_file": "ORIGINAL_REQUEST.md",
-      "source_location": "L16"
-    },
-    {
       "id": "original_request_r3_b\u1ed9_k\u1ecbch_b\u1ea3n_ki\u1ec3m_th\u1eed_t\u1ef1_\u0111\u1ed9ng_\u0111\u1ed9c_l\u1eadp",
       "label": "R3. B\u1ed9 k\u1ecbch b\u1ea3n ki\u1ec3m th\u1eed t\u1ef1 \u0111\u1ed9ng \u0111\u1ed9c l\u1eadp",
       "_origin": "ast",
@@ -11168,48 +10800,152 @@
       "source_location": "L32"
     },
     {
-      "id": "src_server_ftp_ftpuserauth",
-      "label": "FtpUserAuth.java",
+      "id": "com_sun_net_httpserver_httpexchange",
+      "label": "com.sun.net.httpserver.HttpExchange",
       "_origin": "ast",
       "community": 26,
-      "community_name": "SimpleFtpServer.java",
+      "community_name": ".handle",
       "file_type": "code",
-      "norm_label": "ftpuserauth.java",
-      "source_file": "src/server/ftp/FtpUserAuth.java",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_server_ftp_simpleftpserver",
-      "label": "SimpleFtpServer.java",
-      "_origin": "ast",
-      "community": 26,
-      "community_name": "SimpleFtpServer.java",
-      "file_type": "code",
-      "norm_label": "simpleftpserver.java",
-      "source_file": "src/server/ftp/SimpleFtpServer.java",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_server_safepaths",
-      "label": "SafePaths.java",
-      "_origin": "ast",
-      "community": 26,
-      "community_name": "SimpleFtpServer.java",
-      "file_type": "code",
-      "norm_label": "safepaths.java",
-      "source_file": "src/server/SafePaths.java",
-      "source_location": "L1"
-    },
-    {
-      "id": "java_net_serversocket",
-      "label": "java.net.ServerSocket",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "FtpClient",
-      "file_type": "code",
-      "norm_label": "java.net.serversocket",
+      "norm_label": "com.sun.net.httpserver.httpexchange",
       "source_file": "",
       "source_location": ""
+    },
+    {
+      "id": "com_sun_net_httpserver_httphandler",
+      "label": "com.sun.net.httpserver.HttpHandler",
+      "_origin": "ast",
+      "community": 26,
+      "community_name": ".handle",
+      "file_type": "code",
+      "norm_label": "com.sun.net.httpserver.httphandler",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "src_server_routerhandler_java_httpexchange",
+      "label": "HttpExchange",
+      "_origin": "ast",
+      "community": 26,
+      "community_name": ".handle",
+      "file_type": "code",
+      "norm_label": "httpexchange",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "src_server_sitefilehandler",
+      "label": "SiteFileHandler.java",
+      "_origin": "ast",
+      "community": 26,
+      "community_name": ".handle",
+      "file_type": "code",
+      "norm_label": "sitefilehandler.java",
+      "source_file": "src/server/SiteFileHandler.java",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_server_sitefilehandler_java_override",
+      "label": "Override",
+      "_origin": "ast",
+      "community": 26,
+      "community_name": ".handle",
+      "file_type": "code",
+      "norm_label": "override",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "src_server_sitesapihandler",
+      "label": "SitesApiHandler.java",
+      "_origin": "ast",
+      "community": 26,
+      "community_name": ".handle",
+      "file_type": "code",
+      "norm_label": "sitesapihandler.java",
+      "source_file": "src/server/SitesApiHandler.java",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_server_sitesapihandler_java_override",
+      "label": "Override",
+      "_origin": "ast",
+      "community": 26,
+      "community_name": ".handle",
+      "file_type": "code",
+      "norm_label": "override",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "src_server_serverlogger",
+      "label": "ServerLogger.java",
+      "_origin": "ast",
+      "community": 29,
+      "community_name": ".tryServe",
+      "file_type": "code",
+      "norm_label": "serverlogger.java",
+      "source_file": "src/server/ServerLogger.java",
+      "source_location": "L1"
+    },
+    {
+      "id": "docs_superpowers_specs_2026_10_10_multisite_design_3_2_server_sitefilehandler_moi_va_staticfilehandler_sua_nho",
+      "label": "3.2 `server.SiteFileHandler` (moi) va `StaticFileHandler` (sua nho)",
+      "_origin": "ast",
+      "community": 29,
+      "community_name": ".tryServe",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "3.2 `server.sitefilehandler` (moi) va `staticfilehandler` (sua nho)",
+      "source_file": "docs/superpowers/specs/2026-10-10-multisite-design.md",
+      "source_location": "L54"
+    },
+    {
+      "id": "docs_superpowers_specs_2026_10_10_multisite_design_3_3_server_sitesapihandler_moi_gan_vao_simplehttpserver_tai_api_sites",
+      "label": "3.3 `server.SitesApiHandler` (moi), gan vao `SimpleHttpServer` tai `/api/sites`",
+      "_origin": "ast",
+      "community": 29,
+      "community_name": ".tryServe",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "3.3 `server.sitesapihandler` (moi), gan vao `simplehttpserver` tai `/api/sites`",
+      "source_file": "docs/superpowers/specs/2026-10-10-multisite-design.md",
+      "source_location": "L58"
+    },
+    {
+      "id": "docs_superpowers_specs_2026_10_10_multisite_design_3_4_trang_quan_tri_wwwroot_admin_html_moi_link_tu_wwwroot_index_html",
+      "label": "3.4 Trang quan tri `wwwroot/admin.html` (moi) + link tu `wwwroot/index.html`",
+      "_origin": "ast",
+      "community": 29,
+      "community_name": ".tryServe",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "3.4 trang quan tri `wwwroot/admin.html` (moi) + link tu `wwwroot/index.html`",
+      "source_file": "docs/superpowers/specs/2026-10-10-multisite-design.md",
+      "source_location": "L70"
+    },
+    {
+      "id": "docs_superpowers_specs_2026_10_10_multisite_design_3_5_cau_hinh_va_cleanup",
+      "label": "3.5 Cau hinh va cleanup",
+      "_origin": "ast",
+      "community": 29,
+      "community_name": ".tryServe",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "3.5 cau hinh va cleanup",
+      "source_file": "docs/superpowers/specs/2026-10-10-multisite-design.md",
+      "source_location": "L74"
+    },
+    {
+      "id": "docs_superpowers_specs_2026_10_10_multisite_design_3_kien_truc",
+      "label": "3. Kien truc",
+      "_origin": "ast",
+      "community": 29,
+      "community_name": ".tryServe",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "3. kien truc",
+      "source_file": "docs/superpowers/specs/2026-10-10-multisite-design.md",
+      "source_location": "L34"
     },
     {
       "id": "java_net_socket",
@@ -11234,6 +10970,17 @@
       "source_location": ""
     },
     {
+      "id": "src_client_ftpreply",
+      "label": "FtpReply.java",
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "FtpClient",
+      "file_type": "code",
+      "norm_label": "ftpreply.java",
+      "source_file": "src/client/FtpReply.java",
+      "source_location": "L1"
+    },
+    {
       "id": "src_client_ftpreply_java_override",
       "label": "Override",
       "_origin": "ast",
@@ -11255,6 +11002,203 @@
       "norm_label": "b. goi may khach ftp (`src/client/ftp/`)",
       "source_file": "docs/superpowers/plans/2026-10-15-ftp-server-client.md",
       "source_location": "L72"
+    },
+    {
+      "id": "java_net_uri",
+      "label": "java.net.URI",
+      "_origin": "ast",
+      "community": 31,
+      "community_name": "java.net.URI",
+      "file_type": "code",
+      "norm_label": "java.net.uri",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "src_client_httpclientgetdemo",
+      "label": "HttpClientGetDemo.java",
+      "_origin": "ast",
+      "community": 31,
+      "community_name": "java.net.URI",
+      "file_type": "code",
+      "norm_label": "httpclientgetdemo.java",
+      "source_file": "src/client/HttpClientGetDemo.java",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_client_httpclientpostdemo",
+      "label": "HttpClientPostDemo.java",
+      "_origin": "ast",
+      "community": 31,
+      "community_name": "java.net.URI",
+      "file_type": "code",
+      "norm_label": "httpclientpostdemo.java",
+      "source_file": "src/client/HttpClientPostDemo.java",
+      "source_location": "L1"
+    },
+    {
+      "id": "original_request_r2_b\u1ea3o_\u0111\u1ea3m_\u0111\u1ea7y_\u0111\u1ee7_c\u00e1c_route_v\u00e0_b\u00e0i_t\u1eadp_m\u1edf_r\u1ed9ng_c\u1ee7a_slide",
+      "label": "R2. B\u1ea3o \u0111\u1ea3m \u0111\u1ea7y \u0111\u1ee7 c\u00e1c Route v\u00e0 B\u00e0i t\u1eadp m\u1edf r\u1ed9ng c\u1ee7a Slide",
+      "_origin": "ast",
+      "community": 31,
+      "community_name": "java.net.URI",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "r2. bao \u0111am \u0111ay \u0111u cac route va bai tap mo rong cua slide",
+      "source_file": "ORIGINAL_REQUEST.md",
+      "source_location": "L16"
+    },
+    {
+      "id": "docs_superpowers_specs_2026_10_10_file_tree_design_5_rang_buoc_chung",
+      "label": "5. Rang buoc chung",
+      "_origin": "ast",
+      "community": 32,
+      "community_name": ".isLoopback",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "5. rang buoc chung",
+      "source_file": "docs/superpowers/specs/2026-10-10-file-tree-design.md",
+      "source_location": "L45"
+    },
+    {
+      "id": "docs_superpowers_specs_2026_10_10_multisite_design",
+      "label": "2026-10-10-multisite-design.md",
+      "_origin": "ast",
+      "community": 32,
+      "community_name": ".isLoopback",
+      "file_type": "document",
+      "node_kind": "page",
+      "norm_label": "2026-10-10-multisite-design.md",
+      "source_file": "docs/superpowers/specs/2026-10-10-multisite-design.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "docs_superpowers_specs_2026_10_10_multisite_design_1_muc_tieu",
+      "label": "1. Muc tieu",
+      "_origin": "ast",
+      "community": 32,
+      "community_name": ".isLoopback",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "1. muc tieu",
+      "source_file": "docs/superpowers/specs/2026-10-10-multisite-design.md",
+      "source_location": "L5"
+    },
+    {
+      "id": "docs_superpowers_specs_2026_10_10_multisite_design_2_quyet_dinh_da_chot_voi_nguoi_dung",
+      "label": "2. Quyet dinh da chot voi nguoi dung",
+      "_origin": "ast",
+      "community": 32,
+      "community_name": ".isLoopback",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "2. quyet dinh da chot voi nguoi dung",
+      "source_file": "docs/superpowers/specs/2026-10-10-multisite-design.md",
+      "source_location": "L26"
+    },
+    {
+      "id": "docs_superpowers_specs_2026_10_10_multisite_design_4_kiem_thu_them_vao_crosstestclient",
+      "label": "4. Kiem thu (them vao `CrossTestClient`)",
+      "_origin": "ast",
+      "community": 32,
+      "community_name": ".isLoopback",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "4. kiem thu (them vao `crosstestclient`)",
+      "source_file": "docs/superpowers/specs/2026-10-10-multisite-design.md",
+      "source_location": "L78"
+    },
+    {
+      "id": "docs_superpowers_specs_2026_10_10_multisite_design_5_rui_ro_da_biet",
+      "label": "5. Rui ro da biet",
+      "_origin": "ast",
+      "community": 32,
+      "community_name": ".isLoopback",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "5. rui ro da biet",
+      "source_file": "docs/superpowers/specs/2026-10-10-multisite-design.md",
+      "source_location": "L85"
+    },
+    {
+      "id": "docs_superpowers_specs_2026_10_10_multisite_design_multi_site_hosting_quan_ly_nhieu_web_design",
+      "label": "Multi-site hosting (quan ly nhieu web) - Design",
+      "_origin": "ast",
+      "community": 32,
+      "community_name": ".isLoopback",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "multi-site hosting (quan ly nhieu web) - design",
+      "source_file": "docs/superpowers/specs/2026-10-10-multisite-design.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "docs_superpowers_specs_2026_10_10_multisite_design_ngoai_pham_vi_yagni",
+      "label": "Ngoai pham vi (YAGNI)",
+      "_origin": "ast",
+      "community": 32,
+      "community_name": ".isLoopback",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "ngoai pham vi (yagni)",
+      "source_file": "docs/superpowers/specs/2026-10-10-multisite-design.md",
+      "source_location": "L22"
+    },
+    {
+      "id": "docs_superpowers_specs_2026_10_10_multisite_design_tieu_chi_thanh_cong",
+      "label": "Tieu chi thanh cong",
+      "_origin": "ast",
+      "community": 32,
+      "community_name": ".isLoopback",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "tieu chi thanh cong",
+      "source_file": "docs/superpowers/specs/2026-10-10-multisite-design.md",
+      "source_location": "L12"
+    },
+    {
+      "id": "httphandler",
+      "label": "HttpHandler",
+      "_origin": "ast",
+      "community": 33,
+      "community_name": ".startServer",
+      "file_type": "code",
+      "norm_label": "httphandler",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "src_server_proxyhandler_java_httpclient",
+      "label": "HttpClient",
+      "_origin": "ast",
+      "community": 33,
+      "community_name": ".startServer",
+      "file_type": "code",
+      "norm_label": "httpclient",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "src_server_proxyhandler_java_httpexchange",
+      "label": "HttpExchange",
+      "_origin": "ast",
+      "community": 33,
+      "community_name": ".startServer",
+      "file_type": "code",
+      "norm_label": "httpexchange",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "src_server_proxyhandler_java_override",
+      "label": "Override",
+      "_origin": "ast",
+      "community": 33,
+      "community_name": ".startServer",
+      "file_type": "code",
+      "norm_label": "override",
+      "source_file": "",
+      "source_location": ""
     },
     {
       "id": "com_sun_net_httpserver_httpserver",
@@ -11334,7 +11278,7 @@
       "node_kind": "heading",
       "norm_label": "\ud83c\udf10 2. kiem tra bang trinh duyet (firefox / chrome)",
       "source_file": "README.md",
-      "source_location": "L16"
+      "source_location": "L27"
     },
     {
       "id": "readme_3_c\u00e1c_file_ki\u1ec3m_th\u1eed_ri\u00eang_l\u1ebb_ch\u1ea1y_b\u1eb1ng_1_click",
@@ -11346,7 +11290,7 @@
       "node_kind": "heading",
       "norm_label": "\ud83e\uddea 3. cac file kiem thu rieng le (chay bang 1 click)",
       "source_file": "README.md",
-      "source_location": "L28"
+      "source_location": "L39"
     },
     {
       "id": "readme_4_qu\u1ea3n_l\u00fd_iis_th\u1eadt_c\u1ee7a_windows_w3svc_b\u1eb1ng_l\u1ec7nh",
@@ -11358,7 +11302,7 @@
       "node_kind": "heading",
       "norm_label": "\ud83d\uded1 4. quan ly iis that cua windows (w3svc) bang lenh",
       "source_file": "README.md",
-      "source_location": "L54"
+      "source_location": "L66"
     },
     {
       "id": "readme_5_bi\u00ean_d\u1ecbch_l\u1ea1i_m\u00e3_ngu\u1ed3n_khi_c\u00f3_s\u1eeda_code",
@@ -11370,7 +11314,7 @@
       "node_kind": "heading",
       "norm_label": "\ud83d\udee0\ufe0f 5. bien dich lai ma nguon (khi co sua code)",
       "source_file": "README.md",
-      "source_location": "L78"
+      "source_location": "L90"
     },
     {
       "id": "readme_6_c\u1ea5u_tr\u00fac_m\u00e3_ngu\u1ed3n",
@@ -11382,7 +11326,7 @@
       "node_kind": "heading",
       "norm_label": "\ud83d\udcc1 6. cau truc ma nguon",
       "source_file": "README.md",
-      "source_location": "L86"
+      "source_location": "L98"
     },
     {
       "id": "readme_7_web_client_swing_xem_source_code_qua_webfetch",
@@ -11394,7 +11338,7 @@
       "node_kind": "heading",
       "norm_label": "\ud83d\udda5\ufe0f 7. web client (swing) \u2014 xem source code qua webfetch",
       "source_file": "README.md",
-      "source_location": "L103"
+      "source_location": "L118"
     },
     {
       "id": "readme_8_qu\u1ea3n_l\u00fd_nhi\u1ec1u_web_sites",
@@ -11406,7 +11350,79 @@
       "node_kind": "heading",
       "norm_label": "\ud83c\udf10 8. quan ly nhieu web (sites)",
       "source_file": "README.md",
-      "source_location": "L124"
+      "source_location": "L139"
+    },
+    {
+      "id": "readme_9_1_kh\u1edfi_\u0111\u1ed9ng_nhanh_1_click",
+      "label": "9.1 Kh\u1edfi \u0111\u1ed9ng nhanh (1-Click)",
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "B\u00c0I 12: HTTP SERVER V\u00c0 GIAO TI\u1ebeP M\u1ea0NG CH\u00c9O (JAVA)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "9.1 khoi \u0111ong nhanh (1-click)",
+      "source_file": "README.md",
+      "source_location": "L165"
+    },
+    {
+      "id": "readme_9_2_ph\u00e2n_quy\u1ec1n_t\u00e0i_kho\u1ea3n_role_based_authorization",
+      "label": "9.2 Ph\u00e2n quy\u1ec1n t\u00e0i kho\u1ea3n (Role-Based Authorization)",
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "B\u00c0I 12: HTTP SERVER V\u00c0 GIAO TI\u1ebeP M\u1ea0NG CH\u00c9O (JAVA)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "9.2 phan quyen tai khoan (role-based authorization)",
+      "source_file": "README.md",
+      "source_location": "L177"
+    },
+    {
+      "id": "readme_9_3_h\u01b0\u1edbng_d\u1eabn_k\u1ebft_n\u1ed1i_b\u1eb1ng_filezilla_client",
+      "label": "9.3 H\u01b0\u1edbng d\u1eabn k\u1ebft n\u1ed1i b\u1eb1ng FileZilla Client",
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "B\u00c0I 12: HTTP SERVER V\u00c0 GIAO TI\u1ebeP M\u1ea0NG CH\u00c9O (JAVA)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "9.3 huong dan ket noi bang filezilla client",
+      "source_file": "README.md",
+      "source_location": "L197"
+    },
+    {
+      "id": "readme_9_4_c\u00e1c_t\u00ednh_n\u0103ng_b\u1ea3o_m\u1eadt_n\u00e2ng_cao_security_hardening",
+      "label": "9.4 C\u00e1c t\u00ednh n\u0103ng b\u1ea3o m\u1eadt n\u00e2ng cao (Security Hardening)",
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "B\u00c0I 12: HTTP SERVER V\u00c0 GIAO TI\u1ebeP M\u1ea0NG CH\u00c9O (JAVA)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "9.4 cac tinh nang bao mat nang cao (security hardening)",
+      "source_file": "README.md",
+      "source_location": "L213"
+    },
+    {
+      "id": "readme_9_5_d\u1eebng_d\u1ecbch_v\u1ee5_an_to\u00e0n_sau_bu\u1ed5i_th\u1ef1c_h\u00e0nh",
+      "label": "9.5 D\u1eebng d\u1ecbch v\u1ee5 an to\u00e0n sau bu\u1ed5i th\u1ef1c h\u00e0nh",
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "B\u00c0I 12: HTTP SERVER V\u00c0 GIAO TI\u1ebeP M\u1ea0NG CH\u00c9O (JAVA)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "9.5 dung dich vu an toan sau buoi thuc hanh",
+      "source_file": "README.md",
+      "source_location": "L223"
+    },
+    {
+      "id": "readme_9_java_ftp_server_rfc_959_swing_gui_client",
+      "label": "\ud83d\ude80 9. Java FTP Server (RFC 959) & Swing GUI Client",
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "B\u00c0I 12: HTTP SERVER V\u00c0 GIAO TI\u1ebeP M\u1ea0NG CH\u00c9O (JAVA)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "\ud83d\ude80 9. java ftp server (rfc 959) & swing gui client",
+      "source_file": "README.md",
+      "source_location": "L161"
     },
     {
       "id": "readme_b\u00e0i_12_http_server_v\u00e0_giao_ti\u1ebfp_m\u1ea1ng_ch\u00e9o_java",
@@ -11430,7 +11446,31 @@
       "node_kind": "heading",
       "norm_label": "cac api co san tren `http://localhost:8080/`",
       "source_file": "README.md",
-      "source_location": "L37"
+      "source_location": "L49"
+    },
+    {
+      "id": "readme_d\u1ecbch_v\u1ee5_ftp_server_client_rfc_959",
+      "label": "D\u1ecbch v\u1ee5 FTP Server & Client (RFC 959)",
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "B\u00c0I 12: HTTP SERVER V\u00c0 GIAO TI\u1ebeP M\u1ea0NG CH\u00c9O (JAVA)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "dich vu ftp server & client (rfc 959)",
+      "source_file": "README.md",
+      "source_location": "L16"
+    },
+    {
+      "id": "readme_d\u1ecbch_v\u1ee5_http_web",
+      "label": "D\u1ecbch v\u1ee5 HTTP & Web",
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "B\u00c0I 12: HTTP SERVER V\u00c0 GIAO TI\u1ebeP M\u1ea0NG CH\u00c9O (JAVA)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "dich vu http & web",
+      "source_file": "README.md",
+      "source_location": "L9"
     },
     {
       "id": "src_client_ftpclient",
@@ -11645,6 +11685,18 @@
       "source_location": "L942"
     },
     {
+      "id": "docs_superpowers_plans_2026_10_10_webclient_task_3_tab_rendered_readme",
+      "label": "Task 3: Tab Rendered + README",
+      "_origin": "ast",
+      "community": 7,
+      "community_name": "CrossTestClient",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "task 3: tab rendered + readme",
+      "source_file": "docs/superpowers/plans/2026-10-10-webclient.md",
+      "source_location": "L902"
+    },
+    {
       "id": "docs_superpowers_specs_2026_10_10_multisite_design_3_1_server_sitemanager_moi",
       "label": "3.1 `server.SiteManager` (moi)",
       "_origin": "ast",
@@ -11668,6 +11720,39 @@
       "source_location": ""
     },
     {
+      "id": "java_net_inetsocketaddress",
+      "label": "java.net.InetSocketAddress",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "FtpSessionHandler",
+      "file_type": "code",
+      "norm_label": "java.net.inetsocketaddress",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "java_net_serversocket",
+      "label": "java.net.ServerSocket",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "FtpSessionHandler",
+      "file_type": "code",
+      "norm_label": "java.net.serversocket",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "src_server_ftp_ftpdatachannel",
+      "label": "FtpDataChannel.java",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "FtpSessionHandler",
+      "file_type": "code",
+      "norm_label": "ftpdatachannel.java",
+      "source_file": "src/server/ftp/FtpDataChannel.java",
+      "source_location": "L1"
+    },
+    {
       "id": "src_server_ftp_ftpdatachannel_java_override",
       "label": "Override",
       "_origin": "ast",
@@ -11688,6 +11773,17 @@
       "norm_label": "override",
       "source_file": "",
       "source_location": ""
+    },
+    {
+      "id": "src_server_ftp_ftpuserauth",
+      "label": "FtpUserAuth.java",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "FtpSessionHandler",
+      "file_type": "code",
+      "norm_label": "ftpuserauth.java",
+      "source_file": "src/server/ftp/FtpUserAuth.java",
+      "source_location": "L1"
     },
     {
       "id": "src_server_ftp_ftpuserauth_role_admin",
@@ -11901,18 +11997,6 @@
       "type": "external"
     },
     {
-      "id": "http",
-      "label": "http",
-      "_origin": "semantic",
-      "community": 0,
-      "community_name": "WebFetchHandler.java",
-      "external": true,
-      "file_type": "concept",
-      "norm_label": "http",
-      "source_file": "",
-      "type": "external"
-    },
-    {
       "id": "httprequest",
       "label": "httprequest",
       "_origin": "semantic",
@@ -11993,18 +12077,6 @@
       "external": true,
       "file_type": "concept",
       "norm_label": "urlencoder",
-      "source_file": "",
-      "type": "external"
-    },
-    {
-      "id": "util",
-      "label": "util",
-      "_origin": "semantic",
-      "community": 1,
-      "community_name": ".handle",
-      "external": true,
-      "file_type": "concept",
-      "norm_label": "util",
       "source_file": "",
       "type": "external"
     },
@@ -12113,18 +12185,6 @@
       "external": true,
       "file_type": "concept",
       "norm_label": "dimension",
-      "source_file": "",
-      "type": "external"
-    },
-    {
-      "id": "file",
-      "label": "file",
-      "_origin": "semantic",
-      "community": 13,
-      "community_name": "FtpClientApp.java",
-      "external": true,
-      "file_type": "concept",
-      "norm_label": "file",
       "source_file": "",
       "type": "external"
     },
@@ -12369,18 +12429,6 @@
       "type": "external"
     },
     {
-      "id": "collections",
-      "label": "collections",
-      "_origin": "semantic",
-      "community": 19,
-      "community_name": "SiteManager.java",
-      "external": true,
-      "file_type": "concept",
-      "norm_label": "collections",
-      "source_file": "",
-      "type": "external"
-    },
-    {
       "id": "comparator",
       "label": "comparator",
       "_origin": "semantic",
@@ -12453,6 +12501,18 @@
       "type": "external"
     },
     {
+      "id": "atomicboolean",
+      "label": "atomicboolean",
+      "_origin": "semantic",
+      "community": 2,
+      "community_name": "ioexception",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "atomicboolean",
+      "source_file": "",
+      "type": "external"
+    },
+    {
       "id": "chronounit",
       "label": "chronounit",
       "_origin": "semantic",
@@ -12473,6 +12533,18 @@
       "external": true,
       "file_type": "concept",
       "norm_label": "datetimeformatter",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "files",
+      "label": "files",
+      "_origin": "semantic",
+      "community": 2,
+      "community_name": "ioexception",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "files",
       "source_file": "",
       "type": "external"
     },
@@ -12525,6 +12597,42 @@
       "type": "external"
     },
     {
+      "id": "locale",
+      "label": "locale",
+      "_origin": "semantic",
+      "community": 2,
+      "community_name": "ioexception",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "locale",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "path",
+      "label": "path",
+      "_origin": "semantic",
+      "community": 2,
+      "community_name": "ioexception",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "path",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "socket",
+      "label": "socket",
+      "_origin": "semantic",
+      "community": 2,
+      "community_name": "ioexception",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "socket",
+      "source_file": "",
+      "type": "external"
+    },
+    {
       "id": "standardcharsets",
       "label": "standardcharsets",
       "_origin": "semantic",
@@ -12557,6 +12665,18 @@
       "external": true,
       "file_type": "concept",
       "norm_label": "zoneid",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "atomic",
+      "label": "atomic",
+      "_origin": "semantic",
+      "community": 24,
+      "community_name": "CrossTestFtpClient.java",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "atomic",
       "source_file": "",
       "type": "external"
     },
@@ -12633,6 +12753,18 @@
       "type": "external"
     },
     {
+      "id": "util",
+      "label": "util",
+      "_origin": "semantic",
+      "community": 24,
+      "community_name": "CrossTestFtpClient.java",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "util",
+      "source_file": "",
+      "type": "external"
+    },
+    {
       "id": "zip",
       "label": "zip",
       "_origin": "semantic",
@@ -12645,66 +12777,6 @@
       "type": "external"
     },
     {
-      "id": "atomicboolean",
-      "label": "atomicboolean",
-      "_origin": "semantic",
-      "community": 26,
-      "community_name": "SimpleFtpServer.java",
-      "external": true,
-      "file_type": "concept",
-      "norm_label": "atomicboolean",
-      "source_file": "",
-      "type": "external"
-    },
-    {
-      "id": "files",
-      "label": "files",
-      "_origin": "semantic",
-      "community": 26,
-      "community_name": "SimpleFtpServer.java",
-      "external": true,
-      "file_type": "concept",
-      "norm_label": "files",
-      "source_file": "",
-      "type": "external"
-    },
-    {
-      "id": "locale",
-      "label": "locale",
-      "_origin": "semantic",
-      "community": 26,
-      "community_name": "SimpleFtpServer.java",
-      "external": true,
-      "file_type": "concept",
-      "norm_label": "locale",
-      "source_file": "",
-      "type": "external"
-    },
-    {
-      "id": "path",
-      "label": "path",
-      "_origin": "semantic",
-      "community": 26,
-      "community_name": "SimpleFtpServer.java",
-      "external": true,
-      "file_type": "concept",
-      "norm_label": "path",
-      "source_file": "",
-      "type": "external"
-    },
-    {
-      "id": "socket",
-      "label": "socket",
-      "_origin": "semantic",
-      "community": 26,
-      "community_name": "SimpleFtpServer.java",
-      "external": true,
-      "file_type": "concept",
-      "norm_label": "socket",
-      "source_file": "",
-      "type": "external"
-    },
-    {
       "id": "uri",
       "label": "uri",
       "_origin": "semantic",
@@ -12713,6 +12785,42 @@
       "external": true,
       "file_type": "concept",
       "norm_label": "uri",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "collections",
+      "label": "collections",
+      "_origin": "semantic",
+      "community": 3,
+      "community_name": "FtpClient",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "collections",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "http",
+      "label": "http",
+      "_origin": "semantic",
+      "community": 31,
+      "community_name": "java.net.URI",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "http",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "bytearrayoutputstream",
+      "label": "bytearrayoutputstream",
+      "_origin": "semantic",
+      "community": 4,
+      "community_name": "CrossTestClient.java",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "bytearrayoutputstream",
       "source_file": "",
       "type": "external"
     },
@@ -12825,18 +12933,6 @@
       "type": "external"
     },
     {
-      "id": "bytearrayoutputstream",
-      "label": "bytearrayoutputstream",
-      "_origin": "semantic",
-      "community": 6,
-      "community_name": "FtpClient.java",
-      "external": true,
-      "file_type": "concept",
-      "norm_label": "bytearrayoutputstream",
-      "source_file": "",
-      "type": "external"
-    },
-    {
       "id": "copyonwritearraylist",
       "label": "copyonwritearraylist",
       "_origin": "semantic",
@@ -12869,6 +12965,18 @@
       "external": true,
       "file_type": "concept",
       "norm_label": "eofexception",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "file",
+      "label": "file",
+      "_origin": "semantic",
+      "community": 6,
+      "community_name": "FtpClient.java",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "file",
       "source_file": "",
       "type": "external"
     },
@@ -12989,17 +13097,6 @@
       "external": true,
       "file_type": "concept",
       "norm_label": "zoneoffset",
-      "source_file": "",
-      "type": "external"
-    },
-    {
-      "id": "atomic",
-      "label": "atomic",
-      "community": 24,
-      "community_name": "CrossTestFtpClient.java",
-      "external": true,
-      "file_type": "concept",
-      "norm_label": "atomic",
       "source_file": "",
       "type": "external"
     }
@@ -24514,6 +24611,28 @@
       "weight": 1.0
     },
     {
+      "source": "readme_1_kh\u1edfi_\u0111\u1ed9ng_nhanh_1_click",
+      "target": "readme_d\u1ecbch_v\u1ee5_ftp_server_client_rfc_959",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "readme_1_kh\u1edfi_\u0111\u1ed9ng_nhanh_1_click",
+      "target": "readme_d\u1ecbch_v\u1ee5_http_web",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
       "source": "readme_3_c\u00e1c_file_ki\u1ec3m_th\u1eed_ri\u00eang_l\u1ebb_ch\u1ea1y_b\u1eb1ng_1_click",
       "target": "readme_c\u00e1c_api_c\u00f3_s\u1eb5n_tr\u00ean_http_localhost_8080",
       "relation": "contains",
@@ -24521,7 +24640,62 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L37",
+      "source_location": "L49",
+      "weight": 1.0
+    },
+    {
+      "source": "readme_9_java_ftp_server_rfc_959_swing_gui_client",
+      "target": "readme_9_1_kh\u1edfi_\u0111\u1ed9ng_nhanh_1_click",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": "L165",
+      "weight": 1.0
+    },
+    {
+      "source": "readme_9_java_ftp_server_rfc_959_swing_gui_client",
+      "target": "readme_9_2_ph\u00e2n_quy\u1ec1n_t\u00e0i_kho\u1ea3n_role_based_authorization",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": "L177",
+      "weight": 1.0
+    },
+    {
+      "source": "readme_9_java_ftp_server_rfc_959_swing_gui_client",
+      "target": "readme_9_3_h\u01b0\u1edbng_d\u1eabn_k\u1ebft_n\u1ed1i_b\u1eb1ng_filezilla_client",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": "L197",
+      "weight": 1.0
+    },
+    {
+      "source": "readme_9_java_ftp_server_rfc_959_swing_gui_client",
+      "target": "readme_9_4_c\u00e1c_t\u00ednh_n\u0103ng_b\u1ea3o_m\u1eadt_n\u00e2ng_cao_security_hardening",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": "L213",
+      "weight": 1.0
+    },
+    {
+      "source": "readme_9_java_ftp_server_rfc_959_swing_gui_client",
+      "target": "readme_9_5_d\u1eebng_d\u1ecbch_v\u1ee5_an_to\u00e0n_sau_bu\u1ed5i_th\u1ef1c_h\u00e0nh",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": "L223",
       "weight": 1.0
     },
     {
@@ -24532,7 +24706,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L103",
+      "source_location": "L118",
       "weight": 1.0
     },
     {
@@ -24543,7 +24717,18 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L124",
+      "source_location": "L139",
+      "weight": 1.0
+    },
+    {
+      "source": "readme_b\u00e0i_12_http_server_v\u00e0_giao_ti\u1ebfp_m\u1ea1ng_ch\u00e9o_java",
+      "target": "readme_9_java_ftp_server_rfc_959_swing_gui_client",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": "L161",
       "weight": 1.0
     },
     {
@@ -24554,7 +24739,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L16",
+      "source_location": "L27",
       "weight": 1.0
     },
     {
@@ -24565,7 +24750,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L28",
+      "source_location": "L39",
       "weight": 1.0
     },
     {
@@ -24576,7 +24761,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L54",
+      "source_location": "L66",
       "weight": 1.0
     },
     {
@@ -24598,7 +24783,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L78",
+      "source_location": "L90",
       "weight": 1.0
     },
     {
@@ -24609,7 +24794,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L86",
+      "source_location": "L98",
       "weight": 1.0
     },
     {
@@ -32011,7 +32196,7 @@
       "confidence_score": 0.95,
       "context": "status",
       "source_file": "README.md",
-      "source_location": "L114",
+      "source_location": "L129",
       "weight": 1.0
     },
     {
@@ -32232,5 +32417,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "dee473a00ffc65be4f22b7c2b3e30d89d82a2d34"
+  "built_at_commit": "5cb07ff13f89024cc0a52c720ffcd10d254837d5"
 }
