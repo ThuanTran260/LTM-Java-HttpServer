@@ -8,6 +8,9 @@
   let currentRole = null;
   let currentPath = '/';
   let currentParent = null;
+  // Path of the most recently initiated listing; differs from currentPath while
+  // a navigation is still in flight.
+  let requestedPath = null;
   let currentOffset = 0;
   let currentTotal = 0;
   let fetchGeneration = 0;
@@ -18,6 +21,11 @@
   const MAX_CONCURRENT_UPLOADS = 2;
   let activeUploads = 0;
   const uploadQueue = [];
+  // Target directories whose latest upload outcome is unknown: another upload
+  // there must wait for a listing initiated after the uncertainty. pendingSince
+  // records the fetch generation at which each directory became uncertain.
+  const pendingReconciliation = new Set();
+  const pendingSince = new Map();
 
   // DOM Elements
   const setupBanner = document.getElementById('setup-banner');
@@ -256,6 +264,7 @@
 
   async function loadDirectory(path, offset = 0) {
     const gen = ++fetchGeneration;
+    requestedPath = path;
     clearStatus();
     btnPrevPage.disabled = true;
     btnNextPage.disabled = true;
@@ -311,6 +320,15 @@
       renderBreadcrumbs(currentPath, currentParent);
       renderTable(page.entries || []);
       renderPageInfo(page);
+
+      // Only a listing initiated after the directory became uncertain proves the
+      // user has observed its server state; an older in-flight listing cannot.
+      const uncertainSince = pendingSince.get(page.path);
+      if (uncertainSince !== undefined && gen > uncertainSince) {
+        pendingReconciliation.delete(page.path);
+        pendingSince.delete(page.path);
+        processUploadQueue();
+      }
       return true;
     } catch (err) {
       if (gen === fetchGeneration) {
@@ -687,8 +705,10 @@
   }
 
   function processUploadQueue() {
-    while (activeUploads < MAX_CONCURRENT_UPLOADS && uploadQueue.length > 0) {
-      const item = uploadQueue.shift();
+    while (activeUploads < MAX_CONCURRENT_UPLOADS) {
+      const index = uploadQueue.findIndex(item => !pendingReconciliation.has(item.targetDir));
+      if (index === -1) return;
+      const item = uploadQueue.splice(index, 1)[0];
       startUpload(item.file, item.targetDir);
     }
   }
@@ -731,10 +751,8 @@
 
     const targetVirtual = targetDir + (targetDir.endsWith('/') ? '' : '/') + file.name;
     const xhr = new XMLHttpRequest();
-    let isCancelled = false;
 
     btnCancel.addEventListener('click', () => {
-      isCancelled = true;
       xhr.abort();
     });
 
@@ -746,18 +764,22 @@
       }
     };
 
-    xhr.onload = () => {
+    let settled = false;
+    function finishUpload(outcome) {
+      if (settled) return;
+      settled = true;
       activeUploads--;
       btnCancel.remove();
 
-      if (xhr.status === 201) {
+      if (outcome === 'success') {
         barFill.style.backgroundColor = '#16a34a';
         pctSpan.textContent = '100%';
         showStatus('Tải lên thành công: ' + file.name, 'success');
         if (currentPath === targetDir) {
           loadDirectory(currentPath);
         }
-      } else {
+        setTimeout(() => itemDiv.remove(), 4000);
+      } else if (outcome === 'failure') {
         barFill.style.backgroundColor = '#dc2626';
         let errMsg = 'Mã lỗi ' + xhr.status;
         try {
@@ -770,30 +792,33 @@
         } else {
           showStatus('Tải lên thất bại (' + file.name + '): ' + errMsg, 'error');
         }
+        setTimeout(() => itemDiv.remove(), 4000);
+      } else {
+        // Abort, timeout or network error after the request started: the server
+        // may already have committed it, so the row stays as durable evidence.
+        barFill.style.backgroundColor = '#dc2626';
+        pctSpan.textContent = 'Chưa xác định';
+        showStatus('Chưa xác định kết quả tải lên. Đang kiểm tra lại danh sách.', 'info');
+        pendingReconciliation.add(targetDir);
+        pendingSince.set(targetDir, fetchGeneration);
+        if (currentPath === targetDir && requestedPath === targetDir) {
+          const sessionToken = csrfToken;
+          loadDirectory(targetDir, 0).then(ok => {
+            // Do not overwrite a login/expiry message from a changed session.
+            if (ok && csrfToken === sessionToken) {
+              showStatus('Chưa xác định kết quả tải lên. Đang kiểm tra lại danh sách.', 'info');
+            }
+          });
+        }
       }
 
-      setTimeout(() => itemDiv.remove(), 4000);
       processUploadQueue();
-    };
+    }
 
-    xhr.onerror = () => {
-      activeUploads--;
-      btnCancel.remove();
-      barFill.style.backgroundColor = '#dc2626';
-      showStatus('Lỗi mạng khi tải lên ' + file.name + '. Vui lòng làm mới danh sách để kiểm tra trạng thái.', 'error');
-      setTimeout(() => itemDiv.remove(), 4000);
-      processUploadQueue();
-    };
-
-    xhr.onabort = () => {
-      activeUploads--;
-      btnCancel.remove();
-      barFill.style.backgroundColor = '#64748b';
-      pctSpan.textContent = 'Đã hủy';
-      showStatus('Đã hủy tải lên: ' + file.name, 'info');
-      setTimeout(() => itemDiv.remove(), 2500);
-      processUploadQueue();
-    };
+    xhr.onload = () => finishUpload(xhr.status === 201 ? 'success' : 'failure');
+    xhr.onerror = () => finishUpload('uncertain');
+    xhr.ontimeout = () => finishUpload('uncertain');
+    xhr.onabort = () => finishUpload('uncertain');
 
     xhr.open('PUT', '/api/files/content?path=' + encodeURIComponent(targetVirtual), true);
     xhr.setRequestHeader('X-File-Explorer', '1');

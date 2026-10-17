@@ -271,3 +271,238 @@ test('stale listing response delivered last cannot replace the visible page', as
   await ui.emit(ui.elements['btn-refresh'], 'click');
   assert.equal(calls.at(-1).searchParams.get('path'), '/', 'stale response cannot change the current path');
 });
+
+// ---------------------------------------------------------------------------
+// Upload uncertainty & reconciliation (Task 4)
+// ---------------------------------------------------------------------------
+
+const putPaths = () => FakeXHR.instances
+  .filter(x => x.method === 'PUT')
+  .map(x => new URL(x.url, 'http://localhost').searchParams.get('path'));
+async function upload(ui, ...names) {
+  ui.elements['file-picker'].files = names.map(name => ({name, size:1}));
+  await ui.emit(ui.elements['file-picker'], 'change');
+}
+const uncertainRow = ui => ui.created.some(e => e.textContent === 'Chưa xác định');
+const adminSession = url => url.endsWith('/session')
+  ? json(200, {user:'admin', role:'ADMIN', csrfToken:'c'}) : null;
+
+test('aborted upload is uncertain and triggers directory reconciliation', async () => {
+  const requests = [];
+  const ui = await boot({XMLHttpRequest:FakeXHR, fetch:async url => {
+    requests.push(url);
+    if (url.endsWith('/session')) return json(200,{user:'admin',role:'ADMIN',csrfToken:'c'});
+    return json(200,{path:'/',parent:null,offset:0,limit:200,total:0,entries:[]});
+  }});
+  ui.elements['file-picker'].files = [{name:'a.txt',size:1}];
+  await ui.emit(ui.elements['file-picker'], 'change');
+  const before = requests.length;
+  FakeXHR.instances.at(-1).abort(); await ui.settle();
+  assert.ok(requests.length > before, 'refresh issued after abort');
+  assert.ok(ui.created.some(e => /Chưa xác định/.test(e.textContent)));
+  assert.ok(!ui.created.some(e => e.textContent === 'Đã hủy'));
+});
+
+test('abort after the server already published keeps the row uncertain and lists the file', async () => {
+  const ui = await boot({XMLHttpRequest:FakeXHR, fetch:async url => {
+    const session = adminSession(url);
+    if (session) return session;
+    return json(200,{path:'/',parent:null,offset:0,limit:200,total:1,entries:[fileEntry('a.txt','/a.txt')]});
+  }});
+  await upload(ui, 'a.txt');
+  FakeXHR.instances.at(-1).abort(); await ui.settle();
+  assert.ok(uncertainRow(ui), 'row stays uncertain even though the file is visible');
+  assert.equal(ui.elements['status-region'].textContent,
+    'Chưa xác định kết quả tải lên. Đang kiểm tra lại danh sách.');
+  assert.match(ui.elements['file-list-body'].textContent, /a\.txt/, 'reconciled listing shows the file');
+  await upload(ui, 'a.txt');
+  assert.equal(FakeXHR.instances.length, 2, 'retry allowed after a fresh listing');
+});
+
+test('network error is uncertain and reconciles', async () => {
+  const requests = [];
+  const ui = await boot({XMLHttpRequest:FakeXHR, fetch:async url => {
+    requests.push(url);
+    const session = adminSession(url);
+    if (session) return session;
+    return json(200,{path:'/',parent:null,offset:0,limit:200,total:0,entries:[]});
+  }});
+  await upload(ui, 'a.txt');
+  const before = requests.length;
+  FakeXHR.instances.at(-1).onerror(); await ui.settle();
+  assert.ok(requests.length > before, 'refresh issued after network error');
+  assert.ok(uncertainRow(ui), 'network error row is uncertain');
+  assert.equal(ui.elements['status-region'].textContent,
+    'Chưa xác định kết quả tải lên. Đang kiểm tra lại danh sách.');
+});
+
+test('upload timeout is uncertain and reconciles', async () => {
+  const requests = [];
+  const ui = await boot({XMLHttpRequest:FakeXHR, fetch:async url => {
+    requests.push(url);
+    const session = adminSession(url);
+    if (session) return session;
+    return json(200,{path:'/',parent:null,offset:0,limit:200,total:0,entries:[]});
+  }});
+  await upload(ui, 'a.txt');
+  const before = requests.length;
+  FakeXHR.instances.at(-1).ontimeout?.(); await ui.settle();
+  assert.ok(requests.length > before, 'refresh issued after timeout');
+  assert.ok(uncertainRow(ui), 'timeout row is uncertain');
+});
+
+test('failed reconciliation retains the marker and blocks retries until a listing succeeds', async () => {
+  let failListing = false;
+  let listings = 0;
+  const ui = await boot({XMLHttpRequest:FakeXHR, fetch:async url => {
+    const session = adminSession(url);
+    if (session) return session;
+    listings++;
+    if (failListing) return json(500,{message:'boom'});
+    return json(200,{path:'/',parent:null,offset:0,limit:200,total:0,entries:[]});
+  }});
+  await upload(ui, 'a.txt');
+  failListing = true;
+  FakeXHR.instances.at(-1).abort(); await ui.settle();
+  assert.equal(listings, 2, 'one reconciliation attempt, no automatic listing retry');
+  assert.match(ui.elements['status-region'].textContent, /Lỗi tải danh mục/);
+  assert.ok(uncertainRow(ui));
+  await upload(ui, 'a.txt');
+  await ui.settle();
+  assert.equal(FakeXHR.instances.length, 1, 'retry waits while the marker is pending');
+  failListing = false;
+  await ui.emit(ui.elements['btn-refresh'], 'click');
+  assert.equal(FakeXHR.instances.length, 2, 'queued retry starts after a successful listing');
+  assert.equal(putPaths().at(-1), '/a.txt');
+});
+
+test('folder change during transfer does not reconcile the old directory', async () => {
+  const requests = [];
+  const ui = await boot({XMLHttpRequest:FakeXHR, fetch:async raw => {
+    const u = new URL(raw, 'http://localhost');
+    requests.push(u);
+    const session = adminSession(raw);
+    if (session) return session;
+    if (u.searchParams.get('path') === '/sub') {
+      return json(200,{path:'/sub',parent:'/',offset:0,limit:200,total:0,entries:[]});
+    }
+    return json(200,{path:'/',parent:null,offset:0,limit:200,total:1,entries:[dirEntry('sub','/sub')]});
+  }});
+  await upload(ui, 'a.txt');
+  await ui.emit(ui.created.filter(e => e.className === 'item-link' && e.textContent === 'sub').at(-1), 'click');
+  const before = requests.length;
+  FakeXHR.instances.at(-1).abort(); await ui.settle();
+  assert.ok(uncertainRow(ui), 'outcome still recorded as uncertain');
+  assert.equal(requests.length, before, 'no listing for a directory the user left');
+  assert.equal(ui.elements['page-info'].textContent, '0 mục');
+  await ui.emit(ui.elements['btn-refresh'], 'click');
+  assert.equal(requests.at(-1).searchParams.get('path'), '/sub', 'view did not move');
+});
+
+test('in-flight folder navigation is not cancelled by an abort reconciliation', async () => {
+  let rootRequests = 0;
+  let releaseRoot;
+  const rootGate = new Promise(resolve => { releaseRoot = resolve; });
+  const paths = [];
+  const ui = await boot({XMLHttpRequest:FakeXHR, fetch:async raw => {
+    const session = adminSession(raw);
+    if (session) return session;
+    const u = new URL(raw, 'http://localhost');
+    const path = u.searchParams.get('path');
+    paths.push(path);
+    if (path === '/sub') {
+      return json(200,{path:'/sub',parent:'/',offset:0,limit:200,total:0,entries:[]});
+    }
+    if (++rootRequests > 1) await rootGate;
+    return json(200,{path:'/',parent:null,offset:0,limit:200,total:1,entries:[dirEntry('sub','/sub')]});
+  }});
+  await ui.emit(ui.created.filter(e => e.className === 'item-link' && e.textContent === 'sub').at(-1), 'click');
+  await upload(ui, 'a.txt');
+  const before = paths.length;
+  await ui.emit(ui.elements['btn-parent'], 'click');
+  assert.deepEqual(paths.slice(before), ['/'], 'parent navigation in flight');
+  FakeXHR.instances.at(-1).abort(); await ui.settle();
+  assert.ok(uncertainRow(ui));
+  assert.deepEqual(paths.slice(before), ['/'],
+    'abort must not add a listing while a navigation is in flight');
+  releaseRoot(); await ui.settle();
+  assert.equal(ui.elements['page-info'].textContent, '1–1 / 1', 'navigation completed');
+  assert.equal(ui.elements['file-list-body'].children.length, 1);
+});
+
+test('duplicate terminal events settle an upload once', async () => {
+  const ui = await boot({XMLHttpRequest:FakeXHR, fetch:async url => {
+    const session = adminSession(url);
+    if (session) return session;
+    return json(200,{path:'/',parent:null,offset:0,limit:200,total:0,entries:[]});
+  }});
+  await upload(ui, 'a.txt','b.txt','c.txt','d.txt');
+  assert.equal(FakeXHR.instances.length, 2);
+  const first = FakeXHR.instances[0];
+  first.status = 201;
+  first.onload();
+  first.onload(); first.onabort(); await ui.settle();
+  assert.equal(FakeXHR.instances.length, 3, 'one slot freed once, so only c.txt started');
+  assert.equal(putPaths().at(-1), '/c.txt');
+  assert.ok(!uncertainRow(ui), 'a settled success cannot be rewritten by later events');
+});
+
+test('queue keeps at most two uploads active and starts the next when one settles', async () => {
+  const ui = await boot({XMLHttpRequest:FakeXHR, fetch:async url => {
+    const session = adminSession(url);
+    if (session) return session;
+    return json(200,{path:'/',parent:null,offset:0,limit:200,total:0,entries:[]});
+  }});
+  await upload(ui, 'a.txt','b.txt','c.txt');
+  assert.deepEqual(putPaths(), ['/a.txt','/b.txt'], 'two active uploads');
+  const b = FakeXHR.instances[1];
+  b.status = 201;
+  b.onload(); await ui.settle();
+  assert.deepEqual(putPaths(), ['/a.txt','/b.txt','/c.txt']);
+});
+
+test('queued uploads wait for a pending directory while other directories proceed', async () => {
+  const ui = await boot({XMLHttpRequest:FakeXHR, fetch:async raw => {
+    const session = adminSession(raw);
+    if (session) return session;
+    const u = new URL(raw, 'http://localhost');
+    if (u.searchParams.get('path') === '/sub') {
+      return json(200,{path:'/sub',parent:'/',offset:0,limit:200,total:0,entries:[]});
+    }
+    return json(200,{path:'/',parent:null,offset:0,limit:200,total:1,entries:[dirEntry('sub','/sub')]});
+  }});
+  await upload(ui, 'b1.txt','b2.txt');
+  await upload(ui, 'w1.txt');
+  await ui.emit(ui.created.filter(e => e.className === 'item-link' && e.textContent === 'sub').at(-1), 'click');
+  await upload(ui, 'o1.txt');
+  FakeXHR.instances[0].abort(); await ui.settle();
+  assert.deepEqual(putPaths(), ['/b1.txt','/b2.txt','/sub/o1.txt'],
+    'queued item for the pending directory must not start');
+  const b2 = FakeXHR.instances[1];
+  b2.status = 201;
+  b2.onload(); await ui.settle();
+  assert.deepEqual(putPaths(), ['/b1.txt','/b2.txt','/sub/o1.txt'], 'still no silent overwrite');
+  await ui.emit(ui.elements['btn-parent'], 'click');
+  assert.deepEqual(putPaths(), ['/b1.txt','/b2.txt','/sub/o1.txt','/w1.txt'],
+    'queued item proceeds after returning to a freshly listed directory');
+});
+
+test('same-name retry sends no PUT before a fresh listing resolves', async () => {
+  let holdListing = false;
+  let releaseListing;
+  const listingGate = new Promise(resolve => { releaseListing = resolve; });
+  const ui = await boot({XMLHttpRequest:FakeXHR, fetch:async url => {
+    const session = adminSession(url);
+    if (session) return session;
+    if (holdListing) await listingGate;
+    return json(200,{path:'/',parent:null,offset:0,limit:200,total:0,entries:[]});
+  }});
+  await upload(ui, 'a.txt');
+  holdListing = true;
+  FakeXHR.instances.at(-1).abort(); await ui.settle();
+  await upload(ui, 'a.txt');
+  assert.equal(FakeXHR.instances.length, 1, 'retry must wait for the listing');
+  releaseListing(); await ui.settle();
+  assert.equal(FakeXHR.instances.length, 2, 'retry starts once the fresh listing lands');
+  assert.equal(putPaths().at(-1), '/a.txt');
+});
