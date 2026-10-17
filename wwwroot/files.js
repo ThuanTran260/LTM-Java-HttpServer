@@ -8,7 +8,11 @@
   let currentRole = null;
   let currentPath = '/';
   let currentParent = null;
+  let currentOffset = 0;
+  let currentTotal = 0;
   let fetchGeneration = 0;
+
+  const PAGE_SIZE = 200;
 
   // Upload queue state
   const MAX_CONCURRENT_UPLOADS = 2;
@@ -39,6 +43,9 @@
   const progressContainer = document.getElementById('progress-container');
   const fileListBody = document.getElementById('file-list-body');
   const emptyState = document.getElementById('empty-state');
+  const btnPrevPage = document.getElementById('btn-prev-page');
+  const btnNextPage = document.getElementById('btn-next-page');
+  const pageInfo = document.getElementById('page-info');
 
   // Modal elements
   const modalOverlay = document.getElementById('modal-overlay');
@@ -247,46 +254,70 @@
   // DIRECTORY LISTING & NAVIGATION
   // =========================================================================
 
-  async function loadDirectory(path) {
+  async function loadDirectory(path, offset = 0) {
     const gen = ++fetchGeneration;
     clearStatus();
+    btnPrevPage.disabled = true;
+    btnNextPage.disabled = true;
 
     try {
-      const res = await fetch('/api/files?path=' + encodeURIComponent(path) + '&offset=0&limit=200', {
+      const query = new URLSearchParams({ path, offset: String(offset), limit: String(PAGE_SIZE) });
+      // URLSearchParams encodes spaces as '+', which the server query decoder reads literally.
+      const res = await fetch('/api/files?' + query.toString().replace(/\+/g, '%20'), {
         method: 'GET',
         headers: { 'Cache-Control': 'no-store' }
       });
 
-      if (gen !== fetchGeneration) return; // Stale request, ignore
+      if (gen !== fetchGeneration) return false; // Stale request, ignore
 
       if (res.status === 401) {
+        updatePageButtons(currentOffset, currentTotal);
         showLoginView();
         showStatus('Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.', 'error');
-        return;
+        return false;
       }
 
       if (res.status === 503) {
         const data = await res.json().catch(() => ({}));
+        if (gen !== fetchGeneration) return false;
+        updatePageButtons(currentOffset, currentTotal);
         showSetupRequired(data.message);
-        return;
+        return false;
       }
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
+        if (gen !== fetchGeneration) return false;
         showStatus('Lỗi tải danh mục: ' + (errData.message || res.statusText), 'error');
-        return;
+        updatePageButtons(currentOffset, currentTotal);
+        return false;
       }
 
       const page = await res.json();
+      if (gen !== fetchGeneration) return false;
+
+      if (page.total > 0 && page.offset >= page.total) {
+        // A deletion (or concurrent change) left this page out of range; reload the
+        // last page that still has entries. The corrected offset always decreases,
+        // so this retries at most once per vanished page.
+        return loadDirectory(path, Math.floor((page.total - 1) / PAGE_SIZE) * PAGE_SIZE);
+      }
+
       currentPath = page.path;
       currentParent = page.parent;
+      currentOffset = page.offset;
+      currentTotal = page.total;
 
       renderBreadcrumbs(currentPath, currentParent);
       renderTable(page.entries || []);
+      renderPageInfo(page);
+      return true;
     } catch (err) {
       if (gen === fetchGeneration) {
         showStatus('Lỗi kết nối máy chủ: ' + err.message, 'error');
+        updatePageButtons(currentOffset, currentTotal);
       }
+      return false;
     }
   }
 
@@ -340,7 +371,15 @@
   });
 
   btnRefresh.addEventListener('click', () => {
-    loadDirectory(currentPath);
+    loadDirectory(currentPath, currentOffset);
+  });
+
+  btnPrevPage.addEventListener('click', () => {
+    loadDirectory(currentPath, currentOffset - PAGE_SIZE);
+  });
+
+  btnNextPage.addEventListener('click', () => {
+    loadDirectory(currentPath, currentOffset + PAGE_SIZE);
   });
 
   function renderTable(entries) {
@@ -438,6 +477,22 @@
 
       fileListBody.appendChild(tr);
     });
+  }
+
+  function updatePageButtons(offset, total) {
+    btnPrevPage.disabled = offset <= 0;
+    btnNextPage.disabled = offset + PAGE_SIZE >= total;
+  }
+
+  function renderPageInfo(page) {
+    if (page.total === 0) {
+      pageInfo.textContent = '0 mục';
+    } else {
+      const entries = page.entries || [];
+      pageInfo.textContent = (page.offset + 1) + '–' +
+        Math.min(page.offset + entries.length, page.total) + ' / ' + page.total;
+    }
+    updatePageButtons(page.offset, page.total);
   }
 
   // =========================================================================
@@ -555,7 +610,7 @@
 
         if (res.status === 204) {
           showStatus('Đã xóa thành công.', 'success');
-          loadDirectory(currentPath);
+          loadDirectory(currentPath, currentOffset);
         } else {
           const data = await res.json().catch(() => ({}));
           showStatus('Xóa thất bại: ' + (data.message || res.statusText), 'error');

@@ -363,6 +363,23 @@ tr:hover td {
   font-size: 15px;
 }
 
+/* Pagination controls */
+nav[aria-label="Phân trang tệp"] {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+nav[aria-label="Phân trang tệp"] #page-info {
+  color: #475569;
+  font-size: 14px;
+  min-width: 8em;
+  text-align: center;
+}
+
 /* Modal confirmation dialog */
 .modal-overlay {
   position: fixed;
