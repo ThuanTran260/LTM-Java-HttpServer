@@ -94,7 +94,7 @@ run_cross_test_ftp.bat
 ### Manual CLI Execution:
 ```bat
 javac -encoding UTF-8 -d out src\model\*.java src\service\*.java src\server\*.java src\server\ftp\*.java src\mock\*.java src\client\*.java
-java -cp out client.CrossTestFtpClient
+java --enable-native-access=ALL-UNNAMED -cp out client.CrossTestFtpClient
 ```
 
 ---
@@ -228,21 +228,21 @@ Duration     : 1188 ms
 
 ```cmd
 cmd /c compile.bat
-java -cp out client.CrossTestReviewFixes ftp-delete
-java -cp out client.CrossTestReviewFixes guest-logout
-java -cp out client.CrossTestReviewFixes public-errors
-java -cp out server.SharedFileStoreIdentityTest
+java --enable-native-access=ALL-UNNAMED -cp out client.CrossTestReviewFixes ftp-delete
+java --enable-native-access=ALL-UNNAMED -cp out client.CrossTestReviewFixes guest-logout
+java --enable-native-access=ALL-UNNAMED -cp out client.CrossTestReviewFixes public-errors
+java --enable-native-access=ALL-UNNAMED -cp out server.SharedFileStoreIdentityTest
 node --test tests/files-ui-regressions.test.cjs
-java -cp out client.CrossTestClient
-java -cp out client.CrossTestFtpClient
-java -cp out client.CrossTestFilesClient all
+java --enable-native-access=ALL-UNNAMED -cp out client.CrossTestClient
+java --enable-native-access=ALL-UNNAMED -cp out client.CrossTestFtpClient
+java --enable-native-access=ALL-UNNAMED -cp out client.CrossTestFilesClient all
 git diff --check
 git status --short
 ```
 
 - `server.SharedFileStoreIdentityTest`: upload parent-directory identity seam tests (missing identity -> `409 CONFLICT` with nothing published, identity change/loss at commit, no timestamp fallback) plus real-provider checks (identity stable, distinct per directory, follows rename, changes on replacement, positive upload publishes).
 - `node --test tests/files-ui-regressions.test.cjs`: **mocked-DOM** JavaScript tests (Node.js test-only prerequisite). These are NOT browser acceptance.
-- JDK notes: on Windows the first directory-identity read uses JDK standard `java.lang.foreign` and prints a one-time `WARNING: A restricted method in java.lang.foreign.SymbolLookup has been called` to stderr unless the JVM is started with `--enable-native-access=ALL-UNNAMED`. If the OS/filesystem cannot provide a file ID (or native access is blocked), uploads fail closed with `409 CONFLICT` by design.
+- JDK notes: on Windows the first directory-identity read uses JDK standard `java.lang.foreign` and prints a one-time `WARNING: A restricted method in java.lang.foreign.SymbolLookup has been called` to stderr unless the JVM is started with `--enable-native-access=ALL-UNNAMED`. The `java` commands above and the `run_*.bat` launchers pass this flag so output stays silent. If the OS/filesystem cannot provide a file ID (or native access is blocked), uploads fail closed with `409 CONFLICT` by design.
 
 ### 3.4 Browser manual acceptance checklist (not covered by mocked JS tests)
 

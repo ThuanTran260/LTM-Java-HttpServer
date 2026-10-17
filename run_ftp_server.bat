@@ -32,6 +32,6 @@ if "%~1"=="--demo" (
     echo [INFO] Standard mode: student account is disabled. Use run_ftp_server.bat --demo to enable.
 )
 
-java -Dftp.enable.demo=%FTP_ENABLE_DEMO_ACCOUNT% -cp out server.ftp.SimpleFtpServer
+java --enable-native-access=ALL-UNNAMED -Dftp.enable.demo=%FTP_ENABLE_DEMO_ACCOUNT% -cp out server.ftp.SimpleFtpServer
 endlocal
 exit /b %ERRORLEVEL%

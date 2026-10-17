@@ -7,6 +7,6 @@ if errorlevel 1 (
     endlocal
     exit /b 1
 )
-java -cp out client.CrossTestFilesClient %*
+java --enable-native-access=ALL-UNNAMED -cp out client.CrossTestFilesClient %*
 set "testExit=%ERRORLEVEL%"
 endlocal & exit /b %testExit%

@@ -24,6 +24,6 @@ if errorlevel 1 (
     exit /b 1
 )
 
-java -cp out server.SimpleHttpServer 8080
+java --enable-native-access=ALL-UNNAMED -cp out server.SimpleHttpServer 8080
 set "serverExit=%ERRORLEVEL%"
 endlocal & exit /b %serverExit%
