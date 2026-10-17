@@ -105,13 +105,13 @@ public class FilesApiHandler implements HttpHandler {
             try { sendJson(ex, ae.statusCode(), ae.code(), ae.getMessage()); } catch (Exception ignored) {}
         } catch (SharedFileStore.StoreException se) {
             int status = mapStoreStatusCode(se.code());
-            try { sendJson(ex, status, se.code(), se.getMessage()); } catch (Exception ignored) {}
+            try { sendJson(ex, status, se.code(), publicStoreMessage(se.code())); } catch (Exception ignored) {}
         } catch (SecurityException se) {
-            try { sendJson(ex, 403, "FORBIDDEN", se.getMessage()); } catch (Exception ignored) {}
+            try { sendJson(ex, 403, "FORBIDDEN", "Access denied"); } catch (Exception ignored) {}
         } catch (IllegalArgumentException iae) {
-            try { sendJson(ex, 400, "BAD_REQUEST", iae.getMessage()); } catch (Exception ignored) {}
+            try { sendJson(ex, 400, "BAD_REQUEST", "Invalid request"); } catch (Exception ignored) {}
         } catch (Exception e) {
-            try { sendJson(ex, 500, "INTERNAL_ERROR", "Unexpected server error: " + e.getMessage()); } catch (Exception ignored) {}
+            try { sendJson(ex, 500, "INTERNAL_ERROR", "Unexpected server error"); } catch (Exception ignored) {}
         }
     }
 
@@ -401,6 +401,26 @@ public class FilesApiHandler implements HttpHandler {
             case "ATOMIC_UNSUPPORTED", "SETUP_REQUIRED" -> 503;
             case "NO_SPACE" -> 507;
             default -> 500;
+        };
+    }
+
+    /**
+     * Public message allowlist for store failures. Untrusted exception text
+     * (which may embed absolute filesystem paths) never reaches responses.
+     */
+    private static String publicStoreMessage(String code) {
+        return switch (code) {
+            case "NOT_FOUND" -> "File or directory not found";
+            case "FORBIDDEN" -> "Access denied";
+            case "CONFLICT" -> "Operation conflicts with current file state";
+            case "NOT_EMPTY" -> "Directory is not empty";
+            case "BUSY" -> "Storage is busy; try again later";
+            case "TOO_LARGE" -> "File exceeds the upload limit";
+            case "TOO_MANY_ENTRIES" -> "Directory exceeds the entry limit";
+            case "ATOMIC_UNSUPPORTED" -> "Atomic storage is unavailable";
+            case "SETUP_REQUIRED" -> "File storage requires configuration";
+            case "NO_SPACE" -> "Insufficient storage space";
+            default -> "File operation failed";
         };
     }
 

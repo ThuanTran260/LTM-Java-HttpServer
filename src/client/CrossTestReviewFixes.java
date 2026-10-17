@@ -1,5 +1,6 @@
 package client;
 
+import com.sun.net.httpserver.HttpServer;
 import java.io.*;
 import java.net.*;
 import java.net.http.*;
@@ -8,7 +9,7 @@ import java.util.*;
 
 /**
  * Regression runner for file explorer / FTP review fixes.
- * Groups: ftp-delete (task 1), guest-logout (task 2). Later tasks add public-errors.
+ * Groups: ftp-delete (task 1), guest-logout (task 2), public-errors (task 6).
  */
 public class CrossTestReviewFixes {
 
@@ -16,11 +17,22 @@ public class CrossTestReviewFixes {
         if (!ok) throw new AssertionError(message);
     }
 
+    /** Asserts public error responses keep the {code,message} shape and carry no filesystem details. */
+    static void checkError(HttpResponse<String> resp, int status, String code, String message) {
+        check(resp.statusCode() == status, "status expected " + status + " got " + resp.statusCode() + ": " + resp.body());
+        String expected = "{\"code\":\"" + code + "\",\"message\":\"" + message + "\"}";
+        check(resp.body().equals(expected), "unexpected error body: " + resp.body());
+        check(!resp.body().contains("private-canary"), "canary leaked: " + resp.body());
+        check(!resp.body().contains("C:"), "drive prefix leaked: " + resp.body());
+        check(!resp.body().contains("\\"), "path or escape sequence leaked: " + resp.body());
+    }
+
     public static void main(String[] args) throws Exception {
         String group = args.length == 0 ? "ftp-delete" : args[0];
         switch (group) {
             case "ftp-delete" -> testFtpDeleteTypes();
             case "guest-logout" -> testGuestLogout();
+            case "public-errors" -> testPublicErrors();
             default -> throw new IllegalArgumentException("Unknown group: " + group);
         }
         System.out.println("PASS " + group);
@@ -78,6 +90,55 @@ public class CrossTestReviewFixes {
             check(adminMatcher.find(), "admin csrf exists");
             check(request(port, "/api/files/logout", "POST", null, adminCookie, adminMatcher.group(1)).statusCode()
                     == 204, "admin logout succeeds");
+        }
+    }
+
+    static void testPublicErrors() throws Exception {
+        try (var fixture = new CrossTestFilesClient.ProcessFixture()) {
+            Path root = fixture.createWorkspace().resolve("root");
+            var kind = new java.util.concurrent.atomic.AtomicInteger();
+            server.SharedFileStore store = new server.SharedFileStore(root, 1024) {
+                @Override
+                public server.SharedFileStore.DirectoryPage list(String path, int offset, int limit)
+                        throws IOException {
+                    switch (kind.getAndIncrement()) {
+                        case 0 -> throw new server.SharedFileStore.StoreException(
+                                "CONFLICT", "locked: C:\\private-canary\\secret.txt");
+                        case 1 -> throw new SecurityException("C:\\private-canary");
+                        case 2 -> throw new IOException("C:\\private-canary");
+                        case 3 -> throw new server.SharedFileStore.StoreException(
+                                "CONFLICT", "locked: \\\\server\\share\\private-canary");
+                        case 4 -> throw new server.SharedFileStore.StoreException(
+                                "CONFLICT", "bad \"name\"\u0007\t\n C:\\private-canary");
+                        default -> throw new server.SharedFileStore.StoreException(
+                                "WEIRD_CODE", "unsupported: C:\\private-canary");
+                    }
+                }
+            };
+
+            var http = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+            try (var auth = new server.FileSessionAuth("ReviewOnly_2026!", false, java.time.Clock.systemUTC())) {
+                http.createContext("/api/files", new server.FilesApiHandler(store, auth));
+                http.start();
+                int port = http.getAddress().getPort();
+                var view = auth.login("admin", "ReviewOnly_2026!");
+                String cookie = server.FileSessionAuth.COOKIE_NAME + "=" + view.sessionToken();
+
+                checkError(request(port, "/api/files", "GET", null, cookie, null),
+                        409, "CONFLICT", "Operation conflicts with current file state");
+                checkError(request(port, "/api/files", "GET", null, cookie, null),
+                        403, "FORBIDDEN", "Access denied");
+                checkError(request(port, "/api/files", "GET", null, cookie, null),
+                        500, "INTERNAL_ERROR", "Unexpected server error");
+                checkError(request(port, "/api/files", "GET", null, cookie, null),
+                        409, "CONFLICT", "Operation conflicts with current file state");
+                checkError(request(port, "/api/files", "GET", null, cookie, null),
+                        409, "CONFLICT", "Operation conflicts with current file state");
+                checkError(request(port, "/api/files", "GET", null, cookie, null),
+                        500, "WEIRD_CODE", "File operation failed");
+            } finally {
+                http.stop(0);
+            }
         }
     }
 
