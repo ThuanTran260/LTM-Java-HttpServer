@@ -424,7 +424,7 @@ public class FtpSessionHandler implements Runnable, AutoCloseable {
         }
         try {
             String targetVirtual = sandbox.resolveVirtual(currentVirtualDir, dirName, false);
-            store.delete(targetVirtual);
+            store.delete(targetVirtual, server.SharedFileStore.DeleteKind.DIRECTORY);
             sendReply("250 Directory removed.\r\n");
         } catch (SecurityException se) {
             sendReply("550 Access denied: " + se.getMessage() + "\r\n");
@@ -442,7 +442,7 @@ public class FtpSessionHandler implements Runnable, AutoCloseable {
         }
         try {
             String targetVirtual = sandbox.resolveVirtual(currentVirtualDir, fileName, false);
-            store.delete(targetVirtual);
+            store.delete(targetVirtual, server.SharedFileStore.DeleteKind.FILE);
             sendReply("250 File deleted successfully.\r\n");
         } catch (SecurityException se) {
             sendReply("550 Access denied: " + se.getMessage() + "\r\n");

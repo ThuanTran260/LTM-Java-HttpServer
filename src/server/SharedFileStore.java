@@ -39,6 +39,8 @@ public class SharedFileStore {
 
     public record RenameTicket(String source, String version) {}
 
+    public enum DeleteKind { ANY, FILE, DIRECTORY }
+
     public static final class StoreException extends IOException {
         private final String code;
 
@@ -333,16 +335,25 @@ public class SharedFileStore {
     }
 
     public void delete(String virtualPath) throws IOException {
-        Path target = SafePaths.resolveSafe(root, virtualPath);
-        if (target.equals(root)) {
-            throw new StoreException("FORBIDDEN", "Cannot delete root directory");
-        }
+        delete(virtualPath, DeleteKind.ANY);
+    }
 
+    public void delete(String virtualPath, DeleteKind kind) throws IOException {
         withLock(() -> {
+            Path target = SafePaths.resolveSafe(root, virtualPath);
+            if (target.equals(root)) {
+                throw new StoreException("FORBIDDEN", "Cannot delete root directory");
+            }
             if (!Files.exists(target, LinkOption.NOFOLLOW_LINKS)) {
                 throw new StoreException("NOT_FOUND", "Target not found: " + virtualPath);
             }
-            if (Files.isDirectory(target, LinkOption.NOFOLLOW_LINKS)) {
+            boolean directory = Files.isDirectory(target, LinkOption.NOFOLLOW_LINKS);
+            boolean regular = Files.isRegularFile(target, LinkOption.NOFOLLOW_LINKS);
+            if ((kind == DeleteKind.FILE && !regular)
+                    || (kind == DeleteKind.DIRECTORY && !directory)) {
+                throw new StoreException("FORBIDDEN", "Target type does not match command");
+            }
+            if (directory) {
                 try (DirectoryStream<Path> ds = Files.newDirectoryStream(target)) {
                     if (ds.iterator().hasNext()) {
                         throw new StoreException("NOT_EMPTY", "Directory is not empty: " + virtualPath);
