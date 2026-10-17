@@ -155,7 +155,7 @@ public class FilesApiHandler implements HttpHandler {
     }
 
     private void handleLogout(HttpExchange ex) throws Exception {
-        auth.requireSession(ex, true);
+        auth.requireSessionWithCsrf(ex);
         auth.logout(ex);
         ex.getResponseHeaders().set("Set-Cookie", FileSessionAuth.createDeleteCookieHeader());
         ex.sendResponseHeaders(204, -1);

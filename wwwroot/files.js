@@ -221,16 +221,26 @@
 
   btnLogout.addEventListener('click', async () => {
     try {
-      await fetch('/api/files/logout', {
+      const res = await fetch('/api/files/logout', {
         method: 'POST',
         headers: {
           'X-File-Explorer': '1',
           'X-CSRF-Token': csrfToken || ''
         }
       });
-    } catch (ignored) {}
-    showLoginView();
-    showStatus('Đã đăng xuất.', 'info');
+
+      if (res.status === 204) {
+        showLoginView();
+        showStatus('Đã đăng xuất.', 'info');
+      } else if (res.status === 401) {
+        showLoginView();
+        showStatus('Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.', 'error');
+      } else {
+        showStatus('Đăng xuất thất bại. Vui lòng thử lại.', 'error');
+      }
+    } catch (err) {
+      showStatus('Không thể kết nối đến máy chủ: ' + err.message, 'error');
+    }
   });
 
   // =========================================================================

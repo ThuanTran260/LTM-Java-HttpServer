@@ -234,17 +234,19 @@ public class FileSessionAuth implements AutoCloseable {
     }
 
     /**
-     * Validates session from cookie and checks CSRF if write is required.
+     * Validates session from cookie. Write requests additionally require the
+     * application header, a valid CSRF token, and a non-guest role.
      */
     public SessionView requireSession(HttpExchange ex, boolean write) throws AuthException {
-        checkLocalRequest(ex);
-
         if (write) {
-            String explorerHeader = ex.getRequestHeaders().getFirst(EXPLORER_HEADER);
-            if (!"1".equals(explorerHeader)) {
-                throw new AuthException(403, "FORBIDDEN", "Missing or invalid " + EXPLORER_HEADER + " header");
+            SessionView view = requireSessionWithCsrf(ex);
+            if (view.role() == FtpUserAuth.Role.GUEST) {
+                throw new AuthException(403, "FORBIDDEN", "Guest account is read-only");
             }
+            return view;
         }
+
+        checkLocalRequest(ex);
 
         String sessionToken = extractSessionCookie(ex);
         if (sessionToken == null || sessionToken.isBlank()) {
@@ -264,18 +266,28 @@ public class FileSessionAuth implements AutoCloseable {
 
         record.lastAccess = now;
 
-        if (write) {
-            if (record.role == FtpUserAuth.Role.GUEST) {
-                throw new AuthException(403, "FORBIDDEN", "Guest account is read-only");
-            }
+        return new SessionView(record.user, record.role, record.csrfToken, record.sessionToken);
+    }
 
-            String csrfHeader = ex.getRequestHeaders().getFirst(CSRF_HEADER);
-            if (csrfHeader == null || !record.csrfToken.equals(csrfHeader.trim())) {
-                throw new AuthException(403, "FORBIDDEN", "Invalid or missing CSRF token");
-            }
+    /**
+     * Validates session plus same-origin proof (application header and CSRF token
+     * matched against the session). No role rejection: callers decide whether the
+     * role may mutate.
+     */
+    public SessionView requireSessionWithCsrf(HttpExchange ex) throws AuthException {
+        SessionView view = requireSession(ex, false);
+
+        String explorerHeader = ex.getRequestHeaders().getFirst(EXPLORER_HEADER);
+        if (!"1".equals(explorerHeader)) {
+            throw new AuthException(403, "FORBIDDEN", "Missing or invalid " + EXPLORER_HEADER + " header");
         }
 
-        return new SessionView(record.user, record.role, record.csrfToken, record.sessionToken);
+        String csrfHeader = ex.getRequestHeaders().getFirst(CSRF_HEADER);
+        if (csrfHeader == null || !view.csrfToken().equals(csrfHeader.trim())) {
+            throw new AuthException(403, "FORBIDDEN", "Invalid or missing CSRF token");
+        }
+
+        return view;
     }
 
     public void logout(HttpExchange ex) {
