@@ -14,6 +14,9 @@
   let currentOffset = 0;
   let currentTotal = 0;
   let fetchGeneration = 0;
+  // Bumped on every session reset (logout or expiry). Requests capture the
+  // value at send time and ignore their response once it changed.
+  let sessionGeneration = 0;
 
   const PAGE_SIZE = 200;
 
@@ -26,6 +29,8 @@
   // records the fetch generation at which each directory became uncertain.
   const pendingReconciliation = new Set();
   const pendingSince = new Map();
+  // XHRs whose responses still belong to the current session; aborted on reset.
+  const activeUploadRequests = new Set();
 
   // DOM Elements
   const setupBanner = document.getElementById('setup-banner');
@@ -146,6 +151,8 @@
         headers: { 'Cache-Control': 'no-store' }
       });
 
+      if (handleSessionExpired(res.status)) return;
+
       if (res.status === 200) {
         const data = await res.json();
         onLoginSuccess(data);
@@ -176,6 +183,53 @@
     setupBanner.style.display = 'none';
     usernameInput.value = '';
     passwordInput.value = '';
+  }
+
+  // Full session teardown shared by logout and expired-session handling.
+  // Generations are bumped before outstanding uploads are aborted so their
+  // late callbacks can tell they belong to a dead session.
+  function resetExplorerSession() {
+    sessionGeneration++;
+    fetchGeneration++;
+
+    const outstanding = Array.from(activeUploadRequests);
+    activeUploadRequests.clear();
+    for (const xhr of outstanding) {
+      xhr.abort();
+    }
+
+    uploadQueue.length = 0;
+    pendingReconciliation.clear();
+    pendingSince.clear();
+
+    csrfToken = null;
+    currentUser = null;
+    currentRole = null;
+    currentPath = '/';
+    currentParent = null;
+    currentOffset = 0;
+    currentTotal = 0;
+    requestedPath = null;
+
+    adminToolbar.style.display = 'none';
+    dropZone.style.display = 'none';
+    hideModal();
+    progressContainer.innerHTML = '';
+
+    loginView.style.display = 'block';
+    explorerView.style.display = 'none';
+    setupBanner.style.display = 'none';
+    usernameInput.value = '';
+    passwordInput.value = '';
+  }
+
+  // Single entry point for the expired-session transition. Returns true when
+  // the status invalidated the session; callers must stop processing then.
+  function handleSessionExpired(status) {
+    if (status !== 401) return false;
+    resetExplorerSession();
+    showStatus('Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.', 'error');
+    return true;
   }
 
   function onLoginSuccess(data) {
@@ -235,6 +289,7 @@
   });
 
   btnLogout.addEventListener('click', async () => {
+    const gen = sessionGeneration;
     try {
       const res = await fetch('/api/files/logout', {
         method: 'POST',
@@ -244,17 +299,20 @@
         }
       });
 
+      // A response from a session that already ended must not touch the UI.
+      if (gen !== sessionGeneration) return;
+      if (handleSessionExpired(res.status)) return;
+
       if (res.status === 204) {
-        showLoginView();
+        resetExplorerSession();
         showStatus('Đã đăng xuất.', 'info');
-      } else if (res.status === 401) {
-        showLoginView();
-        showStatus('Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.', 'error');
       } else {
         showStatus('Đăng xuất thất bại. Vui lòng thử lại.', 'error');
       }
     } catch (err) {
-      showStatus('Không thể kết nối đến máy chủ: ' + err.message, 'error');
+      if (gen === sessionGeneration) {
+        showStatus('Không thể kết nối đến máy chủ: ' + err.message, 'error');
+      }
     }
   });
 
@@ -279,12 +337,7 @@
 
       if (gen !== fetchGeneration) return false; // Stale request, ignore
 
-      if (res.status === 401) {
-        updatePageButtons(currentOffset, currentTotal);
-        showLoginView();
-        showStatus('Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.', 'error');
-        return false;
-      }
+      if (handleSessionExpired(res.status)) return false;
 
       if (res.status === 503) {
         const data = await res.json().catch(() => ({}));
@@ -465,8 +518,28 @@
           btnDl.type = 'button';
           btnDl.className = 'secondary sm';
           btnDl.textContent = 'Tải về';
-          btnDl.addEventListener('click', () => {
-            window.location.href = '/api/files/download?path=' + encodeURIComponent(e.path);
+          // Download action. A direct navigation cannot surface HTTP status to
+          // JS, so verify the session first and hand off only when it is still
+          // authenticated; the server still enforces the download itself.
+          btnDl.addEventListener('click', async () => {
+            const gen = sessionGeneration;
+            try {
+              const res = await fetch('/api/files/session', {
+                method: 'GET',
+                headers: { 'Cache-Control': 'no-store' }
+              });
+              if (gen !== sessionGeneration) return;
+              if (handleSessionExpired(res.status)) return;
+              if (!res.ok) {
+                showStatus('Không thể tải xuống: phiên làm việc không hợp lệ.', 'error');
+                return;
+              }
+              window.location.href = '/api/files/download?path=' + encodeURIComponent(e.path);
+            } catch (err) {
+              if (gen === sessionGeneration) {
+                showStatus('Không thể kết nối đến máy chủ: ' + err.message, 'error');
+              }
+            }
           });
           tdActions.appendChild(btnDl);
         }
@@ -518,6 +591,8 @@
   // =========================================================================
 
   btnMkdir.addEventListener('click', async () => {
+    if (currentRole !== 'ADMIN') return;
+
     const dirName = newFolderInput.value.trim();
     if (!dirName) {
       showStatus('Vui lòng nhập tên thư mục mới.', 'error');
@@ -525,6 +600,7 @@
     }
 
     const targetVirtual = currentPath + (currentPath.endsWith('/') ? '' : '/') + dirName;
+    const gen = sessionGeneration;
     try {
       const res = await fetch('/api/files/mkdir', {
         method: 'POST',
@@ -536,16 +612,22 @@
         body: JSON.stringify({ path: targetVirtual })
       });
 
+      if (gen !== sessionGeneration) return;
+      if (handleSessionExpired(res.status)) return;
+
       if (res.status === 201) {
         newFolderInput.value = '';
         showStatus('Đã tạo thư mục thành công.', 'success');
         loadDirectory(currentPath);
       } else {
         const data = await res.json().catch(() => ({}));
+        if (gen !== sessionGeneration) return;
         showStatus('Tạo thư mục thất bại: ' + (data.message || res.statusText), 'error');
       }
     } catch (err) {
-      showStatus('Lỗi kết nối máy chủ: ' + err.message, 'error');
+      if (gen === sessionGeneration) {
+        showStatus('Lỗi kết nối máy chủ: ' + err.message, 'error');
+      }
     }
   });
 
@@ -566,11 +648,14 @@
     wrap.appendChild(input);
 
     showModal('Đổi tên ' + (entry.directory ? 'thư mục' : 'tệp tin'), wrap, 'Đổi tên', 'secondary', async () => {
+      if (currentRole !== 'ADMIN') return;
+
       const newName = input.value.trim();
       if (!newName || newName === entry.name) return;
 
       const parentPath = entry.path.substring(0, entry.path.lastIndexOf('/')) || '/';
       const toVirtual = parentPath + (parentPath.endsWith('/') ? '' : '/') + newName;
+      const gen = sessionGeneration;
 
       try {
         const res = await fetch('/api/files/rename', {
@@ -583,15 +668,21 @@
           body: JSON.stringify({ from: entry.path, to: toVirtual })
         });
 
+        if (gen !== sessionGeneration) return;
+        if (handleSessionExpired(res.status)) return;
+
         if (res.status === 200) {
           showStatus('Đã đổi tên thành công.', 'success');
           loadDirectory(currentPath);
         } else {
           const data = await res.json().catch(() => ({}));
+          if (gen !== sessionGeneration) return;
           showStatus('Đổi tên thất bại: ' + (data.message || res.statusText), 'error');
         }
       } catch (err) {
-        showStatus('Lỗi kết nối máy chủ: ' + err.message, 'error');
+        if (gen === sessionGeneration) {
+          showStatus('Lỗi kết nối máy chủ: ' + err.message, 'error');
+        }
       }
     });
 
@@ -617,6 +708,8 @@
     }
 
     showModal('Xác nhận xóa', wrap, 'Xóa vĩnh viễn', 'danger', async () => {
+      if (currentRole !== 'ADMIN') return;
+      const gen = sessionGeneration;
       try {
         const res = await fetch('/api/files?path=' + encodeURIComponent(entry.path), {
           method: 'DELETE',
@@ -626,15 +719,21 @@
           }
         });
 
+        if (gen !== sessionGeneration) return;
+        if (handleSessionExpired(res.status)) return;
+
         if (res.status === 204) {
           showStatus('Đã xóa thành công.', 'success');
           loadDirectory(currentPath, currentOffset);
         } else {
           const data = await res.json().catch(() => ({}));
+          if (gen !== sessionGeneration) return;
           showStatus('Xóa thất bại: ' + (data.message || res.statusText), 'error');
         }
       } catch (err) {
-        showStatus('Lỗi kết nối máy chủ: ' + err.message, 'error');
+        if (gen === sessionGeneration) {
+          showStatus('Lỗi kết nối máy chủ: ' + err.message, 'error');
+        }
       }
     });
   }
@@ -705,6 +804,7 @@
   }
 
   function processUploadQueue() {
+    if (currentRole !== 'ADMIN') return;
     while (activeUploads < MAX_CONCURRENT_UPLOADS) {
       const index = uploadQueue.findIndex(item => !pendingReconciliation.has(item.targetDir));
       if (index === -1) return;
@@ -715,6 +815,7 @@
 
   function startUpload(file, targetDir) {
     activeUploads++;
+    const uploadGeneration = sessionGeneration;
 
     // Create progress item in DOM
     const itemDiv = document.createElement('div');
@@ -751,6 +852,7 @@
 
     const targetVirtual = targetDir + (targetDir.endsWith('/') ? '' : '/') + file.name;
     const xhr = new XMLHttpRequest();
+    activeUploadRequests.add(xhr);
 
     btnCancel.addEventListener('click', () => {
       xhr.abort();
@@ -769,7 +871,18 @@
       if (settled) return;
       settled = true;
       activeUploads--;
+      activeUploadRequests.delete(xhr);
       btnCancel.remove();
+
+      // The session that started this upload is gone: only its own row and
+      // counter may be cleaned up here. Never refresh, restart the queue,
+      // announce an outcome or invalidate a newer session.
+      if (sessionGeneration !== uploadGeneration) {
+        itemDiv.remove();
+        return;
+      }
+
+      if (handleSessionExpired(xhr.status)) return;
 
       if (outcome === 'success') {
         barFill.style.backgroundColor = '#16a34a';

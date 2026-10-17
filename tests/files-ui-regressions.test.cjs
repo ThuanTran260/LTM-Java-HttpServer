@@ -487,6 +487,24 @@ test('queued uploads wait for a pending directory while other directories procee
     'queued item proceeds after returning to a freshly listed directory');
 });
 
+test('mkdir 401 returns to login and disables further mutations', async () => {
+  const calls = [];
+  const ui = await boot({fetch:async (url, options={}) => {
+    calls.push({url,options});
+    if (url.endsWith('/session')) return json(200,{user:'admin',role:'ADMIN',csrfToken:'old'});
+    if (url.endsWith('/mkdir')) return json(401,{code:'UNAUTHORIZED'});
+    return json(200,{path:'/',parent:null,offset:0,limit:200,total:0,entries:[]});
+  }});
+  ui.elements['new-folder-name'].value = 'new';
+  await ui.emit(ui.elements['btn-mkdir'],'click');
+  assert.equal(ui.elements['login-view'].style.display,'block');
+  assert.equal(ui.elements['explorer-view'].style.display,'none');
+  assert.equal(ui.elements['admin-toolbar'].style.display,'none');
+  const count = calls.length;
+  await ui.emit(ui.elements['btn-mkdir'],'click');
+  assert.equal(calls.length,count,'stale UI cannot send another mutation');
+});
+
 test('same-name retry sends no PUT before a fresh listing resolves', async () => {
   let holdListing = false;
   let releaseListing;
@@ -505,4 +523,295 @@ test('same-name retry sends no PUT before a fresh listing resolves', async () =>
   releaseListing(); await ui.settle();
   assert.equal(FakeXHR.instances.length, 2, 'retry starts once the fresh listing lands');
   assert.equal(putPaths().at(-1), '/a.txt');
+});
+
+// ---------------------------------------------------------------------------
+// Expired-session transitions (Task 5)
+// ---------------------------------------------------------------------------
+
+const EXPIRED = 'Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.';
+
+test('rename 401 returns to login and stale UI cannot rename again', async () => {
+  const calls = [];
+  const ui = await boot({fetch: async (raw, options={}) => {
+    calls.push({url:raw, options});
+    if (raw.endsWith('/session')) return json(200,{user:'admin',role:'ADMIN',csrfToken:'c'});
+    if (raw.endsWith('/rename')) return json(401,{code:'UNAUTHORIZED'});
+    return json(200,{path:'/',parent:null,offset:0,limit:200,total:1,entries:[fileEntry('a.txt','/a.txt')]});
+  }});
+  await ui.emit(ui.created.filter(e => e.textContent === 'Đổi tên').at(-1), 'click');
+  ui.created.filter(e => e.tagName === 'INPUT').at(-1).value = 'b.txt';
+  await ui.emit(ui.elements['modal-btn-confirm'], 'click');
+  assert.equal(calls.filter(c => c.url.endsWith('/rename')).length, 1);
+  assert.equal(ui.elements['login-view'].style.display, 'block');
+  assert.equal(ui.elements['explorer-view'].style.display, 'none');
+  assert.equal(ui.elements['admin-toolbar'].style.display, 'none');
+  assert.equal(ui.elements['status-region'].textContent, EXPIRED);
+
+  await ui.emit(ui.created.filter(e => e.textContent === 'Đổi tên').at(-1), 'click');
+  ui.created.filter(e => e.tagName === 'INPUT').at(-1).value = 'c.txt';
+  await ui.emit(ui.elements['modal-btn-confirm'], 'click');
+  assert.equal(calls.filter(c => c.url.endsWith('/rename')).length, 1, 'stale UI cannot rename again');
+});
+
+test('delete 401 returns to login', async () => {
+  const calls = [];
+  const ui = await boot({fetch: async (raw, options={}) => {
+    calls.push({url:raw, options});
+    if (raw.endsWith('/session')) return json(200,{user:'admin',role:'ADMIN',csrfToken:'c'});
+    if (options.method === 'DELETE') return json(401,{code:'UNAUTHORIZED'});
+    return json(200,{path:'/',parent:null,offset:0,limit:200,total:1,entries:[fileEntry('a.txt','/a.txt')]});
+  }});
+  await ui.emit(ui.created.filter(e => e.textContent === 'Xóa').at(-1), 'click');
+  await ui.emit(ui.elements['modal-btn-confirm'], 'click');
+  assert.equal(calls.filter(c => c.options.method === 'DELETE').length, 1);
+  assert.equal(ui.elements['login-view'].style.display, 'block');
+  assert.equal(ui.elements['explorer-view'].style.display, 'none');
+  assert.equal(ui.elements['status-region'].textContent, EXPIRED);
+});
+
+test('upload 401 returns to login, aborts other uploads and drops the queue', async () => {
+  const ui = await boot({XMLHttpRequest:FakeXHR, fetch:async url => {
+    const session = adminSession(url);
+    if (session) return session;
+    return json(200,{path:'/',parent:null,offset:0,limit:200,total:0,entries:[]});
+  }});
+  await upload(ui, 'a.txt','b.txt','c.txt');
+  assert.equal(FakeXHR.instances.length, 2, 'two active uploads');
+  const first = FakeXHR.instances[0];
+  first.status = 401;
+  first.responseText = JSON.stringify({code:'UNAUTHORIZED'});
+  first.onload(); await ui.settle();
+  assert.equal(ui.elements['login-view'].style.display, 'block');
+  assert.equal(ui.elements['explorer-view'].style.display, 'none');
+  assert.equal(ui.elements['admin-toolbar'].style.display, 'none');
+  assert.equal(ui.elements['drop-zone'].style.display, 'none');
+  assert.equal(ui.elements['status-region'].textContent, EXPIRED);
+  assert.equal(FakeXHR.instances[1].aborted, true, 'other in-flight upload aborted');
+  assert.equal(FakeXHR.instances.length, 2, 'queued upload never sent');
+  assert.equal(ui.elements['progress-container'].children.length, 0, 'stale upload rows cleared');
+  assert.ok(!ui.created.some(e => e.textContent === 'Chưa xác định'), 'reset abort is not uncertain evidence');
+});
+
+test('a fetch 401 aborts active uploads, drops queued ones and fresh login uploads with the new token', async () => {
+  const ui = await boot({XMLHttpRequest:FakeXHR, fetch:async (url, options={}) => {
+    if (url.endsWith('/session')) return json(200,{user:'admin',role:'ADMIN',csrfToken:'old'});
+    if (url.endsWith('/login')) return json(200,{user:'admin',role:'ADMIN',csrfToken:'new'});
+    if (url.endsWith('/mkdir')) return json(401,{code:'UNAUTHORIZED'});
+    return json(200,{path:'/',parent:null,offset:0,limit:200,total:0,entries:[]});
+  }});
+  await upload(ui, 'a.txt','b.txt','c.txt');
+  assert.equal(FakeXHR.instances.length, 2);
+  ui.elements['new-folder-name'].value = 'x';
+  await ui.emit(ui.elements['btn-mkdir'],'click');
+  assert.equal(ui.elements['login-view'].style.display, 'block');
+  assert.equal(FakeXHR.instances.length, 2, 'queued upload never sent after the reset');
+  assert.ok(FakeXHR.instances.every(x => x.aborted), 'active uploads aborted by the reset');
+  assert.equal(ui.elements['progress-container'].children.length, 0);
+
+  ui.elements['username'].value = 'admin';
+  ui.elements['password'].value = 'pw';
+  await ui.emit(ui.elements['login-form'], 'submit');
+  assert.equal(ui.elements['explorer-view'].style.display, 'block');
+  await upload(ui, 'd.txt');
+  assert.equal(FakeXHR.instances.length, 3, 'new upload proceeds after re-login');
+  assert.equal(putPaths().at(-1), '/d.txt');
+  assert.equal(FakeXHR.instances.at(-1).headers['X-CSRF-Token'], 'new');
+});
+
+test('download prechecks the session and navigates when authenticated', async () => {
+  const ui = await boot({fetch: async raw => {
+    if (raw.endsWith('/session')) return json(200,{user:'admin',role:'ADMIN',csrfToken:'c'});
+    return json(200,{path:'/',parent:null,offset:0,limit:200,total:1,entries:[fileEntry('a.txt','/a.txt')]});
+  }});
+  await ui.emit(ui.created.filter(e => e.textContent === 'Tải về').at(-1), 'click');
+  assert.equal(ui.window.location.href, '/api/files/download?path=' + encodeURIComponent('/a.txt'));
+});
+
+test('download precheck 401 returns to login without navigating', async () => {
+  let sessionChecks = 0;
+  const ui = await boot({fetch: async raw => {
+    if (raw.endsWith('/session')) {
+      sessionChecks++;
+      if (sessionChecks > 1) return json(401,{code:'UNAUTHORIZED'});
+      return json(200,{user:'admin',role:'ADMIN',csrfToken:'c'});
+    }
+    return json(200,{path:'/',parent:null,offset:0,limit:200,total:1,entries:[fileEntry('a.txt','/a.txt')]});
+  }});
+  await ui.emit(ui.created.filter(e => e.textContent === 'Tải về').at(-1), 'click');
+  assert.equal(ui.window.location.href, '', 'no navigation on an expired session');
+  assert.equal(ui.elements['login-view'].style.display, 'block');
+  assert.equal(ui.elements['status-region'].textContent, EXPIRED);
+});
+
+test('successful logout reuses the reset and aborts in-flight uploads', async () => {
+  const ui = await boot({XMLHttpRequest:FakeXHR, fetch:async url => {
+    if (url.endsWith('/session')) return json(200,{user:'admin',role:'ADMIN',csrfToken:'c'});
+    if (url.endsWith('/logout')) return json(204,{});
+    return json(200,{path:'/',parent:null,offset:0,limit:200,total:0,entries:[]});
+  }});
+  await upload(ui, 'a.txt','b.txt');
+  await ui.emit(ui.elements['btn-logout'], 'click');
+  assert.equal(ui.elements['login-view'].style.display, 'block');
+  assert.equal(ui.elements['explorer-view'].style.display, 'none');
+  assert.equal(ui.elements['admin-toolbar'].style.display, 'none');
+  assert.equal(ui.elements['status-region'].textContent, 'Đã đăng xuất.');
+  assert.equal(FakeXHR.instances[0].aborted, true);
+  assert.equal(FakeXHR.instances[1].aborted, true);
+  assert.equal(ui.elements['progress-container'].children.length, 0);
+});
+
+test('logout 401 announces the expired session', async () => {
+  const ui = await boot({fetch: async raw => {
+    if (raw.endsWith('/session')) return json(200,{user:'admin',role:'ADMIN',csrfToken:'c'});
+    if (raw.endsWith('/logout')) return json(401,{code:'UNAUTHORIZED'});
+    return json(200,{path:'/',parent:null,offset:0,limit:200,total:0,entries:[]});
+  }});
+  await ui.emit(ui.elements['btn-logout'], 'click');
+  assert.equal(ui.elements['login-view'].style.display, 'block');
+  assert.equal(ui.elements['status-region'].textContent, EXPIRED);
+});
+
+test('expired session closes an open confirmation modal', async () => {
+  const ui = await boot({fetch: async raw => {
+    if (raw.endsWith('/session')) return json(200,{user:'admin',role:'ADMIN',csrfToken:'c'});
+    if (raw.endsWith('/mkdir')) return json(401,{code:'UNAUTHORIZED'});
+    return json(200,{path:'/',parent:null,offset:0,limit:200,total:1,entries:[fileEntry('a.txt','/a.txt')]});
+  }});
+  await ui.emit(ui.created.filter(e => e.textContent === 'Đổi tên').at(-1), 'click');
+  assert.equal(ui.elements['modal-overlay'].style.display, 'flex', 'rename modal open');
+  ui.elements['new-folder-name'].value = 'x';
+  await ui.emit(ui.elements['btn-mkdir'], 'click');
+  assert.equal(ui.elements['modal-overlay'].style.display, 'none', 'reset closed the modal');
+  assert.equal(ui.elements['login-view'].style.display, 'block');
+});
+
+test('late mkdir success after logout cannot reopen the explorer', async () => {
+  let releaseMkdir;
+  const gate = new Promise(resolve => { releaseMkdir = resolve; });
+  const ui = await boot({fetch: async (url, options={}) => {
+    if (url.endsWith('/session')) return json(200,{user:'admin',role:'ADMIN',csrfToken:'c'});
+    if (url.endsWith('/mkdir')) { await gate; return json(201,{}); }
+    if (url.endsWith('/logout')) return json(204,{});
+    return json(200,{path:'/',parent:null,offset:0,limit:200,total:0,entries:[]});
+  }});
+  ui.elements['new-folder-name'].value = 'late';
+  const pending = ui.elements['btn-mkdir'].fire('click');
+  await ui.settle();
+  await ui.emit(ui.elements['btn-logout'], 'click');
+  assert.equal(ui.elements['status-region'].textContent, 'Đã đăng xuất.');
+  releaseMkdir();
+  await pending; await ui.settle();
+  assert.equal(ui.elements['explorer-view'].style.display, 'none');
+  assert.equal(ui.elements['login-view'].style.display, 'block');
+  assert.equal(ui.elements['status-region'].textContent, 'Đã đăng xuất.');
+  assert.equal(ui.elements['new-folder-name'].value, 'late', 'late 201 must not run the success branch');
+});
+
+test('late listing response after logout cannot repaint the explorer', async () => {
+  let releaseListing;
+  const gate = new Promise(resolve => { releaseListing = resolve; });
+  let listings = 0;
+  const ui = await boot({fetch: async raw => {
+    if (raw.endsWith('/session')) return json(200,{user:'admin',role:'ADMIN',csrfToken:'c'});
+    if (raw.endsWith('/logout')) return json(204,{});
+    if (++listings > 1) {
+      await gate;
+      return json(200,{path:'/',parent:null,offset:0,limit:200,total:1,entries:[fileEntry('LATE.txt','/LATE.txt')]});
+    }
+    return json(200,{path:'/',parent:null,offset:0,limit:200,total:1,entries:[fileEntry('a.txt','/a.txt')]});
+  }});
+  const pending = ui.elements['btn-refresh'].fire('click');
+  await ui.settle();
+  await ui.emit(ui.elements['btn-logout'], 'click');
+  assert.equal(ui.elements['status-region'].textContent, 'Đã đăng xuất.');
+  releaseListing();
+  await pending; await ui.settle();
+  assert.equal(ui.elements['explorer-view'].style.display, 'none');
+  assert.equal(ui.elements['login-view'].style.display, 'block');
+  assert.equal(ui.elements['status-region'].textContent, 'Đã đăng xuất.');
+  assert.doesNotMatch(ui.elements['file-list-body'].textContent, /LATE\.txt/, 'late listing ignored');
+  assert.match(ui.elements['file-list-body'].textContent, /a\.txt/, 'visible page unchanged');
+});
+
+test('successful re-login uses the fresh CSRF token for later mutations', async () => {
+  const mkdirOptions = [];
+  const ui = await boot({fetch: async (url, options={}) => {
+    if (url.endsWith('/session')) return json(200,{user:'admin',role:'ADMIN',csrfToken:'old'});
+    if (url.endsWith('/login')) return json(200,{user:'admin',role:'ADMIN',csrfToken:'new'});
+    if (url.endsWith('/mkdir')) {
+      mkdirOptions.push(options);
+      if (mkdirOptions.length === 1) return json(401,{code:'UNAUTHORIZED'});
+      return json(201,{});
+    }
+    return json(200,{path:'/',parent:null,offset:0,limit:200,total:0,entries:[]});
+  }});
+  ui.elements['new-folder-name'].value = 'one';
+  await ui.emit(ui.elements['btn-mkdir'],'click');
+  assert.equal(ui.elements['login-view'].style.display, 'block');
+  assert.equal(mkdirOptions[0].headers['X-CSRF-Token'], 'old');
+
+  ui.elements['username'].value = 'admin';
+  ui.elements['password'].value = 'secret';
+  await ui.emit(ui.elements['login-form'], 'submit');
+  assert.equal(ui.elements['explorer-view'].style.display, 'block');
+  assert.equal(ui.elements['lbl-user'].textContent, 'admin');
+
+  ui.elements['new-folder-name'].value = 'two';
+  await ui.emit(ui.elements['btn-mkdir'],'click');
+  assert.equal(mkdirOptions.length, 2);
+  assert.equal(mkdirOptions[1].headers['X-CSRF-Token'], 'new');
+  assert.equal(JSON.parse(mkdirOptions[1].body).path, '/two');
+});
+
+test('two overlapping 401 responses leave one expired-session state', async () => {
+  const releases = [];
+  const ui = await boot({fetch: async (url, options={}) => {
+    if (url.endsWith('/session')) return json(200,{user:'admin',role:'ADMIN',csrfToken:'old'});
+    if (url.endsWith('/login')) return json(200,{user:'admin',role:'ADMIN',csrfToken:'fresh'});
+    if (url.endsWith('/mkdir')) {
+      await new Promise(resolve => releases.push(resolve));
+      return json(401,{code:'UNAUTHORIZED'});
+    }
+    return json(200,{path:'/',parent:null,offset:0,limit:200,total:0,entries:[]});
+  }});
+  ui.elements['new-folder-name'].value = 'a';
+  const first = ui.elements['btn-mkdir'].fire('click');
+  ui.elements['new-folder-name'].value = 'b';
+  const second = ui.elements['btn-mkdir'].fire('click');
+  await ui.settle();
+  assert.equal(releases.length, 2, 'both mkdir requests in flight');
+  releases.forEach(resolve => resolve());
+  await Promise.all([first, second]); await ui.settle();
+  assert.equal(ui.elements['login-view'].style.display, 'block');
+  assert.equal(ui.elements['explorer-view'].style.display, 'none');
+  assert.equal(ui.elements['status-region'].textContent, EXPIRED);
+
+  ui.elements['username'].value = 'admin';
+  ui.elements['password'].value = 'pw';
+  await ui.emit(ui.elements['login-form'], 'submit');
+  assert.equal(ui.elements['explorer-view'].style.display, 'block', 'the second 401 did not break re-login');
+});
+
+test('guest sessions can read listings but cannot mutate', async () => {
+  const calls = [];
+  const ui = await boot({XMLHttpRequest:FakeXHR, fetch: async (raw, options={}) => {
+    calls.push({url:raw, options});
+    if (raw.endsWith('/session')) return json(200,{user:'guest',role:'GUEST',csrfToken:'g'});
+    return json(200,{path:'/',parent:null,offset:0,limit:200,total:1,entries:[fileEntry('a.txt','/a.txt')]});
+  }});
+  assert.equal(ui.elements['explorer-view'].style.display, 'block');
+  assert.equal(ui.elements['admin-toolbar'].style.display, 'none');
+  assert.equal(ui.elements['drop-zone'].style.display, 'none');
+  assert.match(ui.elements['file-list-body'].textContent, /a\.txt/, 'guest can read the listing');
+  assert.ok(ui.created.some(e => e.textContent === 'Tải về'), 'guest can still download');
+  assert.ok(!ui.created.some(e => e.textContent === 'Đổi tên'), 'no rename control for guests');
+
+  ui.elements['new-folder-name'].value = 'x';
+  await ui.emit(ui.elements['btn-mkdir'],'click');
+  ui.elements['file-picker'].files = [{name:'g.txt',size:1}];
+  await ui.emit(ui.elements['file-picker'],'change');
+  assert.ok(!calls.some(c => c.url.endsWith('/mkdir')), 'guest mkdir blocked');
+  assert.equal(FakeXHR.instances.length, 0, 'guest upload blocked');
+  assert.match(ui.elements['status-region'].textContent, /không có quyền/);
 });

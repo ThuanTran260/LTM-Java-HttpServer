@@ -59,13 +59,14 @@ async function boot(options) {
     await new Promise(resolve => setImmediate(resolve));
     await new Promise(resolve => setImmediate(resolve));
   };
+  const window = {location:{href:''}};
   vm.runInNewContext(fs.readFileSync(path.join(root, 'wwwroot/files.js'), 'utf8'), {
     document, fetch: options.fetch, XMLHttpRequest: options.XMLHttpRequest || FakeXHR,
-    window:{location:{href:''}}, URLSearchParams, AbortController, console,
+    window, URLSearchParams, AbortController, console,
     setTimeout:fn => { timers.push(fn); return timers.length; }, clearTimeout() {}
   }, {filename:'wwwroot/files.js'});
   await settle();
-  return {elements, created, timers, settle,
+  return {elements, created, timers, settle, window,
     emit: async (element, type, extra) => {
       if (!element) throw new Error(`Missing element for ${type}`);
       await element.fire(type, extra); await settle();
