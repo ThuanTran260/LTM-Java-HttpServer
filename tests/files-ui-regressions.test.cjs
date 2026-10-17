@@ -4,6 +4,38 @@ const assert = require('node:assert/strict');
 const { boot, FakeXHR } = require('./files-ui-harness.cjs');
 const json = (status, body) => ({status, ok: status >= 200 && status < 300,
   statusText: String(status), json: async () => body});
+
+test('initial signed-out visit does not announce an expired session', async () => {
+  const ui = await boot({fetch: async () => json(401, {})});
+  assert.equal(ui.elements['login-view'].style.display, 'block');
+  assert.equal(ui.elements['status-region'].textContent, '');
+});
+
+test('late initial session response cannot discard a successful login', async () => {
+  let resolveSession;
+  const ui = await boot({fetch: async url => {
+    if (url.endsWith('/session')) return new Promise(resolve => { resolveSession = resolve; });
+    if (url.endsWith('/login')) return json(200, {user:'admin',role:'ADMIN',csrfToken:'new'});
+    return json(200, {path:'/',parent:null,offset:0,total:0,entries:[]});
+  }});
+  ui.elements.username.value = 'admin';
+  ui.elements.password.value = 'password';
+  await ui.emit(ui.elements['login-form'], 'submit');
+  resolveSession(json(401, {}));
+  await ui.settle();
+  assert.equal(ui.elements['explorer-view'].style.display, 'block');
+  assert.equal(ui.elements['lbl-user'].textContent, 'admin');
+  assert.equal(ui.elements['status-region'].textContent, '');
+});
+
+test('401 during authenticated listing still asks the user to log in again', async () => {
+  const ui = await boot({fetch: async url => {
+    if (url.endsWith('/session')) return json(200, {user:'admin',role:'ADMIN',csrfToken:'c'});
+    return json(401, {});
+  }});
+  assert.equal(ui.elements['login-view'].style.display, 'block');
+  assert.match(ui.elements['status-region'].textContent, /Phiên làm việc đã hết hạn/);
+});
 test('failed logout keeps explorer and does not claim success', async () => {
   const ui = await boot({fetch: async url => {
     if (url.endsWith('/session')) return json(200, {user:'guest',role:'GUEST',csrfToken:'csrf'});

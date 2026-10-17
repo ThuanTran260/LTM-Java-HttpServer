@@ -143,6 +143,7 @@
   // =========================================================================
 
   async function checkSession() {
+    const gen = sessionGeneration;
     clearStatus();
     setupBanner.style.display = 'none';
     try {
@@ -151,18 +152,26 @@
         headers: { 'Cache-Control': 'no-store' }
       });
 
-      if (handleSessionExpired(res.status)) return;
+      if (gen !== sessionGeneration) return;
+      // No session on initial page load is a normal signed-out state.
+      if (res.status === 401) {
+        showLoginView();
+        return;
+      }
 
       if (res.status === 200) {
         const data = await res.json();
+        if (gen !== sessionGeneration) return;
         onLoginSuccess(data);
       } else if (res.status === 503) {
         const data = await res.json().catch(() => ({}));
+        if (gen !== sessionGeneration) return;
         showSetupRequired(data.message || 'Hệ thống chưa được thiết lập');
       } else {
         showLoginView();
       }
     } catch (err) {
+      if (gen !== sessionGeneration) return;
       showLoginView();
     }
   }
@@ -233,6 +242,9 @@
   }
 
   function onLoginSuccess(data) {
+    // Invalidate outstanding checks from before this login.
+    sessionGeneration++;
+    clearStatus();
     csrfToken = data.csrfToken;
     currentUser = data.user;
     currentRole = data.role;
