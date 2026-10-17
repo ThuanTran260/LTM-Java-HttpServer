@@ -204,22 +204,57 @@ Duration     : 1188 ms
 
 - **Test Runner Source**: `src/client/CrossTestFilesClient.java`
 - **1-Click Execution Script**: `run_cross_test_files.bat all`
-- **Total Test Cases**: **82 Automated Wire & Integration Tests across 7 Groups**
-- **Test Execution Result**: **82 / 82 PASS (100% PASS, 0 FAIL, 0 FLAKE, Exit Code 0)**
+- **Total Test Cases**: **88 Automated Wire & Integration Tests across 7 Groups**
+- **Test Execution Result**: **88 total tests; the timing-sensitive `api_concurrent_upload_limit_429` can intermittently fail on a full run (observed once 2026-10-17: `resp3=201`; immediate `api` re-run 18 / 18 PASS). Re-run the `api` group before treating it as a regression.**
 
 ### 3.1 Test Groups Breakdown
 
 | Group | Target Component | Assertions | Key Validations | Status |
 |:---:|:---|:---:|:---|:---:|
 | **CONFIG** | `FileStoreConfig` | 9 | Defaults, negative limits rejected, password exclamation mark preserved, CLI root precedence, SafePaths junction root rejection | **PASS** |
-| **STORAGE** | `SharedFileStore` | 18 | Atomic staging, short/long body rejection, limit bounds, 0-byte commit, no Web overwrite (409), non-empty directory delete rejection (409), rename ticket, canonical path traversal rejection, outside canary preservation | **PASS** |
-| **FTP** | `FtpSessionHandler` | 11 | Wire STOR/RETR with literal `+` (`a+b.txt`), `%` (`100%.txt`), Vietnamese unicode, atomic STOR overwrite (226), `.state` staging concealment, RNFR/RNTO rename tickets | **PASS** |
-| **SESSION** | `FileSessionAuth` | 15 | Loopback socket check, X-Forwarded-For ignored, Host/Origin spoof rejection (403), no default fallback password (503), brute-force rate limiter (429), token redaction in toString(), CSRF tokens, guest read-only | **PASS** |
+| **STORAGE** | `SharedFileStore` | 20 | Atomic staging, short/long body rejection, limit bounds, 0-byte commit, no Web overwrite (409), non-empty directory delete rejection (409), rename ticket, canonical path traversal rejection, outside canary preservation, parent directory recreation during upload (409) | **PASS** |
+| **FTP** | `FtpSessionHandler` | 12 | Wire STOR/RETR with literal `+` (`a+b.txt`), `%` (`100%.txt`), Vietnamese unicode, atomic STOR overwrite (226), `.state` staging concealment, RNFR/RNTO rename tickets | **PASS** |
+| **SESSION** | `FileSessionAuth` | 17 | Loopback socket check, X-Forwarded-For ignored, Host/Origin spoof rejection (403), no default fallback password (503), brute-force rate limiter (429), token redaction in toString(), CSRF tokens, guest read-only | **PASS** |
 | **ISOLATION** | `UpstreamContentPolicy` | 3 | CSP sandbox (`sandbox; form-action 'none'; frame-ancestors 'none'`) and nosniff applied to raw `/fetch` and `/iis`, app UI (`index.html`) unaffected | **PASS** |
-| **API** | `FilesApiHandler` | 17 | Exact routing (`/api/filesXYZ` -> 404), method not allowed (405 with Allow), unauthenticated (401), full CRUD (mkdir, list, upload, download attachment, rename, delete), 0-byte file, HTML download isolation, guest rejection, logout, files.html loopback guard | **PASS** |
+| **API** | `FilesApiHandler` | 18 | Exact routing (`/api/filesXYZ` -> 404), method not allowed (405 with Allow), unauthenticated (401), full CRUD (mkdir, list, upload, download attachment, rename, delete), 0-byte file, HTML download isolation, guest rejection, logout, files.html loopback guard | **PASS** |
 | **CONCURRENCY** | Cross-Process Locking | 9 | Web upload -> FTP RETR SHA-256 match, FTP STOR -> Web download SHA-256 match, unicode/symbol handling on both, conflict semantics, 2 stores in same JVM (no overlapping lock), atomic unsupported simulation rollback, Web operates after FTP killed, CSP sandbox browser proof | **PASS** |
 
 ### 3.2 Regression Verification Summary
-- `CrossTestFilesClient all`: 82 / 82 PASS (0 FAIL)
+- `CrossTestFilesClient all`: 88 tests — worst observed 87 / 88 on 2026-10-17 (`api_concurrent_upload_limit_429` timing flake, note above); immediate `api` re-run 18 / 18 PASS
 - `CrossTestFtpClient`: 80 / 80 PASS (0 FAIL)
-- `CrossTestClient`: 148 / 148 PASS (0 FAIL)
+- `CrossTestClient`: 153 / 153 PASS (0 FAIL)
+
+### 3.3 Review-fix regression commands (run sequentially from repo root; stop on first nonzero exit)
+
+```cmd
+cmd /c compile.bat
+java -cp out client.CrossTestReviewFixes ftp-delete
+java -cp out client.CrossTestReviewFixes guest-logout
+java -cp out client.CrossTestReviewFixes public-errors
+java -cp out server.SharedFileStoreIdentityTest
+node --test tests/files-ui-regressions.test.cjs
+java -cp out client.CrossTestClient
+java -cp out client.CrossTestFtpClient
+java -cp out client.CrossTestFilesClient all
+git diff --check
+git status --short
+```
+
+- `server.SharedFileStoreIdentityTest`: upload parent-directory identity seam tests (missing identity -> `409 CONFLICT` with nothing published, identity change/loss at commit, no timestamp fallback) plus real-provider checks (identity stable, distinct per directory, follows rename, changes on replacement, positive upload publishes).
+- `node --test tests/files-ui-regressions.test.cjs`: **mocked-DOM** JavaScript tests (Node.js test-only prerequisite). These are NOT browser acceptance.
+- JDK notes: on Windows the first directory-identity read uses JDK standard `java.lang.foreign` and prints a one-time `WARNING: A restricted method in java.lang.foreign.SymbolLookup has been called` to stderr unless the JVM is started with `--enable-native-access=ALL-UNNAMED`. If the OS/filesystem cannot provide a file ID (or native access is blocked), uploads fail closed with `409 CONFLICT` by design.
+
+### 3.4 Browser manual acceptance checklist (not covered by mocked JS tests)
+
+Run with a disposable workspace and a loopback server using fixture credentials. Record PASS/FAIL/SKIP with a reason for each item; mocked DOM tests and CSP header assertions do not replace this pass.
+
+| # | Manual browser check | Expected result |
+|:--:|:---|:---|
+| 1 | Guest logout, then refresh | Returns to login screen; stale cookie gets `401` |
+| 2 | Browse a directory with 201+ files in both directions | Previous/Next pagination reaches every file; no stale page overwrites current navigation |
+| 3 | Expire/clear the session before each mutation (upload, mkdir, rename, delete) | Each mutation is rejected and the UI returns to login |
+| 4 | Cancel an upload near completion, then refresh | No duplicate/partial file promised; directory reconciles on refresh |
+| 5 | Upload a file through the browser on Windows | Upload completes and the file appears with correct bytes |
+| 6 | Visit `/fetch` and `/iis` upstream content while authenticated | Upstream content stays isolated; cannot act on `/api/files` |
+| 7 | Operate pagination controls with the keyboard only | Previous/Next reachable and activatable without a mouse |
+| 8 | Narrow the viewport to 375px | No horizontal overflow of the file explorer layout |

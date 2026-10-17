@@ -1,6 +1,13 @@
 package server;
 
 import java.io.*;
+import java.lang.foreign.Arena;
+import java.lang.foreign.FunctionDescriptor;
+import java.lang.foreign.Linker;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.SymbolLookup;
+import java.lang.foreign.ValueLayout;
+import java.lang.invoke.MethodHandle;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.channels.OverlappingFileLockException;
@@ -214,8 +221,7 @@ public class SharedFileStore {
             throw new StoreException("NOT_FOUND", "Parent directory does not exist for: " + virtualPath);
         }
 
-        BasicFileAttributes parentAttrsBefore = Files.readAttributes(parent, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
-        Object parentIdentityBefore = captureDirectoryIdentity(parentAttrsBefore);
+        Object parentIdentityBefore = directoryIdentity(parent);
         if (parentIdentityBefore == null) {
             throw new StoreException("CONFLICT", "Cannot determine parent directory identity");
         }
@@ -264,9 +270,8 @@ public class SharedFileStore {
                 if (!Files.exists(parent, LinkOption.NOFOLLOW_LINKS) || !Files.isDirectory(parent, LinkOption.NOFOLLOW_LINKS)) {
                     throw new StoreException("CONFLICT", "Parent directory no longer exists");
                 }
-                BasicFileAttributes currParentAttrs = Files.readAttributes(parent, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
-                Object currParentIdentity = captureDirectoryIdentity(currParentAttrs);
-                if (!Objects.equals(parentIdentityBefore, currParentIdentity)) {
+                Object currParentIdentity = directoryIdentity(parent);
+                if (currParentIdentity == null || !Objects.equals(parentIdentityBefore, currParentIdentity)) {
                     throw new StoreException("CONFLICT", "Parent directory identity changed");
                 }
 
@@ -383,7 +388,7 @@ public class SharedFileStore {
         BasicFileAttributes attrs = Files.readAttributes(source, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
         String version;
         if (attrs.isDirectory()) {
-            Object fileKey = captureDirectoryIdentity(attrs);
+            Object fileKey = directoryIdentity(source);
             version = "DIR:" + (fileKey != null ? fileKey.toString() : "") + ":" + attrs.lastModifiedTime().toMillis() + ":" + source.getFileName();
         } else {
             version = "FILE:" + computeSha256(source) + ":" + attrs.size() + ":" + attrs.lastModifiedTime().toMillis();
@@ -414,7 +419,7 @@ public class SharedFileStore {
             BasicFileAttributes currAttrs = Files.readAttributes(source, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
             String currVersion;
             if (currAttrs.isDirectory()) {
-                Object fileKey = captureDirectoryIdentity(currAttrs);
+                Object fileKey = directoryIdentity(source);
                 currVersion = "DIR:" + (fileKey != null ? fileKey.toString() : "") + ":" + currAttrs.lastModifiedTime().toMillis() + ":" + source.getFileName();
             } else {
                 currVersion = "FILE:" + computeSha256(source) + ":" + currAttrs.size() + ":" + currAttrs.lastModifiedTime().toMillis();
@@ -566,12 +571,149 @@ public class SharedFileStore {
         return clean.substring(0, lastSlash);
     }
 
-    private static Object captureDirectoryIdentity(BasicFileAttributes attrs) {
-        if (attrs == null) return null;
+    /**
+     * Reliable identity for a directory that must stay the same between an upload's
+     * staging and commit steps. The canonical path is revalidated through
+     * SafePaths.resolveSafe (link/junction rejection, containment) before any attribute
+     * read. Returns null when no reliable identity is available; callers must fail closed
+     * with CONFLICT. This does not promise protection from an OS user racing filesystem
+     * mutation between the validation and the read.
+     */
+    Object directoryIdentity(Path directory) throws IOException {
+        if (directory == null) {
+            return null;
+        }
+        Path normalized = directory.toAbsolutePath().normalize();
+        String relative;
+        try {
+            relative = root.relativize(normalized).toString();
+        } catch (IllegalArgumentException e) {
+            return null; // different root or drive; no identity to compare
+        }
+        Path canonical = SafePaths.resolveSafe(root, relative);
+        if (SafePaths.isLinkOrReparsePoint(canonical)) {
+            throw new StoreException("FORBIDDEN", "Parent directory is a link or junction");
+        }
+        BasicFileAttributes attrs;
+        try {
+            attrs = Files.readAttributes(canonical, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+        } catch (NoSuchFileException e) {
+            return null;
+        }
+        if (!attrs.isDirectory() || attrs.isSymbolicLink() || attrs.isOther()) {
+            return null;
+        }
         Object fileKey = attrs.fileKey();
+        if (fileKey == null) {
+            // A provider may expose the key only on the link-following read; links and
+            // junctions were explicitly rejected above, so this read cannot escape them.
+            try {
+                fileKey = Files.readAttributes(canonical, BasicFileAttributes.class).fileKey();
+            } catch (IOException ignored) {
+                // Fall through to the Windows file identity below.
+            }
+        }
         if (fileKey != null) {
             return fileKey;
         }
-        return attrs.creationTime();
+        return WindowsDirectoryFileId.read(canonical);
+    }
+
+    /**
+     * Reliable directory identity on Windows. The JDK Windows provider hardcodes
+     * BasicFileAttributes.fileKey() to null (sun/nio/fs/WindowsFileAttributes.fileKey),
+     * so this reads the same OS file identity that Files.isSameFile compares on Windows:
+     * the volume serial number and 128-bit file ID returned by
+     * GetFileInformationByHandleEx(FileIdInfo). Any failure (unsupported filesystem,
+     * future JDK blocking native access) returns null so uploads fail closed with
+     * CONFLICT instead of falling back to timestamps. Uses only JDK standard APIs.
+     */
+    private static final class WindowsDirectoryFileId {
+
+        private static final int FILE_READ_ATTRIBUTES = 0x80;
+        private static final int SHARE_READ_WRITE_DELETE = 0x7;
+        private static final int OPEN_EXISTING = 3;
+        private static final int FILE_FLAG_BACKUP_SEMANTICS = 0x02000000;
+        private static final int FILE_FLAG_OPEN_REPARSE_POINT = 0x00200000;
+        private static final int FILE_ID_INFO_CLASS = 18;
+        private static final int FILE_ID_INFO_SIZE = 24;
+
+        private static final Arena LIBRARY_ARENA;
+        private static final MethodHandle CREATE_FILE;
+        private static final MethodHandle GET_FILE_INFO;
+        private static final MethodHandle CLOSE_HANDLE;
+        private static final boolean AVAILABLE;
+
+        static {
+            Arena libraryArena = null;
+            MethodHandle createFile = null;
+            MethodHandle getFileInfo = null;
+            MethodHandle closeHandle = null;
+            boolean available = false;
+            if (System.getProperty("os.name", "").toLowerCase(Locale.ROOT).startsWith("windows")) {
+                try {
+                    Linker linker = Linker.nativeLinker();
+                    libraryArena = Arena.ofShared();
+                    SymbolLookup kernel32 = SymbolLookup.libraryLookup("kernel32.dll", libraryArena);
+                    createFile = linker.downcallHandle(kernel32.find("CreateFileW").orElseThrow(),
+                            FunctionDescriptor.of(ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.JAVA_INT,
+                                    ValueLayout.JAVA_INT, ValueLayout.ADDRESS, ValueLayout.JAVA_INT,
+                                    ValueLayout.JAVA_INT, ValueLayout.ADDRESS));
+                    getFileInfo = linker.downcallHandle(kernel32.find("GetFileInformationByHandleEx").orElseThrow(),
+                            FunctionDescriptor.of(ValueLayout.JAVA_INT, ValueLayout.ADDRESS, ValueLayout.JAVA_INT,
+                                    ValueLayout.ADDRESS, ValueLayout.JAVA_INT));
+                    closeHandle = linker.downcallHandle(kernel32.find("CloseHandle").orElseThrow(),
+                            FunctionDescriptor.of(ValueLayout.JAVA_INT, ValueLayout.ADDRESS));
+                    available = true;
+                } catch (Throwable ignored) {
+                    available = false;
+                }
+            }
+            LIBRARY_ARENA = libraryArena;
+            CREATE_FILE = createFile;
+            GET_FILE_INFO = getFileInfo;
+            CLOSE_HANDLE = closeHandle;
+            AVAILABLE = available;
+        }
+
+        private WindowsDirectoryFileId() {}
+
+        static Object read(Path directory) {
+            if (!AVAILABLE) {
+                return null;
+            }
+            try (Arena arena = Arena.ofConfined()) {
+                String path = directory.toAbsolutePath().normalize().toString();
+                if (path.length() >= 248 && !path.startsWith("\\\\")) {
+                    path = "\\\\?\\" + path; // long local path, mirrors WindowsPath
+                }
+                MemorySegment wide = arena.allocate((path.length() + 1) * 2L);
+                for (int i = 0; i < path.length(); i++) {
+                    wide.setAtIndex(ValueLayout.JAVA_SHORT, i, (short) path.charAt(i));
+                }
+                wide.setAtIndex(ValueLayout.JAVA_SHORT, path.length(), (short) 0);
+
+                MemorySegment handle = (MemorySegment) CREATE_FILE.invokeExact(wide,
+                        FILE_READ_ATTRIBUTES, SHARE_READ_WRITE_DELETE, MemorySegment.NULL, OPEN_EXISTING,
+                        FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, MemorySegment.NULL);
+                if (handle.address() == -1L) {
+                    return null;
+                }
+                try {
+                    MemorySegment info = arena.allocate(FILE_ID_INFO_SIZE);
+                    if ((int) GET_FILE_INFO.invokeExact(handle, FILE_ID_INFO_CLASS, info, FILE_ID_INFO_SIZE) == 0) {
+                        return null;
+                    }
+                    long volumeSerial = info.get(ValueLayout.JAVA_LONG, 0);
+                    byte[] fileId = new byte[16];
+                    MemorySegment.copy(info, ValueLayout.JAVA_BYTE, 8, fileId, 0, 16);
+                    return "win-file-id:" + Long.toHexString(volumeSerial) + ":" + HexFormat.of().formatHex(fileId);
+                } finally {
+                    int ignored = (int) CLOSE_HANDLE.invokeExact(handle);
+                }
+            } catch (Throwable ignored) {
+                return null;
+            }
+        }
     }
 }

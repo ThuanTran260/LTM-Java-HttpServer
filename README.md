@@ -259,6 +259,7 @@ Trang quản lý tệp tin chuyên biệt (**`http://localhost:8080/files.html`*
 
 - **Ranh giới Localhost:** Chỉ chấp nhận kết nối từ loopback socket (`127.0.0.1`, `::1`, `localhost`). Các request từ mạng ngoài bị từ chối `403 FORBIDDEN`. Không tin cậy `X-Forwarded-For`.
 - **Phiên làm việc (Session):** Quản lý hoàn toàn trong bộ nhớ RAM server, tự hủy khi restart server. Cookie `FileExplorerSession` (`HttpOnly; SameSite=Strict; Path=/api/files`). Hết hạn sau 30 phút không hoạt động (idle) hoặc tối đa 8 giờ.
+- **Đăng xuất (Logout):** Nút **Đăng xuất** dùng cho cả `admin` và `guest`; request logout bắt buộc CSRF hợp lệ, server thu hồi phiên ngay và trả cookie hết hạn (`Max-Age=0`). Cookie cũ sau đó nhận `401` và tải lại trang cũng đưa về màn hình đăng nhập.
 - **Chống CSRF:** Mọi thao tác ghi (upload, mkdir, rename, delete) yêu cầu bắt buộc header `X-File-Explorer: 1` và token `X-CSRF-Token` khớp với phiên đăng nhập.
 - **Phân quyền người dùng:**
   - `admin`: Toàn quyền duyệt, tải về, tạo thư mục, đổi tên, xóa và tải lên tệp tin.
@@ -271,21 +272,23 @@ Trang quản lý tệp tin chuyên biệt (**`http://localhost:8080/files.html`*
 - **Giới hạn đồng thời:** Tối đa 2 tiến trình upload HTTP đồng thời trên server. Upload có deadline 120 giây và watchdog đọc 30 giây.
 - **Không xóa thư mục có nội dung:** Chỉ cho phép xóa thư mục rỗng (`204`). Thư mục có chứa tệp tin hoặc thư mục con bị từ chối với `409 NOT_EMPTY`.
 - **Không xem trước (Preview):** Tải về tệp tin luôn trả về dạng luồng nhị phân với `Content-Type: application/octet-stream` và `Content-Disposition: attachment`, ngăn chặn thực thi mã độc.
-- **Phân trang thư mục:** Danh sách hiển thị theo từng trang (1..200 tệp/trang), tối đa 10.000 tệp mỗi thư mục. Thư mục vượt quá 10.000 mục trả về `422`.
+- **Phân trang thư mục:** Danh sách hiển thị theo từng trang (1..200 tệp/trang) với nút **Trang trước / Trang sau** và số trang; tổng tối đa 10.000 tệp mỗi thư mục. Thư mục vượt quá 10.000 mục trả về `422`; trang ngoài phạm vi được server sửa về trang hợp lệ.
+- **Upload khi kết quả không chắc chắn:** Nếu upload bị ngắt kết nối/timeout/hủy gần lúc hoàn tất, giao diện không tự thử lại và không xếp thêm tệp trùng vào thư mục đích; thư mục được đánh dấu "chưa xác định" và trạng thái thật được đối soát ở lần làm mới/duyệt kế tiếp. Server không hứa hủy upload đang chạy.
+- **Định danh thư mục cha (Fail-closed khi thiếu định danh):** Upload chỉ công bố tệp khi server đọc được định danh đáng tin cậy của thư mục cha và xác nhận nó không đổi giữa lúc nhận và lúc công bố. Nền tảng khác dùng `fileKey` của provider; riêng Windows, `BasicFileAttributes.fileKey()` của JDK luôn trả `null`, nên server đọc đúng mã tệp NTFS (volume serial + file ID 128-bit) mà `Files.isSameFile` dùng nội bộ qua API `java.lang.foreign` chuẩn JDK. Nếu định danh không đọc được (filesystem không hỗ trợ hoặc native access bị chặn), hoặc thư mục cha bị thay/thay thế, upload bị từ chối `409 CONFLICT` và không xuất bản gì. Trên JDK 24, lần dùng đầu tiên in cảnh báo `WARNING: A restricted method in java.lang.foreign...` ra stderr; thêm `--enable-native-access=ALL-UNNAMED` khi chạy server/test để tắt cảnh báo. Cơ chế này không cam kết chống người dùng hệ điều hành đang đua sửa đổi hệ thống tệp.
 - **Khóa đa tiến trình (Cross-Process Concurrency):** Mọi thao tác ghi được bảo vệ bởi khóa đồng bộ trong JVM kết hợp khóa tệp OS trên `write.lock` (`<root>.state/write.lock`), đảm bảo không xung đột dữ liệu giữa hai tiến trình Web và FTP Server.
 - **Dọn dẹp tệp tạm (Staging):** Tệp upload được nhận tại thư mục riêng `<root>.state/staging/` trước khi chuyển nguyên tử vào kho. Nếu server gặp sự cố crash, hãy **dừng cả hai tiến trình** trước khi xóa các tệp `.tmp` tồn đọng.
 
 ### 10.4 Chạy kiểm thử tự động toàn diện
 
-Chạy toàn bộ 82 ca kiểm thử ma trận chéo Web File Explorer & Shared Storage:
+Chạy toàn bộ 88 ca kiểm thử ma trận chéo Web File Explorer & Shared Storage:
 ```cmd
 run_cross_test_files.bat all
 ```
 Hoặc chạy từng nhóm kiểm thử riêng lẻ:
 - `run_cross_test_files.bat config`: Kiểm tra cấu hình và biến môi trường (9 tests).
-- `run_cross_test_files.bat storage`: Kiểm tra `SharedFileStore` và khóa nguyên tử (18 tests).
-- `run_cross_test_files.bat ftp`: Kiểm tra tích hợp FTP qua wire protocol (11 tests).
-- `run_cross_test_files.bat session`: Kiểm tra đăng nhập, session, CSRF và local guard (15 tests).
+- `run_cross_test_files.bat storage`: Kiểm tra `SharedFileStore` và khóa nguyên tử (20 tests).
+- `run_cross_test_files.bat ftp`: Kiểm tra tích hợp FTP qua wire protocol (12 tests).
+- `run_cross_test_files.bat session`: Kiểm tra đăng nhập, session, CSRF và local guard (17 tests).
 - `run_cross_test_files.bat isolation`: Kiểm tra chính sách cô lập nội dung upstream CSP sandbox (3 tests).
-- `run_cross_test_files.bat api`: Kiểm tra toàn diện HTTP REST API `/api/files` qua wire (17 tests).
+- `run_cross_test_files.bat api`: Kiểm tra toàn diện HTTP REST API `/api/files` qua wire (18 tests).
 - `run_cross_test_files.bat concurrency`: Kiểm tra đồng thời hai tiến trình Web & FTP với mã băm SHA-256 (9 tests).
